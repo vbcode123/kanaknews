@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}View Reporter - {{ reporter.name }} - Nandilive Admin{% endblock %}
+{% block page_title %}Reporter Profile Details{% endblock %}
+
+{% block extra_head %}
+<style>
+    .view-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        max-width: 1050px;
+    }
+
+    .id-card-wrap {
+        background: linear-gradient(135deg, var(--sidebar-navy) 0%, #1e293b 100%);
+        border-radius: var(--radius-lg);
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .id-card-wrap::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, var(--news-red) 0%, #ef4444 100%);
+    }
+
+    .id-card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(220, 38, 38, 0.25);
+        color: #fca5a5;
+        border: 1px solid rgba(220, 38, 38, 0.4);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .reporter-photo-lg {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 16px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .reporter-photo-placeholder {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background-color: var(--news-red);
+        color: #ffffff;
+        font-size: 42px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .id-name {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .id-district {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+
+    .id-meta-box {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-md);
+        padding: 12px;
+        text-align: left;
+        margin-bottom: 16px;
+    }
+
+    .id-meta-item {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-bottom: 4px;
+    }
+
+    .id-meta-val {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        font-family: monospace;
+    }
+
+    .details-table-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border-light);
+        align-items: center;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-val {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--primary-navy);
+    }
+
+    .aadhar-preview-card {
+        margin-top: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        background-color: #f8fafc;
+    }
+
+    .aadhar-img {
+        max-width: 100%;
+        max-height: 260px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .aadhar-img:hover {
+        transform: scale(1.01);
+    }
+
+    @media (max-width: 860px) {
+        .view-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+    <a href="{% url 'reporter_list' %}" class="btn btn-secondary btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Reporter List
+    </a>
+
+    <div style="display: flex; gap: 8px;">
+        <a href="{% url 'reporter_edit' reporter.pk %}" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Edit Reporter
+        </a>
+    </div>
+</div>
+
+<div class="view-layout">
+    <!-- Left Column: Digital Reporter ID Card -->
+    <div>
+        <div class="id-card-wrap">
+            <div class="id-card-badge">Nandilive Press Card</div>
+            {% if reporter.profile_image %}
+                <img src="{{ reporter.profile_image.url }}" alt="{{ reporter.name }}" class="reporter-photo-lg">
+            {% else %}
+                <div class="reporter-photo-placeholder">
+                    {{ reporter.name|slice:":1"|upper }}
+                </div>
+            {% endif %}
+
+            <div class="id-name">{{ reporter.name }}</div>
+            <div class="id-district">{{ reporter.district }} Bureau</div>
+
+            <div class="id-meta-box">
+                <div class="id-meta-item">Official Reporter ID</div>
+                <div class="id-meta-val" style="color: #38bdf8; font-size: 15px; letter-spacing: 0.5px;">{{ reporter.reporter_id|default:"-" }}</div>
+            </div>
+
+            <div class="id-meta-box">
+                <div class="id-meta-item">Authorized Phone / Login ID</div>
+                <div class="id-meta-val">{{ reporter.phone_number }}</div>
+            </div>
+
+            <div class="id-meta-box">
+                <div class="id-meta-item">Account Status</div>
+                <div>
+                    {% if reporter.is_active %}
+                        <span class="badge badge-published">Active Reporter</span>
+                    {% else %}
+                        <span class="badge badge-draft">Inactive / Suspended</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Detailed Info & Documents -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Personal &amp; Contact Details</h3>
+            </div>
+
+            <div class="details-table-list">
+                <div class="detail-row">
+                    <span class="detail-label">Reporter ID</span>
+                    <span class="detail-val">
+                        <span class="badge" style="background-color: #e0f2fe; color: #0284c7; font-family: monospace; font-size: 14px; font-weight: 700; padding: 4px 10px;">
+                            {{ reporter.reporter_id|default:"-" }}
+                        </span>
+                    </span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Full Name</span>
+                    <span class="detail-val">{{ reporter.name }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Phone Number</span>
+                    <span class="detail-val" style="font-family: monospace;">{{ reporter.phone_number }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Assigned District</span>
+                    <span class="detail-val">
+                        <span class="badge badge-category">{{ reporter.district }}</span>
+                    </span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Residential Address</span>
+                    <span class="detail-val">{{ reporter.address }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Joined / Created</span>
+                    <span class="detail-val">{{ reporter.created_at|date:"F d, Y - h:i A" }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Last Profile Update</span>
+                    <span class="detail-val">{{ reporter.updated_at|date:"F d, Y - h:i A" }}</span>
+                </div>
+            </div>
+
+            <!-- Aadhar Card Document Preview -->
+            <div class="aadhar-preview-card">
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-navy); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                        <circle cx="9" cy="10" r="2"></circle>
+                        <line x1="15" y1="8" x2="17" y2="8"></line>
+                        <line x1="15" y1="12" x2="17" y2="12"></line>
+                        <line x1="7" y1="16" x2="17" y2="16"></line>
+                    </svg>
+                    Aadhar Card Identification Document
+                </h4>
+
+                {% if reporter.aadhar_image %}
+                    <a href="{{ reporter.aadhar_image.url }}" target="_blank" title="Click to view full size">
+                        <img src="{{ reporter.aadhar_image.url }}" alt="Aadhar Card" class="aadhar-img">
+                    </a>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Click on document image to open full resolution.</p>
+                {% else %}
+                    <p style="font-size: 13px; color: var(--text-muted);">No Aadhar card image uploaded for this reporter.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

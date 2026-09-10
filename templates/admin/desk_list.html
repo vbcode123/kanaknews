@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}Desk Staff List - Nandilive Admin{% endblock %}
+{% block page_title %}Desk Staff Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .list-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filters-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        min-width: 260px;
+        flex: 1;
+    }
+
+    .search-input-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        width: 16px;
+        height: 16px;
+    }
+
+    .search-input-wrapper input {
+        width: 100%;
+        height: 38px;
+        padding: 8px 12px 8px 36px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        background-color: #ffffff;
+    }
+
+    .search-input-wrapper input:focus {
+        border-color: #059669;
+    }
+
+    .filter-select {
+        height: 38px;
+        padding: 0 12px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        background-color: #ffffff;
+        color: var(--text-main);
+    }
+
+    .filter-select:focus {
+        border-color: #059669;
+    }
+
+    .desk-avatar-cell {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background-color: #d1fae5;
+        color: #047857;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+        border: 2px solid #a7f3d0;
+    }
+
+    .desk-name-main {
+        font-weight: 700;
+        color: var(--primary-navy);
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .desk-email-sub {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .phone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--primary-navy);
+    }
+
+    .table-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background-color: #f1f5f9;
+        color: var(--text-main);
+    }
+
+    .action-btn svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .action-btn.view:hover {
+        background-color: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .action-btn.edit:hover {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+
+    .action-btn.delete:hover {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-add-desk {
+        background-color: #059669;
+        color: #ffffff;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.15s ease;
+        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.25);
+    }
+
+    .btn-add-desk:hover {
+        background-color: #047857;
+    }
+
+    /* Delete Confirmation Modal */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(2px);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .modal-backdrop.open {
+        display: flex;
+    }
+
+    .modal-content {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        max-width: 440px;
+        width: 100%;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn 0.2s ease;
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #fee2e2;
+        color: #dc2626;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin-bottom: 8px;
+    }
+
+    .modal-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 24px;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- List Toolbar -->
+<div class="list-toolbar">
+    <form method="GET" action="{% url 'desk_list' %}" class="filters-form">
+        <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ query }}" 
+                placeholder="Search desk staff by name, phone, email..."
+            >
+        </div>
+
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if query or status_filter %}
+        <a href="{% url 'desk_list' %}" class="btn btn-secondary btn-sm" title="Reset Filters">Clear</a>
+        {% endif %}
+    </form>
+
+    <a href="{% url 'desk_add' %}" class="btn-add-desk">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Add Desk Staff</span>
+    </a>
+</div>
+
+<!-- Desk Table Card -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    {% if desks %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Desk Member</th>
+                    <th>Phone (Login ID)</th>
+                    <th>Gmail / Email ID</th>
+                    <th>Status</th>
+                    <th>Registered On</th>
+                    <th style="text-align: right; width: 140px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for desk in desks %}
+                <tr>
+                    <td>
+                        <div class="desk-avatar-cell">
+                            {{ desk.name|slice:":1"|upper }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="desk-name-main">{{ desk.name }}</div>
+                        <div class="desk-email-sub">
+                            <span>Desk Editorial Staff</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="phone-badge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            {{ desk.phone_number }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <span>{{ desk.email }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if desk.is_active %}
+                            <span class="badge badge-published">Active</span>
+                        {% else %}
+                            <span class="badge badge-draft">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: 13px; color: var(--text-muted);">
+                        {{ desk.created_at|date:"M d, Y" }}
+                    </td>
+                    <td>
+                        <div class="table-actions-group" style="justify-content: flex-end;">
+                            <!-- 1. View Button -->
+                            <a href="{% url 'desk_view' desk.pk %}" class="action-btn view" title="View Desk Member Details">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+
+                            <!-- 2. Edit Button -->
+                            <a href="{% url 'desk_edit' desk.pk %}" class="action-btn edit" title="Edit Desk Member">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </a>
+
+                            <!-- 3. Delete Button -->
+                            <button 
+                                type="button" 
+                                class="action-btn delete" 
+                                title="Delete Desk Member" 
+                                onclick="openDeleteModal('{{ desk.pk }}', '{{ desk.name|escapejs }}')"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="padding: 48px 24px; text-align: center;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background-color: #f1f5f9; color: var(--text-light); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px;">No Desk Members Found</h3>
+        <p style="font-size: 13px; color: var(--text-muted); max-width: 360px; margin: 0 auto 18px;">
+            {% if query or status_filter %}
+                No desk staff matches your filter criteria. Try resetting filters.
+            {% else %}
+                Get started by creating your first Desk team account.
+            {% endif %}
+        </p>
+        <a href="{% url 'desk_add' %}" class="btn-add-desk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add Desk Staff</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <h3 class="modal-title">Delete Desk Member</h3>
+        <p class="modal-desc">
+            Are you sure you want to delete <strong id="deleteTargetName" style="color: var(--primary-navy);"></strong>? This will permanently remove their access and delete their login credentials.
+        </p>
+        <form method="POST" id="deleteForm" action="">
+            {% csrf_token %}
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">Yes, Delete Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openDeleteModal(pk, name) {
+        const modal = document.getElementById('deleteModal');
+        const targetName = document.getElementById('deleteTargetName');
+        const form = document.getElementById('deleteForm');
+
+        targetName.textContent = name;
+        form.action = `/desks/delete/${pk}/`;
+        modal.classList.add('open');
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('open');
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target === modal) {
+            closeDeleteModal();
+        }
+    };
+</script>
+{% endblock %}

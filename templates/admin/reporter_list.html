@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Reporter List - Nandilive Admin{% endblock %}
+{% block page_title %}Reporter Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .list-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filters-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        min-width: 260px;
+        flex: 1;
+    }
+
+    .search-input-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        width: 16px;
+        height: 16px;
+    }
+
+    .search-input-wrapper input {
+        width: 100%;
+        height: 38px;
+        padding: 8px 12px 8px 36px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        background-color: #ffffff;
+    }
+
+    .search-input-wrapper input:focus {
+        border-color: var(--news-red);
+    }
+
+    .filter-select {
+        height: 38px;
+        padding: 0 12px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        background-color: #ffffff;
+        color: var(--text-main);
+    }
+
+    .filter-select:focus {
+        border-color: var(--news-red);
+    }
+
+    .reporter-avatar-cell {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e2e8f0;
+    }
+
+    .reporter-avatar-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: #e2e8f0;
+        color: var(--primary-navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .reporter-name-main {
+        font-weight: 700;
+        color: var(--primary-navy);
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .reporter-district-sub {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .reporter-district-sub svg {
+        width: 12px;
+        height: 12px;
+        color: var(--news-red);
+    }
+
+    .reporter-id-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        background: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .phone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary-navy);
+        background-color: #f1f5f9;
+        padding: 3px 8px;
+        border-radius: var(--radius-sm);
+    }
+
+    .table-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        background-color: #ffffff;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    .action-btn svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .action-btn.view:hover {
+        background-color: #e0f2fe;
+        border-color: #7dd3fc;
+        color: #0284c7;
+    }
+
+    .action-btn.edit:hover {
+        background-color: #fef3c7;
+        border-color: #fcd34d;
+        color: #d97706;
+    }
+
+    .action-btn.delete:hover {
+        background-color: #fee2e2;
+        border-color: #fca5a5;
+        color: var(--news-red);
+    }
+
+    /* Delete Confirmation Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-card {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        max-width: 420px;
+        width: 100%;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+        text-align: center;
+    }
+
+    .modal-icon-danger {
+        width: 50px;
+        height: 50px;
+        background-color: #fee2e2;
+        color: var(--news-red);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+    }
+
+    .modal-icon-danger svg {
+        width: 26px;
+        height: 26px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin-bottom: 8px;
+    }
+
+    .modal-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 22px;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Toolbar: Search & Filters -->
+<div class="list-toolbar">
+    <form method="GET" action="{% url 'reporter_list' %}" class="filters-form">
+        <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ query }}" 
+                placeholder="Search reporter by ID, name, phone, district..."
+            >
+        </div>
+
+        <select name="district" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Districts</option>
+            {% for dist in all_districts %}
+            <option value="{{ dist }}" {% if district_filter == dist %}selected{% endif %}>{{ dist }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if query or district_filter or status_filter %}
+        <a href="{% url 'reporter_list' %}" class="btn btn-secondary btn-sm" title="Reset Filters">Clear</a>
+        {% endif %}
+    </form>
+
+    <a href="{% url 'reporter_add' %}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Add Reporter</span>
+    </a>
+</div>
+
+<!-- Reporter Table Card -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    {% if reporters %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">Photo</th>
+                    <th style="width: 120px;">Reporter ID</th>
+                    <th>Reporter Details</th>
+                    <th>Phone (Login ID)</th>
+                    <th>District</th>
+                    <th>Aadhar Status</th>
+                    <th>Status</th>
+                    <th>Registered On</th>
+                    <th style="text-align: right; width: 140px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reporter in reporters %}
+                <tr>
+                    <td>
+                        {% if reporter.profile_image %}
+                            <img src="{{ reporter.profile_image.url }}" alt="{{ reporter.name }}" class="reporter-avatar-cell">
+                        {% else %}
+                            <div class="reporter-avatar-placeholder">
+                                {{ reporter.name|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reporter.reporter_id %}
+                            <span class="reporter-id-pill">{{ reporter.reporter_id }}</span>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 12px;">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="reporter-name-main">{{ reporter.name }}</div>
+                        <div class="reporter-district-sub">
+                            <span style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                {{ reporter.address }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="phone-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            {{ reporter.phone_number }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-category">{{ reporter.district }}</span>
+                    </td>
+                    <td>
+                        {% if reporter.aadhar_image %}
+                            <span class="badge" style="background-color: #dcfce7; color: #15803d;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Uploaded
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background-color: #f1f5f9; color: var(--text-light);">
+                                Missing
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reporter.is_active %}
+                            <span class="badge badge-published">Active</span>
+                        {% else %}
+                            <span class="badge badge-draft">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: 13px; color: var(--text-muted);">
+                        {{ reporter.created_at|date:"M d, Y" }}
+                    </td>
+                    <td>
+                        <div class="table-actions-group" style="justify-content: flex-end;">
+                            <!-- 1. View Button -->
+                            <a href="{% url 'reporter_view' reporter.pk %}" class="action-btn view" title="View Reporter Details">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+
+                            <!-- 2. Edit Button -->
+                            <a href="{% url 'reporter_edit' reporter.pk %}" class="action-btn edit" title="Edit Reporter">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </a>
+
+                            <!-- 3. Delete Button -->
+                            <button 
+                                type="button" 
+                                class="action-btn delete" 
+                                title="Delete Reporter" 
+                                onclick="openDeleteModal('{{ reporter.pk }}', '{{ reporter.name|escapejs }}')"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-light); margin-bottom: 12px;">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-navy); margin-bottom: 4px;">No Reporters Found</h4>
+        <p style="font-size: 13px;">No reporter accounts found matching your query or filter criteria.</p>
+        <a href="{% url 'reporter_add' %}" class="btn btn-primary btn-sm" style="margin-top: 16px;">
+            Add New Reporter
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-icon-danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+        </div>
+        <h3 class="modal-title">Delete Reporter</h3>
+        <p class="modal-desc">
+            Are you sure you want to delete reporter <strong id="deleteReporterName"></strong>? This action will permanently remove their credentials and data.
+        </p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <a id="deleteConfirmBtn" href="#" class="btn btn-danger">Confirm Delete</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openDeleteModal(pk, name) {
+        document.getElementById('deleteReporterName').textContent = name;
+        document.getElementById('deleteConfirmBtn').href = `/reporters/delete/${pk}/`;
+        document.getElementById('deleteModal').classList.add('open');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+
+    // Close on click outside modal
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}Add Reporter - Nandilive Admin{% endblock %}
+{% block page_title %}Add New Reporter{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        max-width: 900px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary-navy);
+        margin-bottom: 6px;
+    }
+
+    .form-label .required {
+        color: var(--news-red);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-family: inherit;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        background-color: #ffffff;
+        color: var(--text-main);
+    }
+
+    .form-control:focus {
+        border-color: var(--news-red);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    }
+
+    textarea.form-control {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    .is-invalid {
+        border-color: var(--news-red) !important;
+        background-color: #fff5f5;
+    }
+
+    .invalid-feedback {
+        color: var(--news-red);
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .file-upload-box {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 18px;
+        text-align: center;
+        background-color: #fafbfc;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .file-upload-box:hover {
+        border-color: var(--news-red);
+        background-color: #fef2f2;
+    }
+
+    .file-upload-box input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .upload-icon {
+        width: 36px;
+        height: 36px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+    }
+
+    .upload-text {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary-navy);
+    }
+
+    .upload-hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .preview-container {
+        margin-top: 10px;
+        display: none;
+        align-items: center;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+    }
+
+    .preview-img {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .preview-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary-navy);
+        word-break: break-all;
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-light);
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title" style="font-size: 18px;">Register New Reporter</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                    Fill in reporter information. The phone number and password will be used for reporter login.
+                </p>
+            </div>
+            <a href="{% url 'reporter_list' %}" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Reporter List
+            </a>
+        </div>
+
+        <form method="POST" action="{% url 'reporter_add' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <!-- 1. Full Name -->
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        class="form-control {% if errors.name %}is-invalid{% endif %}" 
+                        value="{{ form_data.name|default:'' }}" 
+                        placeholder="e.g. Ramesh Kumar"
+                        required
+                    >
+                    {% if errors.name %}<span class="invalid-feedback">{{ errors.name }}</span>{% endif %}
+                </div>
+
+                <!-- 2. Phone Number -->
+                <div class="form-group">
+                    <label for="phone_number" class="form-label">Phone Number (Login ID) <span class="required">*</span></label>
+                    <input 
+                        type="tel" 
+                        id="phone_number" 
+                        name="phone_number" 
+                        class="form-control {% if errors.phone_number %}is-invalid{% endif %}" 
+                        value="{{ form_data.phone_number|default:'' }}" 
+                        placeholder="e.g. 9876543210"
+                        required
+                    >
+                    {% if errors.phone_number %}<span class="invalid-feedback">{{ errors.phone_number }}</span>{% endif %}
+                </div>
+
+                <!-- 3. District Name -->
+                <div class="form-group">
+                    <label for="district" class="form-label">District Name <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="district" 
+                        name="district" 
+                        class="form-control {% if errors.district %}is-invalid{% endif %}" 
+                        value="{{ form_data.district|default:'' }}" 
+                        placeholder="e.g. Raipur, Bilaspur, Patna, etc."
+                        required
+                    >
+                    {% if errors.district %}<span class="invalid-feedback">{{ errors.district }}</span>{% endif %}
+                </div>
+
+                <!-- 4. Reporter ID (Auto Generated) -->
+                <div class="form-group">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <label for="reporter_id" class="form-label" style="margin-bottom: 0;">
+                            Reporter ID <span class="required">*</span>
+                        </label>
+                        <span class="badge" style="background-color: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">
+                            Auto-Generated (NL_)
+                        </span>
+                    </div>
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="reporter_id" 
+                            name="reporter_id" 
+                            class="form-control {% if errors.reporter_id %}is-invalid{% endif %}" 
+                            value="{{ form_data.reporter_id|default:next_reporter_id }}" 
+                            placeholder="e.g. NL_1002"
+                            style="font-family: monospace; font-weight: 700; font-size: 15px; color: #0369a1; background-color: #f8fafc; padding-left: 38px;"
+                            required
+                        >
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #0284c7; display: flex; align-items: center; pointer-events: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                                <line x1="7" y1="8" x2="17" y2="8"></line>
+                                <line x1="7" y1="12" x2="13" y2="12"></line>
+                                <circle cx="15" cy="14" r="2"></circle>
+                            </svg>
+                        </span>
+                    </div>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">
+                        Automatic sequential ID: Starts with <strong>NL_</strong> followed by unique number.
+                    </span>
+                    {% if errors.reporter_id %}<span class="invalid-feedback">{{ errors.reporter_id }}</span>{% endif %}
+                </div>
+
+                <!-- 4. Address -->
+                <div class="form-group form-full-width">
+                    <label for="address" class="form-label">Full Address <span class="required">*</span></label>
+                    <textarea 
+                        id="address" 
+                        name="address" 
+                        class="form-control {% if errors.address %}is-invalid{% endif %}" 
+                        placeholder="Enter complete residential or bureau address..."
+                        required
+                    >{{ form_data.address|default:'' }}</textarea>
+                    {% if errors.address %}<span class="invalid-feedback">{{ errors.address }}</span>{% endif %}
+                </div>
+
+                <!-- 5. Profile Image -->
+                <div class="form-group">
+                    <label class="form-label">Profile Image / Passport Photo</label>
+                    <div class="file-upload-box">
+                        <input type="file" id="profile_image" name="profile_image" accept="image/*" onchange="previewFile(this, 'profilePreviewContainer', 'profilePreviewImg', 'profilePreviewName')">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <div class="upload-text">Click or Drop Profile Photo</div>
+                        <div class="upload-hint">JPG, PNG, WEBP (Max 5MB)</div>
+                    </div>
+                    <div id="profilePreviewContainer" class="preview-container">
+                        <img id="profilePreviewImg" class="preview-img" src="#" alt="Profile Preview">
+                        <span id="profilePreviewName" class="preview-name"></span>
+                    </div>
+                </div>
+
+                <!-- 6. Aadhar Card Image -->
+                <div class="form-group">
+                    <label class="form-label">Aadhar Card Image</label>
+                    <div class="file-upload-box">
+                        <input type="file" id="aadhar_image" name="aadhar_image" accept="image/*" onchange="previewFile(this, 'aadharPreviewContainer', 'aadharPreviewImg', 'aadharPreviewName')">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                            <circle cx="9" cy="10" r="2"></circle>
+                            <line x1="15" y1="8" x2="17" y2="8"></line>
+                            <line x1="15" y1="12" x2="17" y2="12"></line>
+                            <line x1="7" y1="16" x2="17" y2="16"></line>
+                        </svg>
+                        <div class="upload-text">Click or Drop Aadhar Card Image</div>
+                        <div class="upload-hint">Front/Back document image (JPG, PNG)</div>
+                    </div>
+                    <div id="aadharPreviewContainer" class="preview-container">
+                        <img id="aadharPreviewImg" class="preview-img" src="#" alt="Aadhar Preview">
+                        <span id="aadharPreviewName" class="preview-name"></span>
+                    </div>
+                </div>
+
+                <!-- 7. Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label">Password <span class="required">*</span></label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-control {% if errors.password %}is-invalid{% endif %}" 
+                        placeholder="Create password for reporter login"
+                        required
+                    >
+                    {% if errors.password %}<span class="invalid-feedback">{{ errors.password }}</span>{% endif %}
+                </div>
+
+                <!-- 8. Confirm Password -->
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">Confirm Password <span class="required">*</span></label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-control {% if errors.confirm_password %}is-invalid{% endif %}" 
+                        placeholder="Re-enter password to confirm"
+                        required
+                    >
+                    {% if errors.confirm_password %}<span class="invalid-feedback">{{ errors.confirm_password }}</span>{% endif %}
+                </div>
+            </div>
+
+            <!-- Form Submit & Cancel Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span>Save Reporter</span>
+                </button>
+                <a href="{% url 'reporter_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function previewFile(input, containerId, imgId, nameId) {
+        const container = document.getElementById(containerId);
+        const img = document.getElementById(imgId);
+        const nameSpan = document.getElementById(nameId);
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                nameSpan.textContent = file.name;
+                container.style.display = 'flex';
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            container.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,867 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nandilive - News Channel Admin{% endblock %}</title>
+    <!-- Google Fonts for crisp News Media typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-navy: #0b132b;
+            --sidebar-navy: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #1c2541;
+            --news-red: #dc2626;
+            --news-red-hover: #b91c1c;
+            --news-red-light: #fee2e2;
+            --bg-light: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --sidebar-width: 260px;
+            --header-height: 64px;
+            --success-color: #16a34a;
+            --success-light: #dcfce7;
+            --warning-color: #d97706;
+            --warning-light: #fef3c7;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-navy);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.25s ease-in-out;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar-brand {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .sidebar-logo-img {
+            height: 40px;
+            max-width: 160px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-logo-img:hover {
+            transform: scale(1.03);
+        }
+
+        .brand-logo-badge {
+            background-color: var(--news-red);
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+        }
+
+        .brand-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-text span {
+            color: var(--news-red);
+        }
+
+        .brand-live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: auto;
+            box-shadow: 0 0 8px #ef4444;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .sidebar-nav {
+            padding: 20px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 16px 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.15s ease;
+            position: relative;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background-color: var(--sidebar-hover);
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            background-color: var(--sidebar-active);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 6px;
+            width: 4px;
+            background-color: var(--news-red);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Nav Dropdown / Submenu Styles */
+        .nav-dropdown {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .nav-dropdown-toggle .dropdown-arrow {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .nav-dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+            opacity: 1;
+        }
+
+        .nav-submenu {
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            padding-left: 28px;
+            margin-top: 2px;
+            position: relative;
+        }
+
+        .nav-submenu::before {
+            content: "";
+            position: absolute;
+            left: 20px;
+            top: 4px;
+            bottom: 4px;
+            width: 1.5px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .nav-dropdown.open .nav-submenu {
+            display: flex;
+        }
+
+        .sub-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .sub-nav-item:hover {
+            color: #ffffff;
+            background-color: var(--sidebar-hover);
+        }
+
+        .sub-nav-item.active {
+            color: #ffffff;
+            background-color: rgba(220, 38, 38, 0.2);
+            font-weight: 600;
+            color: #fca5a5;
+        }
+
+        .sub-nav-item svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .sidebar-footer {
+            padding: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            min-width: 0;
+        }
+
+        /* Top Header */
+        .top-header {
+            height: var(--header-height);
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .header-page-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-main);
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            transition: all 0.15s ease;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .header-profile-btn:hover {
+            background-color: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .profile-avatar {
+            width: 28px;
+            height: 28px;
+            background-color: var(--primary-navy);
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        /* Page Content Area */
+        .page-content {
+            padding: 28px;
+            flex: 1;
+        }
+
+        /* Flash Messages */
+        .alerts-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background-color: var(--success-light);
+            color: var(--success-color);
+            border-color: #bbf7d0;
+        }
+
+        .alert-error {
+            background-color: var(--news-red-light);
+            color: var(--news-red);
+            border-color: #fecaca;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        /* Common UI Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-navy);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--news-red);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--news-red-hover);
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-light);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .badge-published {
+            background-color: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .badge-published::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+        }
+
+        .badge-draft {
+            background-color: var(--warning-light);
+            color: var(--warning-color);
+        }
+
+        .badge-draft::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background-color: var(--warning-color);
+            border-radius: 50%;
+        }
+
+        .badge-category {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 500;
+        }
+
+        /* Clean Tables */
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .table tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Overlay for mobile nav */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 45;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay.open {
+                display: block;
+            }
+            .main-wrapper {
+                margin-left: 0;
+            }
+            .mobile-toggle {
+                display: block;
+            }
+            .page-content {
+                padding: 18px;
+            }
+            .top-header {
+                padding: 0 18px;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <a href="{% url 'dashboard' %}" class="sidebar-brand">
+                <img src="{% static 'images/nandi.png' %}" alt="Nandilive Logo" class="sidebar-logo-img">
+                <div class="brand-live-dot" title="Channel Live Status"></div>
+            </a>
+
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+
+                <!-- News Dropdown with 2 Sub-Buttons (Add News & News List) -->
+                <div class="nav-dropdown {% if active_page == 'news_add' or active_page == 'news_list' or active_page == 'news_view' or active_page == 'news_edit' %}open{% endif %}" id="newsDropdown">
+                    <button type="button" class="nav-item nav-dropdown-toggle {% if active_page == 'news_add' or active_page == 'news_list' or active_page == 'news_view' or active_page == 'news_edit' %}active{% endif %}" onclick="toggleNewsDropdown()">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1"></path>
+                                <path d="M18 2h4v18h-4"></path>
+                                <path d="M7 8h6"></path>
+                                <path d="M7 12h8"></path>
+                                <path d="M7 16h5"></path>
+                            </svg>
+                            <span>News</span>
+                        </div>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="nav-submenu">
+                        <!-- Sub-Button 1: Add News -->
+                        <a href="{% url 'news_add' %}" class="sub-nav-item {% if active_page == 'news_add' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Add News</span>
+                        </a>
+
+                        <!-- Sub-Button 2: News List -->
+                        <a href="{% url 'news_list' %}" class="sub-nav-item {% if active_page == 'news_list' or active_page == 'news_view' or active_page == 'news_edit' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                            <span>News List</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Reporter Dropdown with 2 Sub-Buttons -->
+                <div class="nav-dropdown {% if active_page == 'reporter_add' or active_page == 'reporter_list' or active_page == 'reporter_view' or active_page == 'reporter_edit' %}open{% endif %}" id="reporterDropdown">
+                    <button type="button" class="nav-item nav-dropdown-toggle {% if active_page == 'reporter_add' or active_page == 'reporter_list' or active_page == 'reporter_view' or active_page == 'reporter_edit' %}active{% endif %}" onclick="toggleReporterDropdown()">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <span>Reporter</span>
+                        </div>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="nav-submenu">
+                        <!-- Sub-Button 1: Add Reporter -->
+                        <a href="{% url 'reporter_add' %}" class="sub-nav-item {% if active_page == 'reporter_add' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Add Reporter</span>
+                        </a>
+
+                        <!-- Sub-Button 2: Reporter List -->
+                        <a href="{% url 'reporter_list' %}" class="sub-nav-item {% if active_page == 'reporter_list' or active_page == 'reporter_view' or active_page == 'reporter_edit' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                            <span>Reporter List</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- DESK Dropdown with 2 Sub-Buttons (Add Desk & Desk List) -->
+                <div class="nav-dropdown {% if active_page == 'desk_add' or active_page == 'desk_list' or active_page == 'desk_view' or active_page == 'desk_edit' %}open{% endif %}" id="deskDropdown">
+                    <button type="button" class="nav-item nav-dropdown-toggle {% if active_page == 'desk_add' or active_page == 'desk_list' or active_page == 'desk_view' or active_page == 'desk_edit' %}active{% endif %}" onclick="toggleDeskDropdown()">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>Desk</span>
+                        </div>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="nav-submenu">
+                        <!-- Sub-Button 1: Add Desk -->
+                        <a href="{% url 'desk_add' %}" class="sub-nav-item {% if active_page == 'desk_add' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Add Desk</span>
+                        </a>
+
+                        <!-- Sub-Button 2: Desk List -->
+                        <a href="{% url 'desk_list' %}" class="sub-nav-item {% if active_page == 'desk_list' or active_page == 'desk_view' or active_page == 'desk_edit' %}active{% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                            <span>Desk List</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="sidebar-divider"></div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{% url 'profile' %}" class="nav-item {% if active_page == 'profile' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Profile
+                </a>
+
+                <a href="{% url 'logout' %}" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Overlay for Mobile View -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- Main Workspace -->
+        <div class="main-wrapper">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <h1 class="header-page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+
+                <div class="header-right">
+                    <a href="{% url 'profile' %}" class="header-profile-btn" title="View Profile">
+                        <div class="profile-avatar">
+                            {% if request.user.first_name %}
+                                {{ request.user.first_name|slice:":1"|upper }}
+                            {% elif request.user.username %}
+                                {{ request.user.username|slice:":1"|upper }}
+                            {% else %}
+                                A
+                            {% endif %}
+                        </div>
+                        <span>{{ request.user.email|default:request.user.username }}</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="page-content">
+                {% if messages %}
+                <div class="alerts-container">
+                    {% for message in messages %}
+                    <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                        <span>{{ message }}</span>
+                        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        function toggleNewsDropdown() {
+            const dropdown = document.getElementById('newsDropdown');
+            if (dropdown) dropdown.classList.toggle('open');
+        }
+
+        function toggleReporterDropdown() {
+            const dropdown = document.getElementById('reporterDropdown');
+            dropdown.classList.toggle('open');
+        }
+
+        function toggleDeskDropdown() {
+            const dropdown = document.getElementById('deskDropdown');
+            dropdown.classList.toggle('open');
+        }
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,283 @@
+{% extends "reporter/base_reporter.html" %}
+
+{% block title %}My Press Card &amp; Profile - Nandilive Reporter{% endblock %}
+{% block page_title %}My Official Press Card{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-wrap {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .press-id-card {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .card-top-strip {
+        background: linear-gradient(135deg, #090e1a 0%, #1e293b 100%);
+        padding: 24px 28px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 4px solid var(--reporter-blue);
+    }
+
+    .channel-logo-tag {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .channel-badge {
+        background-color: var(--news-red);
+        color: #ffffff;
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 20px;
+    }
+
+    .channel-title {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+
+    .channel-title span {
+        color: var(--news-red);
+    }
+
+    .press-auth-pill {
+        background: rgba(2, 132, 199, 0.2);
+        color: #7dd3fc;
+        border: 1px solid rgba(2, 132, 199, 0.4);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .card-content-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 28px;
+        padding: 28px;
+        background-color: #ffffff;
+    }
+
+    .profile-photo-frame {
+        text-align: center;
+    }
+
+    .id-photo-large {
+        width: 160px;
+        height: 180px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        border: 3px solid #e2e8f0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 12px;
+    }
+
+    .id-photo-placeholder {
+        width: 160px;
+        height: 180px;
+        border-radius: var(--radius-md);
+        background-color: #e2e8f0;
+        color: var(--primary-navy);
+        font-size: 48px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid #cbd5e1;
+        margin-bottom: 12px;
+    }
+
+    .id-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .id-detail-row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .id-detail-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .id-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .id-val {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--reporter-navy);
+    }
+
+    .card-footer-strip {
+        background-color: #f8fafc;
+        border-top: 1px solid var(--border-color);
+        padding: 14px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .press-id-card, .press-id-card * {
+            visibility: visible;
+        }
+        .press-id-card {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            border: 2px solid #000;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 680px) {
+        .card-content-grid {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .id-details-list {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrap">
+    <!-- Action Bar -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;" class="no-print">
+        <a href="{% url 'reporter_dashboard' %}" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Dashboard
+        </a>
+
+        <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print Press ID Card
+        </button>
+    </div>
+
+    <!-- Official Press ID Card -->
+    <div class="press-id-card">
+        <div class="card-top-strip">
+            <div class="channel-logo-tag">
+                <div class="channel-badge">N</div>
+                <div class="channel-title">NANDI<span>LIVE</span> NEWS</div>
+            </div>
+            <div class="press-auth-pill">OFFICIAL PRESS ACCREDITATION</div>
+        </div>
+
+        <div class="card-content-grid">
+            <div class="profile-photo-frame">
+                {% if reporter.profile_image %}
+                    <img src="{{ reporter.profile_image.url }}" alt="{{ reporter.name }}" class="id-photo-large">
+                {% else %}
+                    <div class="id-photo-placeholder">
+                        {{ reporter.name|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                <div style="font-weight: 700; color: var(--reporter-blue); font-size: 13px;">FIELD JOURNALIST</div>
+            </div>
+
+            <div class="id-details-list">
+                <div class="id-detail-row">
+                    <span class="id-lbl">Reporter ID</span>
+                    <span class="id-val" style="font-family: monospace; font-size: 15px; font-weight: 700; color: #0284c7;">
+                        {{ reporter.reporter_id|default:"-" }}
+                    </span>
+                </div>
+
+                <div class="id-detail-row">
+                    <span class="id-lbl">Full Name</span>
+                    <span class="id-val">{{ reporter.name }}</span>
+                </div>
+
+                <div class="id-detail-row">
+                    <span class="id-lbl">Assigned District</span>
+                    <span class="id-val">
+                        <span class="badge" style="background-color: #e0f2fe; color: #0284c7; font-size: 13px;">
+                            {{ reporter.district }} Bureau
+                        </span>
+                    </span>
+                </div>
+
+                <div class="id-detail-row">
+                    <span class="id-lbl">Official Phone</span>
+                    <span class="id-val" style="font-family: monospace;">{{ reporter.phone_number }}</span>
+                </div>
+
+                <div class="id-detail-row">
+                    <span class="id-lbl">Residential Address</span>
+                    <span class="id-val">{{ reporter.address }}</span>
+                </div>
+
+                <div class="id-detail-row">
+                    <span class="id-lbl">Accreditation Status</span>
+                    <span class="id-val">
+                        {% if reporter.is_active %}
+                            <span class="badge badge-active">Active &bull; Authorized</span>
+                        {% else %}
+                            <span class="badge" style="background-color: #fee2e2; color: var(--news-red);">Inactive</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="id-detail-row">
+                    <span class="id-lbl">Issuance Date</span>
+                    <span class="id-val">{{ reporter.created_at|date:"d M, Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer-strip">
+            <span>Authorized by Nandilive News Network Editorial Board</span>
+            <span style="font-family: monospace; font-weight: 700; color: var(--primary-navy);">{{ reporter.reporter_id|default:"-" }}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

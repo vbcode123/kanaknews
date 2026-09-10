@@ -1,0 +1,284 @@
+{% extends base_template %}
+
+{% block title %}{{ news.headline }} - Nandilive Newsroom{% endblock %}
+{% block page_title %}View News Story{% endblock %}
+
+{% block extra_head %}
+<style>
+    .story-layout {
+        max-width: 920px;
+        margin: 0 auto;
+    }
+
+    .story-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 28px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 24px;
+    }
+
+    .story-badge-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .news-type-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .badge-avo { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-byte { background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+    .badge-avobyte { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .badge-pkg { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    .story-headline {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.35;
+        margin-bottom: 16px;
+    }
+
+    .story-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .reporter-info-chip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .reporter-avatar-chip {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: #0284c7;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .story-media-player-box {
+        margin-bottom: 24px;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #090e1a;
+        text-align: center;
+    }
+
+    .story-video {
+        width: 100%;
+        max-height: 480px;
+        display: block;
+        background: #000;
+    }
+
+    .story-image {
+        max-width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .story-body {
+        font-size: 15px;
+        line-height: 1.75;
+        color: #1e293b;
+        white-space: pre-wrap;
+        margin-bottom: 24px;
+        padding: 16px 0;
+        border-top: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .byte-box {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 18px;
+        margin-top: 20px;
+    }
+
+    .byte-box h4 {
+        margin: 0 0 8px 0;
+        color: #0369a1;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="story-layout">
+    <!-- Top Action Bar -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <a href="{% url 'news_list' %}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: 600; color: #334155;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to News List
+        </a>
+
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'news_edit' news.pk %}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 14px; border-radius: 6px; background: #0284c7; color: #fff; font-size: 13px; font-weight: 600;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit Story
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Story Card -->
+    <div class="story-card">
+        <!-- Badge Strip -->
+        <div class="story-badge-strip">
+            {% if news.news_type == 'AVO' %}
+                <span class="news-type-badge badge-avo">AVO (Anchor Voice Over)</span>
+            {% elif news.news_type == 'Byte' %}
+                <span class="news-type-badge badge-byte">Byte (Sound Bite)</span>
+            {% elif news.news_type == 'AVO Byte' %}
+                <span class="news-type-badge badge-avobyte">AVO Byte (Voice Over + Byte)</span>
+            {% elif news.news_type == 'PKG' %}
+                <span class="news-type-badge badge-pkg">PKG (Complete Package)</span>
+            {% else %}
+                <span class="news-type-badge badge-byte">{{ news.news_type }}</span>
+            {% endif %}
+
+            <span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                {{ news.category }}
+            </span>
+
+            <span style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700;">
+                {{ news.district }}
+            </span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="story-headline">{{ news.headline }}</h1>
+
+        <!-- Story Meta Info -->
+        <div class="story-meta-row">
+            <div class="reporter-info-chip">
+                <div class="reporter-avatar-chip">
+                    {% if news.reporter %}
+                        {{ news.reporter.name|slice:":1"|upper }}
+                    {% else %}
+                        N
+                    {% endif %}
+                </div>
+                <div>
+                    <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                        {% if news.reporter %}
+                            {{ news.reporter.name }}
+                            {% if news.reporter.reporter_id %}
+                                <span style="font-family: monospace; font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 1px 6px; border-radius: 3px; margin-left: 4px;">
+                                    {{ news.reporter.reporter_id }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            {{ news.author.first_name|default:news.author.username }} (Desk Staff)
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 1px;">
+                        Location: <strong>{{ news.location }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: right; font-size: 12px; color: #64748b;">
+                <div>Submitted on: <strong>{{ news.created_at|date:"F d, Y - h:i A" }}</strong></div>
+                <div style="margin-top: 2px;">Status: <span style="color: #059669; font-weight: 700;">{{ news.status }}</span></div>
+            </div>
+        </div>
+
+        <!-- Media Player / Photo Display -->
+        {% if news.media_file %}
+        <div class="story-media-player-box">
+            {% if news.is_video %}
+                <video class="story-video" controls autoplay muted playsinline>
+                    <source src="{{ news.media_file.url }}">
+                    Your browser does not support HTML5 video player.
+                </video>
+            {% elif news.is_image %}
+                <img src="{{ news.media_file.url }}" alt="{{ news.headline }}" class="story-image">
+            {% else %}
+                <div style="padding: 24px; color: #fff;">
+                    <a href="{{ news.media_file.url }}" target="_blank" style="color: #38bdf8; font-weight: 700;">
+                        Download / View Media File ({{ news.media_file.name }})
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Story Description / Script -->
+        <div style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+            Story Script / Description:
+        </div>
+        <div class="story-body">{{ news.description }}</div>
+
+        <!-- Byte Interview Details -->
+        {% if news.byte_interview or news.byte_media %}
+        <div class="byte-box">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                </svg>
+                Sound Byte / Interview Statement
+            </h4>
+            {% if news.byte_interview %}
+                <div style="font-size: 14px; color: #0f172a; line-height: 1.5; white-space: pre-wrap; margin-bottom: 12px;">{{ news.byte_interview }}</div>
+            {% endif %}
+
+            {% if news.byte_media %}
+                <div style="margin-top: 10px;">
+                    {% if news.byte_is_video %}
+                        <video controls style="max-width: 100%; max-height: 300px; border-radius: 6px;">
+                            <source src="{{ news.byte_media.url }}">
+                        </video>
+                    {% else %}
+                        <audio controls style="width: 100%; max-width: 500px;">
+                            <source src="{{ news.byte_media.url }}">
+                        </audio>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

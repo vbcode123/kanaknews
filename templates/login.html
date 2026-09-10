@@ -1,0 +1,637 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Nandilive News Network</title>
+    <!-- Google Fonts for crisp News Media typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-navy: #0b132b;
+            --deep-navy: #0f172a;
+            --accent-navy: #1c2541;
+            --news-red: #dc2626;
+            --news-red-hover: #b91c1c;
+            --news-red-light: #fee2e2;
+            --desk-emerald: #059669;
+            --desk-emerald-hover: #047857;
+            --desk-emerald-light: #d1fae5;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --border-focus: #dc2626;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-card: 0 20px 30px -10px rgba(0, 0, 0, 0.25), 0 10px 15px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--primary-navy);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b132b 85%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .login-card {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 460px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .channel-top-bar {
+            height: 5px;
+            background: linear-gradient(90deg, var(--news-red) 0%, #ef4444 40%, #0284c7 70%, var(--desk-emerald) 100%);
+        }
+
+        .login-header {
+            padding: 28px 28px 18px;
+            text-align: center;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .brand-logo-img {
+            height: 64px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+            transition: transform 0.25s ease;
+        }
+
+        .brand-logo-img:hover {
+            transform: scale(1.04);
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-navy);
+            letter-spacing: 0.5px;
+            margin-top: 6px;
+        }
+
+        .brand-name span {
+            color: var(--news-red);
+        }
+
+        .login-tagline {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* 3 Login Selector Tabs */
+        .login-switch-container {
+            padding: 0 24px 18px;
+        }
+
+        .login-tabs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            background-color: #f1f5f9;
+            padding: 5px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .login-tab-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 8px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .login-tab-btn svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .login-tab-btn:hover {
+            color: var(--primary-navy);
+        }
+
+        .login-tab-btn.admin-tab.active {
+            background-color: #ffffff;
+            color: var(--news-red);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-tab-btn.reporter-tab.active {
+            background-color: #ffffff;
+            color: #0284c7;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-tab-btn.desk-tab.active {
+            background-color: #ffffff;
+            color: var(--desk-emerald);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Forms Body */
+        .login-body {
+            padding: 0 28px 32px;
+        }
+
+        .error-banner {
+            background-color: var(--news-red-light);
+            border: 1px solid #fecaca;
+            color: var(--news-red);
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .error-banner svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .role-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 18px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-admin {
+            background-color: #fee2e2;
+            color: var(--news-red);
+            border: 1px solid #fecaca;
+        }
+
+        .role-reporter {
+            background-color: #e0f2fe;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+        }
+
+        .role-desk {
+            background-color: #d1fae5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            height: 44px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-dark);
+            background-color: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--news-red);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+        }
+
+        .form-control.reporter-control:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        .form-control.desk-control:focus {
+            border-color: var(--desk-emerald);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        .btn-login {
+            width: 100%;
+            height: 46px;
+            background-color: var(--news-red);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 22px;
+        }
+
+        .btn-login:hover {
+            background-color: var(--news-red-hover);
+        }
+
+        .btn-login.btn-reporter {
+            background-color: #0284c7;
+        }
+
+        .btn-login.btn-reporter:hover {
+            background-color: #0369a1;
+        }
+
+        .btn-login.btn-desk {
+            background-color: var(--desk-emerald);
+        }
+
+        .btn-login.btn-desk:hover {
+            background-color: var(--desk-emerald-hover);
+        }
+
+        .btn-login:active {
+            transform: scale(0.99);
+        }
+
+        .login-footer-text {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="channel-top-bar"></div>
+        
+        <div class="login-header">
+            <div class="brand-logo-container">
+                <img src="{% static 'images/nandi.png' %}" alt="Nandilive Logo" class="brand-logo-img">
+            </div>
+            <p class="login-tagline">News Network Portal &amp; Management System</p>
+        </div>
+
+        <!-- 3 Login Selector Tabs (Admin, Reporter, Desk) -->
+        <div class="login-switch-container">
+            <div class="login-tabs-grid">
+                <button 
+                    type="button" 
+                    id="adminTabBtn" 
+                    class="login-tab-btn admin-tab {% if active_tab == 'admin' or not active_tab %}active{% endif %}" 
+                    onclick="switchLoginTab('admin')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Admin</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="reporterTabBtn" 
+                    class="login-tab-btn reporter-tab {% if active_tab == 'reporter' %}active{% endif %}" 
+                    onclick="switchLoginTab('reporter')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Reporter</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="deskTabBtn" 
+                    class="login-tab-btn desk-tab {% if active_tab == 'desk' %}active{% endif %}" 
+                    onclick="switchLoginTab('desk')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span>Desk</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="login-body">
+            <!-- ============================================== -->
+            <!-- 1. ADMIN LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="adminTabContent" class="tab-content {% if active_tab == 'admin' or not active_tab %}active{% endif %}">
+                <div class="role-indicator role-admin">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Administrative &amp; Editorial Control Portal</span>
+                </div>
+
+                {% if admin_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ admin_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="admin">
+                    
+                    <div class="form-group">
+                        <label for="admin_email" class="form-label">Email or Username</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                id="admin_email" 
+                                name="email" 
+                                class="form-control" 
+                                placeholder="admin@nandilive.com" 
+                                required 
+                                autocomplete="username"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="admin_password" 
+                                name="password" 
+                                class="form-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login">
+                        <span>Sign In as Admin</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 2. REPORTER LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="reporterTabContent" class="tab-content {% if active_tab == 'reporter' %}active{% endif %}">
+                <div class="role-indicator role-reporter">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Field Reporter Portal (Use Phone Number or Reporter ID &amp; Password)</span>
+                </div>
+
+                {% if reporter_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ reporter_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="reporter">
+                    
+                    <div class="form-group">
+                        <label for="reporter_phone" class="form-label">Phone Number or Reporter ID</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                id="reporter_phone" 
+                                name="phone" 
+                                class="form-control reporter-control" 
+                                placeholder="e.g. 9876543210 or NL_1001" 
+                                required 
+                                autocomplete="username"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reporter_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="reporter_password" 
+                                name="password" 
+                                class="form-control reporter-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-reporter">
+                        <span>Sign In as Reporter</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 3. DESK LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="deskTabContent" class="tab-content {% if active_tab == 'desk' %}active{% endif %}">
+                <div class="role-indicator role-desk">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Desk Staff Portal (Use registered Phone &amp; Password)</span>
+                </div>
+
+                {% if desk_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ desk_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="desk">
+                    
+                    <div class="form-group">
+                        <label for="desk_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="desk_phone" 
+                                name="phone" 
+                                class="form-control desk-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="desk_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="desk_password" 
+                                name="password" 
+                                class="form-control desk-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-desk">
+                        <span>Sign In as Desk Staff</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <div class="login-footer-text">
+                Nandilive News Network &bull; Authorized Personnel Only
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchLoginTab(tab) {
+            const adminBtn = document.getElementById('adminTabBtn');
+            const reporterBtn = document.getElementById('reporterTabBtn');
+            const deskBtn = document.getElementById('deskTabBtn');
+            
+            const adminContent = document.getElementById('adminTabContent');
+            const reporterContent = document.getElementById('reporterTabContent');
+            const deskContent = document.getElementById('deskTabContent');
+
+            // Reset all
+            adminBtn.classList.remove('active');
+            reporterBtn.classList.remove('active');
+            deskBtn.classList.remove('active');
+            adminContent.classList.remove('active');
+            reporterContent.classList.remove('active');
+            deskContent.classList.remove('active');
+
+            if (tab === 'reporter') {
+                reporterBtn.classList.add('active');
+                reporterContent.classList.add('active');
+            } else if (tab === 'desk') {
+                deskBtn.classList.add('active');
+                deskContent.classList.add('active');
+            } else {
+                adminBtn.classList.add('active');
+                adminContent.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

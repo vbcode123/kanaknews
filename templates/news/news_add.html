@@ -1,0 +1,508 @@
+{% extends base_template %}
+
+{% block title %}Add News - Nandilive Portal{% endblock %}
+{% block page_title %}Submit News Report{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary-navy, #0f172a);
+        margin-bottom: 6px;
+    }
+
+    .form-label .required {
+        color: var(--news-red, #dc2626);
+    }
+
+    .form-label .optional-pill {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted, #64748b);
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-family: inherit;
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        border-radius: var(--radius-md, 8px);
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        background-color: #ffffff;
+        color: var(--text-main, #1e293b);
+    }
+
+    .form-control:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    select.form-control {
+        cursor: pointer;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .is-invalid {
+        border-color: var(--news-red, #dc2626) !important;
+        background-color: #fff5f5;
+    }
+
+    .invalid-feedback {
+        color: var(--news-red, #dc2626);
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .section-divider {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 10px 0 6px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--border-color, #e2e8f0);
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title svg {
+        width: 16px;
+        height: 16px;
+        color: #0284c7;
+    }
+
+    .file-upload-box {
+        border: 2px dashed var(--border-color, #cbd5e1);
+        border-radius: var(--radius-md, 8px);
+        padding: 24px 18px;
+        text-align: center;
+        background-color: #f8fafc;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .file-upload-box:hover {
+        border-color: #0284c7;
+        background-color: #f0f9ff;
+    }
+
+    .file-upload-box input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .upload-icon {
+        width: 40px;
+        height: 40px;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .upload-text {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .upload-hint {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .preview-box {
+        margin-top: 12px;
+        display: none;
+        align-items: center;
+        gap: 12px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 10px 14px;
+    }
+
+    .preview-box.show {
+        display: flex;
+    }
+
+    .preview-thumb {
+        width: 50px;
+        height: 50px;
+        border-radius: 4px;
+        object-fit: cover;
+        border: 1px solid #e2e8f0;
+    }
+
+    .preview-info {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .preview-filename {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .preview-meta {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .type-help-badge {
+        font-size: 11px;
+        color: #0284c7;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card" style="background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; margin-bottom: 22px;">
+            <div>
+                <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Create &amp; Submit News</h2>
+                <p style="font-size: 13px; color: #64748b; margin: 0;">
+                    Fill in news story information, upload media (video/photo), and submit to newsroom desk.
+                </p>
+            </div>
+            <a href="{% url 'news_list' %}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: 600; color: #334155;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to News List
+            </a>
+        </div>
+
+        <form method="POST" action="{% url 'news_add' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <!-- 1. News Headline -->
+                <div class="form-group form-full-width">
+                    <label for="headline" class="form-label">
+                        <span>News Headline <span class="required">*</span></span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="headline" 
+                        name="headline" 
+                        class="form-control {% if errors.headline %}is-invalid{% endif %}" 
+                        value="{{ form_data.headline|default:'' }}" 
+                        placeholder="e.g. Raipur-Bilaspur Highway par Bada Sadak Hadsa, 4 Ghayal"
+                        required
+                        autofocus
+                    >
+                    {% if errors.headline %}<span class="invalid-feedback">{{ errors.headline }}</span>{% endif %}
+                </div>
+
+                <!-- 2. News Type (Dropdown) -->
+                <div class="form-group">
+                    <label for="news_type" class="form-label">
+                        <span>News Type <span class="required">*</span></span>
+                        <span class="type-help-badge">(AVO / Byte / AVO Byte / PKG)</span>
+                    </label>
+                    <select id="news_type" name="news_type" class="form-control {% if errors.news_type %}is-invalid{% endif %}" required>
+                        <option value="">-- Select News Type --</option>
+                        <option value="AVO" {% if form_data.news_type == 'AVO' %}selected{% endif %}>AVO (Anchor Voice Over)</option>
+                        <option value="Byte" {% if form_data.news_type == 'Byte' %}selected{% endif %}>Byte (Sound Byte / Statement)</option>
+                        <option value="AVO Byte" {% if form_data.news_type == 'AVO Byte' %}selected{% endif %}>AVO Byte (Voice Over + Sound Byte)</option>
+                        <option value="PKG" {% if form_data.news_type == 'PKG' %}selected{% endif %}>PKG (Complete Package)</option>
+                    </select>
+                    {% if errors.news_type %}<span class="invalid-feedback">{{ errors.news_type }}</span>{% endif %}
+                </div>
+
+                <!-- 3. Category -->
+                <div class="form-group">
+                    <label for="category" class="form-label">
+                        <span>Category <span class="required">*</span></span>
+                    </label>
+                    <select id="category" name="category" class="form-control" required>
+                        {% for cat in news_categories %}
+                        <option value="{{ cat.0 }}" {% if form_data.category == cat.0 %}selected{% endif %}>{{ cat.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 4. Location -->
+                <div class="form-group">
+                    <label for="location" class="form-label">
+                        <span>Location / Incident Spot <span class="required">*</span></span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="location" 
+                        name="location" 
+                        class="form-control {% if errors.location %}is-invalid{% endif %}" 
+                        value="{{ form_data.location|default:'' }}" 
+                        placeholder="e.g. Telibandha Chowk, Collectorate Road"
+                        required
+                    >
+                    {% if errors.location %}<span class="invalid-feedback">{{ errors.location }}</span>{% endif %}
+                </div>
+
+                <!-- 5. District -->
+                <div class="form-group">
+                    <label for="district" class="form-label">
+                        <span>District <span class="required">*</span></span>
+                        {% if is_reporter %}<span class="optional-pill">Your Bureau: {{ request.user.reporter_profile.district }}</span>{% endif %}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="district" 
+                        name="district" 
+                        class="form-control {% if errors.district %}is-invalid{% endif %}" 
+                        value="{{ form_data.district|default:'' }}" 
+                        placeholder="e.g. Raipur, Bilaspur, Durg, Patna"
+                        required
+                    >
+                    {% if errors.district %}<span class="invalid-feedback">{{ errors.district }}</span>{% endif %}
+                </div>
+
+                <!-- 6. News Description / Story Script -->
+                <div class="form-group form-full-width">
+                    <label for="description" class="form-label">
+                        <span>News Description / Script <span class="required">*</span></span>
+                    </label>
+                    <textarea 
+                        id="description" 
+                        name="description" 
+                        class="form-control {% if errors.description %}is-invalid{% endif %}" 
+                        placeholder="Poori khabar ka vivaran, incident details, background information aur script likhein..."
+                        required
+                    >{{ form_data.description|default:'' }}</textarea>
+                    {% if errors.description %}<span class="invalid-feedback">{{ errors.description }}</span>{% endif %}
+                </div>
+
+                <!-- Section: Media & Video Upload -->
+                <div class="section-divider">
+                    <span class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                            <line x1="7" y1="2" x2="7" y2="22"></line>
+                            <line x1="17" y1="2" x2="17" y2="22"></line>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                        </svg>
+                        Media File Upload (Video or Image)
+                    </span>
+                </div>
+
+                <!-- 7. Media File Upload -->
+                <div class="form-group form-full-width">
+                    <div class="file-upload-box" id="mediaUploadBox">
+                        <input 
+                            type="file" 
+                            id="media_file" 
+                            name="media_file" 
+                            accept="video/*,image/*" 
+                            onchange="handleMediaPreview(this)"
+                        >
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                        </svg>
+                        <div class="upload-text">Click or Drop Video Clip / Photo here</div>
+                        <div class="upload-hint">Supports MP4, MOV, MKV, AVI, WEBM, JPG, PNG, WEBP (Max 150MB)</div>
+                    </div>
+
+                    <div id="mediaPreviewBox" class="preview-box">
+                        <div id="mediaPreviewIcon" style="width: 44px; height: 44px; border-radius: 6px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                        </div>
+                        <img id="mediaPreviewImg" class="preview-thumb" src="#" alt="Preview" style="display: none;">
+                        <div class="preview-info">
+                            <div id="mediaFileName" class="preview-filename"></div>
+                            <div id="mediaFileSize" class="preview-meta"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Byte Interview (Optional) -->
+                <div class="section-divider">
+                    <span class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                        Byte / Interview Details (Optional)
+                    </span>
+                </div>
+
+                <!-- 8. Byte Interview Notes -->
+                <div class="form-group">
+                    <label for="byte_interview" class="form-label">
+                        <span>Byte / Interviewee Details</span>
+                        <span class="optional-pill">Optional</span>
+                    </label>
+                    <textarea 
+                        id="byte_interview" 
+                        name="byte_interview" 
+                        class="form-control" 
+                        style="min-height: 90px;"
+                        placeholder="Interviewee Name, Designation, and statement summary (e.g. SP Ramesh Sharma on rescue operation)"
+                    >{{ form_data.byte_interview|default:'' }}</textarea>
+                </div>
+
+                <!-- 9. Byte Audio/Video File -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>Byte Audio / Video Clip</span>
+                        <span class="optional-pill">Optional</span>
+                    </label>
+                    <div class="file-upload-box" style="padding: 16px;">
+                        <input 
+                            type="file" 
+                            id="byte_media" 
+                            name="byte_media" 
+                            accept="audio/*,video/*" 
+                            onchange="handleBytePreview(this)"
+                        >
+                        <svg style="width: 28px; height: 28px; color: #64748b; margin-bottom: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18V5l12-2v13"></path>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="16" r="3"></circle>
+                        </svg>
+                        <div class="upload-text" style="font-size: 12px;">Upload Byte Audio/Video</div>
+                        <div class="upload-hint" style="font-size: 10px;">MP3, WAV, MP4, M4A</div>
+                    </div>
+                    <div id="bytePreviewBox" class="preview-box" style="margin-top: 8px;">
+                        <span id="byteFileName" style="font-size: 12px; font-weight: 600; color: #0284c7;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Submit Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="padding: 11px 28px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; cursor: pointer; border: none; background: #dc2626; color: #fff;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Submit News</span>
+                </button>
+                <a href="{% url 'news_list' %}" class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px; border-radius: 8px; text-decoration: none; border: 1px solid #cbd5e1; background: #fff; color: #475569;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function handleMediaPreview(input) {
+        const previewBox = document.getElementById('mediaPreviewBox');
+        const previewImg = document.getElementById('mediaPreviewImg');
+        const previewIcon = document.getElementById('mediaPreviewIcon');
+        const fileNameSpan = document.getElementById('mediaFileName');
+        const fileSizeSpan = document.getElementById('mediaFileSize');
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            fileNameSpan.textContent = file.name;
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileSizeSpan.textContent = `${sizeInMB} MB • ${file.type || 'Media File'}`;
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    previewIcon.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.style.display = 'none';
+                previewIcon.style.display = 'flex';
+            }
+            previewBox.classList.add('show');
+        } else {
+            previewBox.classList.remove('show');
+        }
+    }
+
+    function handleBytePreview(input) {
+        const byteBox = document.getElementById('bytePreviewBox');
+        const byteNameSpan = document.getElementById('byteFileName');
+        if (input.files && input.files[0]) {
+            byteNameSpan.textContent = "Selected: " + input.files[0].name;
+            byteBox.classList.add('show');
+        } else {
+            byteBox.classList.remove('show');
+        }
+    }
+</script>
+{% endblock %}
