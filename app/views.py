@@ -2383,210 +2383,27 @@ def visual_editor_delete_view(request, pk):
 # ==========================================
 # Reporter Portal Views (Separate Section)
 # ==========================================
-# Teleprompter Database Table Auto-Ensurer
+# ==========================================
+# Schema management functions previously here have been disabled.
+# Django migrations are the single source of truth for the database schema.
 # ==========================================
 def _ensure_teleprompter_table():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_teleprompterscript (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                reporter_id INTEGER NOT NULL REFERENCES app_reporter(id) ON DELETE CASCADE,
-                desk_id INTEGER NULL REFERENCES app_desk(id) ON DELETE SET NULL,
-                news_id INTEGER NULL REFERENCES app_news(id) ON DELETE SET NULL,
-                title VARCHAR(255) NOT NULL DEFAULT '',
-                script_text TEXT NOT NULL,
-                is_read BOOLEAN NOT NULL DEFAULT 0,
-                read_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            )
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_teleprompterscript_reporter_id ON app_teleprompterscript(reporter_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_teleprompterscript_created_at ON app_teleprompterscript(created_at)")
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_teleprompter_table()
-
+    pass
 
 def _ensure_chat_table():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_deskvisualchatmessage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                desk_id INTEGER NOT NULL REFERENCES app_desk(id) ON DELETE CASCADE,
-                visual_editor_id INTEGER NOT NULL REFERENCES app_visualeditor(id) ON DELETE CASCADE,
-                sender_type VARCHAR(20) NOT NULL,
-                sender_user_id INTEGER NULL REFERENCES auth_user(id) ON DELETE SET NULL,
-                message TEXT NOT NULL,
-                attachment VARCHAR(100) NULL,
-                is_read BOOLEAN NOT NULL DEFAULT 0,
-                read_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            )
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskvisualchat_desk_idx ON app_deskvisualchatmessage(desk_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskvisualchat_ve_idx ON app_deskvisualchatmessage(visual_editor_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskvisualchat_created_idx ON app_deskvisualchatmessage(created_at)")
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_chat_table()
-
+    pass
 
 def _ensure_copy_chat_table():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_deskcopychatmessage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                desk_id INTEGER NOT NULL REFERENCES app_desk(id) ON DELETE CASCADE,
-                copy_editor_id INTEGER NOT NULL REFERENCES app_copyeditor(id) ON DELETE CASCADE,
-                sender_type VARCHAR(20) NOT NULL,
-                sender_user_id INTEGER NULL REFERENCES auth_user(id) ON DELETE SET NULL,
-                message TEXT NOT NULL,
-                attachment VARCHAR(100) NULL,
-                is_read BOOLEAN NOT NULL DEFAULT 0,
-                read_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            )
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskcopychat_desk_idx ON app_deskcopychatmessage(desk_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskcopychat_ce_idx ON app_deskcopychatmessage(copy_editor_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskcopychat_created_idx ON app_deskcopychatmessage(created_at)")
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_copy_chat_table()
-
+    pass
 
 def _ensure_voice_over_chat_table():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_deskvoiceoverchatmessage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                desk_id INTEGER NOT NULL REFERENCES app_desk(id) ON DELETE CASCADE,
-                voice_over_id INTEGER NOT NULL REFERENCES app_voiceoveruser(id) ON DELETE CASCADE,
-                sender_type VARCHAR(20) NOT NULL,
-                sender_user_id INTEGER NULL REFERENCES auth_user(id) ON DELETE SET NULL,
-                message TEXT NOT NULL,
-                attachment VARCHAR(100) NULL,
-                is_read BOOLEAN NOT NULL DEFAULT 0,
-                read_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            )
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskvochat_desk_idx ON app_deskvoiceoverchatmessage(desk_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskvochat_vo_idx ON app_deskvoiceoverchatmessage(voice_over_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskvochat_created_idx ON app_deskvoiceoverchatmessage(created_at)")
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_voice_over_chat_table()
-
+    pass
 
 def _ensure_social_media_chat_table():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(app_socialmedia)")
-        tbl_cols = [c[1] for c in cursor.fetchall()]
-        if 'last_seen' not in tbl_cols:
-            cursor.execute("ALTER TABLE app_socialmedia ADD COLUMN last_seen datetime NULL")
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_desksocialchatmessage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                desk_id INTEGER NOT NULL REFERENCES app_desk(id) ON DELETE CASCADE,
-                social_media_id INTEGER NOT NULL REFERENCES app_socialmedia(id) ON DELETE CASCADE,
-                sender_type VARCHAR(20) NOT NULL,
-                sender_user_id INTEGER NULL REFERENCES auth_user(id) ON DELETE SET NULL,
-                message TEXT NOT NULL,
-                attachment VARCHAR(100) NULL,
-                is_read BOOLEAN NOT NULL DEFAULT 0,
-                read_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            )
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_desksmchat_desk_idx ON app_desksocialchatmessage(desk_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_desksmchat_sm_idx ON app_desksocialchatmessage(social_media_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_desksmchat_created_idx ON app_desksocialchatmessage(created_at)")
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_social_media_chat_table()
-
+    pass
 
 def _ensure_reporter_chat_table():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(app_reporter)")
-        tbl_cols = [c[1] for c in cursor.fetchall()]
-        if 'last_seen' not in tbl_cols:
-            cursor.execute("ALTER TABLE app_reporter ADD COLUMN last_seen datetime NULL")
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_deskreporterchatmessage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                desk_id INTEGER NOT NULL REFERENCES app_desk(id) ON DELETE CASCADE,
-                reporter_id INTEGER NOT NULL REFERENCES app_reporter(id) ON DELETE CASCADE,
-                sender_type VARCHAR(20) NOT NULL,
-                sender_user_id INTEGER NULL REFERENCES auth_user(id) ON DELETE SET NULL,
-                message TEXT NOT NULL,
-                attachment VARCHAR(100) NULL,
-                is_read BOOLEAN NOT NULL DEFAULT 0,
-                read_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            )
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskreporterchat_desk_idx ON app_deskreporterchatmessage(desk_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskreporterchat_rep_idx ON app_deskreporterchatmessage(reporter_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS app_deskreporterchat_created_idx ON app_deskreporterchatmessage(created_at)")
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_reporter_chat_table()
+    pass
 
 
 # ==========================================
@@ -4744,28 +4561,7 @@ def social_media_get_chat_messages_api(request, desk_id):
 # Graphic Designer Portal Views (Graphic Designer Staff Access)
 # ==========================================
 def _ensure_graphic_designer_columns():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(app_news)")
-        columns = [col[1] for col in cursor.fetchall()]
-        altered = False
-        if 'is_graphics_completed' not in columns:
-            cursor.execute("ALTER TABLE app_news ADD COLUMN is_graphics_completed bool NOT NULL DEFAULT 0")
-            altered = True
-        if 'graphics_sent_to_visual_editor_at' not in columns:
-            cursor.execute("ALTER TABLE app_news ADD COLUMN graphics_sent_to_visual_editor_at datetime NULL")
-            altered = True
-        if altered:
-            conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_graphic_designer_columns()
+    pass
 
 
 @graphic_designer_required
@@ -6040,28 +5836,7 @@ def voice_over_get_chat_messages_api(request, desk_id):
 # Copy Editor Portal Views (Copy Editor Staff Access)
 # ==========================================
 def _ensure_copy_editor_columns():
-    try:
-        from django.conf import settings
-        import sqlite3
-        db_path = settings.DATABASES['default']['NAME']
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(app_news)")
-        columns = [col[1] for col in cursor.fetchall()]
-        altered = False
-        if 'is_script_edited_by_copy_editor' not in columns:
-            cursor.execute("ALTER TABLE app_news ADD COLUMN is_script_edited_by_copy_editor bool NOT NULL DEFAULT 0")
-            altered = True
-        if 'sent_to_visual_editor_at' not in columns:
-            cursor.execute("ALTER TABLE app_news ADD COLUMN sent_to_visual_editor_at datetime NULL")
-            altered = True
-        if altered:
-            conn.commit()
-        conn.close()
-    except Exception:
-        pass
-
-_ensure_copy_editor_columns()
+    pass
 
 
 @copy_editor_required
