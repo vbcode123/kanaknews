@@ -1,0 +1,1106 @@
+{% extends "reporter/base_reporter.html" %}
+
+{% block title %}Broadcast Teleprompter - {{ reporter.name }} - Nandilive{% endblock %}
+{% block page_title %}Broadcast Teleprompter{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --prompter-bg: #000000;
+        --prompter-text: #fde047;
+        --prompter-guide: rgba(234, 179, 8, 0.45);
+        --prompter-font-size: 42px;
+        --prompter-line-height: 1.6;
+    }
+
+    .prompter-workspace {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px);
+        min-height: 600px;
+        position: relative;
+        background: #090e17;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Top Action & Meta Bar */
+    .prompter-header-bar {
+        background: #0d1525;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        z-index: 20;
+    }
+
+    .prompter-meta-info {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .prompter-badge-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #dc2626;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        box-shadow: 0 0 12px rgba(220, 38, 38, 0.5);
+    }
+
+    .prompter-badge-live span.pulse-dot {
+        width: 7px;
+        height: 7px;
+        background: #ffffff;
+        border-radius: 50%;
+        display: inline-block;
+        animation: prompterPulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes prompterPulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.3; transform: scale(0.7); }
+    }
+
+    .prompter-script-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #f8fafc;
+        max-width: 420px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .prompter-sender-tag {
+        font-size: 12px;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .prompter-sender-tag strong {
+        color: #38bdf8;
+    }
+
+    .prompter-stats {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    .prompter-stat-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .prompter-stat-item strong {
+        color: #e2e8f0;
+    }
+
+    /* Screen Stage */
+    .prompter-screen-stage {
+        flex: 1;
+        background: var(--prompter-bg);
+        position: relative;
+        overflow-y: scroll;
+        scroll-behavior: auto;
+        user-select: text;
+        transition: background-color 0.25s ease;
+    }
+
+    .prompter-screen-stage::-webkit-scrollbar {
+        width: 8px;
+    }
+    .prompter-screen-stage::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.4);
+    }
+    .prompter-screen-stage::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+
+    /* Eye-Line Guide Overlay */
+    .prompter-eyeline-guide {
+        position: absolute;
+        top: 35%;
+        left: 0;
+        right: 0;
+        height: 60px;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-top: 2px dashed var(--prompter-guide);
+        border-bottom: 2px dashed var(--prompter-guide);
+        background: linear-gradient(180deg, rgba(234, 179, 8, 0.06) 0%, rgba(234, 179, 8, 0.12) 50%, rgba(234, 179, 8, 0.06) 100%);
+        z-index: 10;
+        transition: opacity 0.2s ease;
+    }
+
+    .prompter-eyeline-guide.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .prompter-eyeline-pointer {
+        color: #facc15;
+        font-size: 20px;
+        font-weight: 900;
+        text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .prompter-eyeline-tag {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: rgba(234, 179, 8, 0.25);
+        color: #fef08a;
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(234, 179, 8, 0.4);
+    }
+
+    /* Script Content Container: large top and bottom padding so any script can scroll fully */
+    .prompter-content-wrapper {
+        max-width: 960px;
+        margin: 0 auto;
+        padding-top: 34vh;
+        padding-bottom: 95vh;
+        padding-left: 40px;
+        padding-right: 40px;
+        min-height: 160vh;
+        transition: transform 0.2s ease;
+    }
+
+    .prompter-content-wrapper.mirror-mode {
+        transform: scaleX(-1);
+    }
+
+    .prompter-text-body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-size: var(--prompter-font-size);
+        line-height: var(--prompter-line-height);
+        color: var(--prompter-text);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        transition: font-size 0.15s ease, color 0.25s ease;
+    }
+
+    /* Floating / Sticky Control Bar */
+    .prompter-control-bar {
+        background: #0d1525;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        z-index: 25;
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .control-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-prompter {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #f1f5f9;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+        user-select: none;
+    }
+
+    .btn-prompter:hover {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+    }
+
+    .btn-prompter.active {
+        background: #0284c7;
+        border-color: #38bdf8;
+        color: #ffffff;
+        box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
+    }
+
+    .btn-prompter-play {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: 1px solid #34d399;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 800;
+        padding: 10px 22px;
+        border-radius: 9999px;
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-prompter-play:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6);
+        transform: translateY(-1px);
+    }
+
+    .btn-prompter-play.is-playing {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: #fbbf24;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+    }
+
+    .prompter-slider-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .prompter-slider-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #94a3b8;
+        white-space: nowrap;
+    }
+
+    .prompter-slider-val {
+        font-family: monospace;
+        font-weight: 800;
+        color: #38bdf8;
+        font-size: 12px;
+        min-width: 44px;
+        text-align: right;
+    }
+
+    .prompter-range-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 85px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .prompter-range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #0284c7;
+        border: 2px solid #ffffff;
+        cursor: pointer;
+        box-shadow: 0 0 6px rgba(2, 132, 199, 0.6);
+    }
+
+    /* Theme Picker */
+    .theme-picker {
+        display: flex;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 2px;
+    }
+
+    .theme-pill {
+        border: none;
+        background: transparent;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #94a3b8;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .theme-pill.active {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+    }
+
+    /* Scripts Drawer */
+    .scripts-drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        display: none;
+    }
+
+    .scripts-drawer-backdrop.open {
+        display: block;
+    }
+
+    .scripts-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 440px;
+        max-width: 90vw;
+        background: #0f172a;
+        border-left: 1px solid rgba(255, 255, 255, 0.12);
+        z-index: 101;
+        display: flex;
+        flex-direction: column;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+        transform: translateX(100%);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .scripts-drawer.open {
+        transform: translateX(0);
+    }
+
+    .drawer-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .drawer-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .drawer-close-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        color: #94a3b8;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .drawer-close-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+    }
+
+    .drawer-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .drawer-item {
+        background: #1e293b;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 14px 16px;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: all 0.15s ease;
+    }
+
+    .drawer-item:hover {
+        border-color: #0284c7;
+        background: #24344d;
+        transform: translateY(-1px);
+    }
+
+    .drawer-item.active {
+        border-color: #f59e0b;
+        background: rgba(245, 158, 11, 0.1);
+        box-shadow: 0 0 14px rgba(245, 158, 11, 0.2);
+    }
+
+    .drawer-item-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+
+    .drawer-item-snippet {
+        font-size: 12px;
+        color: #94a3b8;
+        line-height: 1.5;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .drawer-item-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11px;
+        color: #64748b;
+    }
+
+    /* Fullscreen mode styling */
+    .prompter-workspace:fullscreen {
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+    }
+
+    .prompter-workspace:-webkit-full-screen {
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+    }
+
+    /* Standby screen */
+    .prompter-standby-view {
+        padding: 80px 20px;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+        color: #94a3b8;
+    }
+
+    .prompter-standby-icon {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 20px auto;
+        border-radius: 16px;
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fbbf24;
+    }
+
+    .prompter-standby-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #f8fafc;
+        margin-bottom: 8px;
+    }
+
+    .prompter-standby-desc {
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+    }
+
+    .practice-textarea {
+        width: 100%;
+        background: #0f172a;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fde047;
+        font-size: 16px;
+        padding: 16px;
+        border-radius: 8px;
+        resize: vertical;
+        font-family: inherit;
+        outline: none;
+        margin-bottom: 16px;
+    }
+    .practice-textarea:focus {
+        border-color: #f59e0b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prompter-workspace" id="prompterWorkspace">
+    <!-- Top Action / Script Meta Bar -->
+    <header class="prompter-header-bar">
+        <div class="prompter-meta-info">
+            <span class="prompter-badge-live">
+                <span class="pulse-dot"></span>
+                LIVE PROMPTER
+            </span>
+
+            {% if active_script %}
+                <div class="prompter-script-title" title="{{ active_script.title }}">
+                    {{ active_script.title }}
+                </div>
+                <div class="prompter-sender-tag">
+                    From Desk: <strong>{{ active_script.desk.name|default:"Editorial Desk" }}</strong>
+                    <span>&bull;</span>
+                    <span>{{ active_script.created_at|date:"M d, H:i" }}</span>
+                    {% if active_script.news %}
+                        <span>&bull;</span>
+                        <span style="color: #a7f3d0; font-size: 11px;">[Ref: {{ active_script.news.headline|truncatechars:25 }}]</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="prompter-script-title">
+                    Standby Practice Studio
+                </div>
+                <div class="prompter-sender-tag">
+                    Waiting for scripts dispatched from Editorial Desk
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div class="prompter-stats">
+                <div class="prompter-stat-item">
+                    <span>Words:</span>
+                    <strong id="statWordCount">0</strong>
+                </div>
+                <div class="prompter-stat-item">
+                    <span>Est. Pace:</span>
+                    <strong id="statDuration">0s</strong>
+                </div>
+            </div>
+
+            <button type="button" class="btn-prompter" onclick="toggleScriptsDrawer()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span>My Desk Scripts ({{ total_scripts_count|default:"0" }})</span>
+                {% if unread_prompter_count %}
+                    <span style="background: #ef4444; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 9999px;">{{ unread_prompter_count }}</span>
+                {% endif %}
+            </button>
+        </div>
+    </header>
+
+    <!-- Prompter Eye-Line Guide Indicator Overlay -->
+    <div class="prompter-eyeline-guide" id="eyelineGuide">
+        <div class="prompter-eyeline-pointer">
+            <span>►</span>
+            <span class="prompter-eyeline-tag">READING LINE</span>
+        </div>
+        <div class="prompter-eyeline-pointer">
+            <span class="prompter-eyeline-tag">EYE LEVEL</span>
+            <span>◄</span>
+        </div>
+    </div>
+
+    <!-- Prompter Screen Scroll Stage -->
+    <main class="prompter-screen-stage" id="prompterStage">
+        <div class="prompter-content-wrapper" id="contentWrapper">
+            {% if active_script %}
+                <div class="prompter-text-body" id="prompterText">{{ active_script.script_text }}</div>
+            {% else %}
+                <div id="standbyPlaceholder" class="prompter-standby-view">
+                    <div class="prompter-standby-icon">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                            <line x1="6" y1="8" x2="18" y2="8"></line>
+                        </svg>
+                    </div>
+                    <h3 class="prompter-standby-title">Teleprompter Standby</h3>
+                    <p class="prompter-standby-desc">
+                        No script has been dispatched by the Editorial Desk yet. Whenever Desk dispatches breaking speech cues or news scripts to you, they will appear here automatically.<br>
+                        In the meantime, you can test by typing or pasting any custom text below:
+                    </p>
+                    <textarea id="practiceInput" class="practice-textarea" rows="6" placeholder="Type or paste your field report / speech here to practice teleprompter scrolling..."></textarea>
+                    <button type="button" class="btn btn-primary" onclick="loadPracticeText()" style="background: #f59e0b; color: #000; font-weight: 800; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer;">
+                        Load into Teleprompter Studio
+                    </button>
+                </div>
+                <div class="prompter-text-body" id="prompterText" style="display: none;"></div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Bottom Broadcast Control Bar -->
+    <footer class="prompter-control-bar">
+        <!-- Play / Pause & Reset -->
+        <div class="control-group">
+            <button type="button" class="btn-prompter btn-prompter-play" id="btnPlayPause" onclick="togglePlayPause()" title="Spacebar to Play/Pause">
+                <svg id="iconPlay" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <svg id="iconPause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+                <span id="playPauseText">START SCROLL</span>
+                <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">SPACE</kbd>
+            </button>
+
+            <button type="button" class="btn-prompter" onclick="resetToTop()" title="Reset to Start (Shortcut: R)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                </svg>
+                <span>Reset</span>
+                <kbd style="font-size: 10px; background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 4px;">R</kbd>
+            </button>
+        </div>
+
+        <!-- Speed & Font Size Adjustments -->
+        <div class="control-group">
+            <!-- Speed Control -->
+            <div class="prompter-slider-box">
+                <span class="prompter-slider-label">Speed:</span>
+                <button type="button" class="btn-prompter" style="padding: 2px 7px; font-size: 11px;" onclick="adjustSpeed(-0.5)" title="Slower (Shortcut: ↓)">-</button>
+                <input type="range" min="1" max="10" step="0.5" value="3.5" class="prompter-range-slider" id="speedSlider" oninput="updateSpeed(this.value)">
+                <button type="button" class="btn-prompter" style="padding: 2px 7px; font-size: 11px;" onclick="adjustSpeed(0.5)" title="Faster (Shortcut: ↑)">+</button>
+                <span class="prompter-slider-val" id="speedVal">3.5x</span>
+            </div>
+
+            <!-- Font Size -->
+            <div class="prompter-slider-box">
+                <span class="prompter-slider-label">Font:</span>
+                <button type="button" class="btn-prompter" style="padding: 2px 7px; font-size: 11px;" onclick="adjustFontSize(-4)" title="Smaller">A-</button>
+                <input type="range" min="24" max="76" step="2" value="42" class="prompter-range-slider" id="fontSlider" oninput="updateFontSize(this.value)">
+                <button type="button" class="btn-prompter" style="padding: 2px 7px; font-size: 11px;" onclick="adjustFontSize(4)" title="Larger">A+</button>
+                <span class="prompter-slider-val" id="fontVal">42px</span>
+            </div>
+        </div>
+
+        <!-- Modes & Toggles -->
+        <div class="control-group">
+            <!-- Mirror Mode (for glass beam splitter teleprompter rigs) -->
+            <button type="button" class="btn-prompter" id="btnMirror" onclick="toggleMirrorMode()" title="Horizontal Flip for Glass Teleprompter (Shortcut: M)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <span>Mirror</span>
+            </button>
+
+            <!-- Eyeline Guide Toggle -->
+            <button type="button" class="btn-prompter active" id="btnGuide" onclick="toggleEyelineGuide()" title="Toggle Eyeline Reading Bar (Shortcut: G)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Guide</span>
+            </button>
+
+            <!-- Color Theme Selector -->
+            <div class="theme-picker">
+                <button type="button" class="theme-pill active" id="themeGold" onclick="setTheme('gold')">Studio Gold</button>
+                <button type="button" class="theme-pill" id="themeWhite" onclick="setTheme('white')">High White</button>
+                <button type="button" class="theme-pill" id="themeLight" onclick="setTheme('light')">Light</button>
+            </div>
+
+            <!-- Fullscreen Toggle -->
+            <button type="button" class="btn-prompter" id="btnFullscreen" onclick="toggleFullscreen()" title="Fullscreen Studio Mode (Shortcut: F)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <span>Fullscreen</span>
+            </button>
+        </div>
+    </footer>
+</div>
+
+<!-- Dispatched Scripts History Drawer -->
+<div class="scripts-drawer-backdrop" id="drawerBackdrop" onclick="toggleScriptsDrawer()"></div>
+<aside class="scripts-drawer" id="scriptsDrawer">
+    <div class="drawer-header">
+        <div class="drawer-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+                <line x1="6" y1="8" x2="18" y2="8"></line>
+            </svg>
+            <span>Desk Dispatched Scripts</span>
+        </div>
+        <button type="button" class="drawer-close-btn" onclick="toggleScriptsDrawer()" aria-label="Close Drawer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div class="drawer-list">
+        {% if scripts %}
+            {% for s in scripts %}
+                <a href="{% url 'reporter_teleprompter_detail' s.pk %}" class="drawer-item {% if active_script and active_script.pk == s.pk %}active{% endif %}">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">
+                            From {{ s.desk.name|default:"Desk Staff" }}
+                        </span>
+                        {% if not s.is_read %}
+                            <span style="background: #ef4444; color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 9999px;">NEW</span>
+                        {% else %}
+                            <span style="color: #64748b; font-size: 11px;">Read</span>
+                        {% endif %}
+                    </div>
+                    <div class="drawer-item-title">{{ s.title }}</div>
+                    <div class="drawer-item-snippet">{{ s.script_text|truncatewords:20 }}</div>
+                    <div class="drawer-item-footer">
+                        <span>{{ s.created_at|date:"d M, H:i" }} ({{ s.created_at|timesince }} ago)</span>
+                        <span style="color: #f59e0b; font-weight: 700;">Open &rarr;</span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 40px 16px; color: #94a3b8;">
+                <p>No scripts sent to you yet.</p>
+                <p style="font-size: 12px; margin-top: 6px; color: #64748b;">Whenever Editorial Desk selects you in the Teleprompter Dispatcher, it will be listed here instantly.</p>
+            </div>
+        {% endif %}
+    </div>
+</aside>
+
+<!-- Inline script directly in content block to ensure 100% execution regardless of base template blocks -->
+<script>
+    // State management for broadcast teleprompter
+    const prompterState = {
+        isPlaying: false,
+        speed: 3.5,
+        fontSize: 42,
+        isMirror: false,
+        guideVisible: true,
+        theme: 'gold',
+        lastTimestamp: null,
+        scrollAccumulator: 0,
+        animId: null
+    };
+
+    const stage = document.getElementById('prompterStage');
+    const contentWrapper = document.getElementById('contentWrapper');
+    const textBody = document.getElementById('prompterText');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const iconPlay = document.getElementById('iconPlay');
+    const iconPause = document.getElementById('iconPause');
+    const playPauseText = document.getElementById('playPauseText');
+    const speedSlider = document.getElementById('speedSlider');
+    const speedVal = document.getElementById('speedVal');
+    const fontSlider = document.getElementById('fontSlider');
+    const fontVal = document.getElementById('fontVal');
+    const btnMirror = document.getElementById('btnMirror');
+    const btnGuide = document.getElementById('btnGuide');
+    const eyelineGuide = document.getElementById('eyelineGuide');
+    const prompterWorkspace = document.getElementById('prompterWorkspace');
+
+    // Recalculate word count and speech duration (~130 words per minute speaking rate)
+    function updateMetrics() {
+        const textEl = document.getElementById('prompterText');
+        const text = textEl ? (textEl.textContent || textEl.innerText || '') : '';
+        const words = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+        
+        const countEl = document.getElementById('statWordCount');
+        if (countEl) countEl.textContent = words.toLocaleString();
+
+        const minutes = Math.floor(words / 130);
+        const seconds = Math.round(((words % 130) / 130) * 60);
+        let durationStr = '';
+        if (minutes > 0) durationStr += minutes + 'm ';
+        durationStr += (seconds || 0) + 's';
+        
+        const durEl = document.getElementById('statDuration');
+        if (durEl) durEl.textContent = durationStr;
+    }
+
+    // Animation loop using requestAnimationFrame for continuous smooth scrolling
+    function scrollStep(timestamp) {
+        if (!prompterState.isPlaying) {
+            prompterState.lastTimestamp = null;
+            return;
+        }
+
+        if (prompterState.lastTimestamp === null) {
+            prompterState.lastTimestamp = timestamp;
+            prompterState.animId = requestAnimationFrame(scrollStep);
+            return;
+        }
+
+        // Clamp delta to avoid big jumps if tab was blurred
+        const delta = Math.min(timestamp - prompterState.lastTimestamp, 64);
+        prompterState.lastTimestamp = timestamp;
+
+        // Speed formula: speed (1..10) * 22 pixels per second
+        const pixelsPerSecond = prompterState.speed * 22;
+        const pixelsToScroll = (pixelsPerSecond * delta) / 1000;
+        prompterState.scrollAccumulator += pixelsToScroll;
+
+        if (prompterState.scrollAccumulator >= 0.5) {
+            stage.scrollTop += prompterState.scrollAccumulator;
+            prompterState.scrollAccumulator = 0;
+        }
+
+        // Check if finished (at the very bottom of scrollable area)
+        const maxScroll = stage.scrollHeight - stage.clientHeight;
+        if (maxScroll > 20 && stage.scrollTop >= maxScroll - 4) {
+            stopScroll();
+            return;
+        }
+
+        prompterState.animId = requestAnimationFrame(scrollStep);
+    }
+
+    function togglePlayPause() {
+        if (prompterState.isPlaying) {
+            stopScroll();
+        } else {
+            startScroll();
+        }
+    }
+
+    function startScroll() {
+        if (prompterState.isPlaying) return;
+
+        // If placeholder visible and has practice text, make sure text is loaded
+        const placeholder = document.getElementById('standbyPlaceholder');
+        if (placeholder && placeholder.style.display !== 'none') {
+            const practiceInput = document.getElementById('practiceInput');
+            if (practiceInput && practiceInput.value.trim()) {
+                loadPracticeText();
+            }
+        }
+
+        // If reached bottom, start from top
+        const maxScroll = stage.scrollHeight - stage.clientHeight;
+        if (maxScroll > 20 && stage.scrollTop >= maxScroll - 10) {
+            stage.scrollTop = 0;
+        }
+
+        prompterState.isPlaying = true;
+        prompterState.lastTimestamp = null;
+        prompterState.scrollAccumulator = 0;
+
+        btnPlayPause.classList.add('is-playing');
+        iconPlay.style.display = 'none';
+        iconPause.style.display = 'inline-block';
+        playPauseText.textContent = 'PAUSE';
+
+        if (prompterState.animId) cancelAnimationFrame(prompterState.animId);
+        prompterState.animId = requestAnimationFrame(scrollStep);
+    }
+
+    function stopScroll() {
+        prompterState.isPlaying = false;
+        prompterState.lastTimestamp = null;
+        if (prompterState.animId) {
+            cancelAnimationFrame(prompterState.animId);
+            prompterState.animId = null;
+        }
+
+        btnPlayPause.classList.remove('is-playing');
+        iconPlay.style.display = 'inline-block';
+        iconPause.style.display = 'none';
+        playPauseText.textContent = 'RESUME';
+    }
+
+    function resetToTop() {
+        stopScroll();
+        stage.scrollTo({ top: 0, behavior: 'smooth' });
+        playPauseText.textContent = 'START SCROLL';
+    }
+
+    function updateSpeed(val) {
+        prompterState.speed = parseFloat(val);
+        speedSlider.value = val;
+        speedVal.textContent = val + 'x';
+    }
+
+    function adjustSpeed(delta) {
+        let newSpeed = Math.min(10, Math.max(1, Math.round((prompterState.speed + delta) * 10) / 10));
+        updateSpeed(newSpeed);
+    }
+
+    function updateFontSize(val) {
+        prompterState.fontSize = parseInt(val);
+        fontSlider.value = val;
+        fontVal.textContent = val + 'px';
+        document.documentElement.style.setProperty('--prompter-font-size', val + 'px');
+    }
+
+    function adjustFontSize(delta) {
+        let newSize = Math.min(76, Math.max(24, prompterState.fontSize + delta));
+        updateFontSize(newSize);
+    }
+
+    function toggleMirrorMode() {
+        prompterState.isMirror = !prompterState.isMirror;
+        if (prompterState.isMirror) {
+            contentWrapper.classList.add('mirror-mode');
+            btnMirror.classList.add('active');
+        } else {
+            contentWrapper.classList.remove('mirror-mode');
+            btnMirror.classList.remove('active');
+        }
+    }
+
+    function toggleEyelineGuide() {
+        prompterState.guideVisible = !prompterState.guideVisible;
+        if (prompterState.guideVisible) {
+            eyelineGuide.classList.remove('hidden');
+            btnGuide.classList.add('active');
+        } else {
+            eyelineGuide.classList.add('hidden');
+            btnGuide.classList.remove('active');
+        }
+    }
+
+    function setTheme(theme) {
+        prompterState.theme = theme;
+        document.getElementById('themeGold').classList.remove('active');
+        document.getElementById('themeWhite').classList.remove('active');
+        document.getElementById('themeLight').classList.remove('active');
+
+        if (theme === 'gold') {
+            document.getElementById('themeGold').classList.add('active');
+            document.documentElement.style.setProperty('--prompter-bg', '#000000');
+            document.documentElement.style.setProperty('--prompter-text', '#fde047');
+            document.documentElement.style.setProperty('--prompter-guide', 'rgba(234, 179, 8, 0.45)');
+        } else if (theme === 'white') {
+            document.getElementById('themeWhite').classList.add('active');
+            document.documentElement.style.setProperty('--prompter-bg', '#050811');
+            document.documentElement.style.setProperty('--prompter-text', '#ffffff');
+            document.documentElement.style.setProperty('--prompter-guide', 'rgba(56, 189, 248, 0.45)');
+        } else if (theme === 'light') {
+            document.getElementById('themeLight').classList.add('active');
+            document.documentElement.style.setProperty('--prompter-bg', '#f8fafc');
+            document.documentElement.style.setProperty('--prompter-text', '#0f172a');
+            document.documentElement.style.setProperty('--prompter-guide', 'rgba(2, 132, 199, 0.45)');
+        }
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (prompterWorkspace.requestFullscreen) {
+                prompterWorkspace.requestFullscreen();
+            } else if (prompterWorkspace.webkitRequestFullscreen) {
+                prompterWorkspace.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
+
+    function toggleScriptsDrawer() {
+        const drawer = document.getElementById('scriptsDrawer');
+        const backdrop = document.getElementById('drawerBackdrop');
+        drawer.classList.toggle('open');
+        backdrop.classList.toggle('open');
+    }
+
+    function loadPracticeText() {
+        const input = document.getElementById('practiceInput');
+        const text = input ? input.value.trim() : '';
+        if (!text) {
+            alert('Please enter or paste some text first.');
+            return;
+        }
+
+        const placeholder = document.getElementById('standbyPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
+
+        textBody.textContent = text;
+        textBody.style.display = 'block';
+        updateMetrics();
+        startScroll();
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', function(e) {
+        // Ignore if user is currently typing in an input or textarea
+        if (['TEXTAREA', 'INPUT'].includes(e.target.tagName)) {
+            return;
+        }
+
+        if (e.code === 'Space') {
+            e.preventDefault();
+            togglePlayPause();
+        } else if (e.code === 'ArrowUp') {
+            e.preventDefault();
+            adjustSpeed(0.5);
+        } else if (e.code === 'ArrowDown') {
+            e.preventDefault();
+            adjustSpeed(-0.5);
+        } else if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            resetToTop();
+        } else if (e.key === 'm' || e.key === 'M') {
+            e.preventDefault();
+            toggleMirrorMode();
+        } else if (e.key === 'g' || e.key === 'G') {
+            e.preventDefault();
+            toggleEyelineGuide();
+        } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            toggleFullscreen();
+        }
+    });
+
+    // Touch / Click on the dark screen background to toggle Play/Pause
+    stage.addEventListener('click', function(e) {
+        if (e.target.id === 'prompterStage' || e.target.id === 'contentWrapper' || e.target.id === 'prompterText') {
+            togglePlayPause();
+        }
+    });
+
+    // Initialize metrics immediately
+    updateMetrics();
+    document.addEventListener('DOMContentLoaded', updateMetrics);
+    window.addEventListener('load', updateMetrics);
+</script>
+{% endblock %}

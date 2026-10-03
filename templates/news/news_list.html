@@ -1,7 +1,7 @@
 {% extends base_template %}
 
-{% block title %}News List - Nandilive Newsroom{% endblock %}
-{% block page_title %}News Management &amp; Feeds{% endblock %}
+{% block title %}{% if is_reporter %}My News Stories{% else %}News List{% endif %} - Nandilive Newsroom{% endblock %}
+{% block page_title %}{% if is_reporter %}My Filed News Stories{% else %}News Management &amp; Feeds{% endif %}{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -224,6 +224,151 @@
         color: #dc2626;
     }
 
+    /* Status Filter Tabs Strip */
+    .status-tabs-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .status-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        background: #ffffff;
+        color: #475569;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .status-tab-btn:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        color: #0f172a;
+    }
+
+    .status-tab-btn.active {
+        border-color: #0284c7;
+        background: #f0f9ff;
+        color: #0284c7;
+    }
+
+    .status-tab-btn.tab-approved.active {
+        border-color: #059669;
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .status-tab-btn.tab-pending.active {
+        border-color: #d97706;
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .status-tab-btn.tab-rejected.active {
+        border-color: #dc2626;
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .count-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1px 7px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 800;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .count-pill.pill-green {
+        background: #d1fae5;
+        color: #047857;
+    }
+
+    .count-pill.pill-amber {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .count-pill.pill-red {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    /* Status Badges in Table */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+    }
+
+    .badge-status-approved {
+        background-color: #d1fae5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .badge-status-rejected {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+    }
+
+    .badge-status-pending {
+        background-color: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    /* Deleted Media Box */
+    .media-deleted-box {
+        width: 60px;
+        height: 48px;
+        border-radius: 6px;
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease;
+    }
+
+    .media-deleted-box:hover {
+        transform: scale(1.04);
+    }
+
+    .media-deleted-box svg {
+        width: 16px;
+        height: 16px;
+        stroke: #ef4444;
+    }
+
+    .media-deleted-box span {
+        font-size: 8px;
+        font-weight: 800;
+        color: #dc2626;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+
     /* Delete Confirmation Modal */
     .modal-overlay {
         display: none;
@@ -253,6 +398,29 @@
 {% endblock %}
 
 {% block content %}
+<!-- Status Quick Filter Tabs -->
+<div class="status-tabs-strip">
+    <a href="?{% if query %}q={{ query }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if district_filter %}district={{ district_filter }}&{% endif %}status=" class="status-tab-btn {% if not status_filter %}active{% endif %}">
+        <span>All Stories</span>
+        <span class="count-pill">{{ total_count }}</span>
+    </a>
+    <a href="?{% if query %}q={{ query }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if district_filter %}district={{ district_filter }}&{% endif %}status=Approved" class="status-tab-btn tab-approved {% if status_filter == 'Approved' %}active{% endif %}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Selected</span>
+        <span class="count-pill pill-green">{{ approved_count }}</span>
+    </a>
+    <a href="?{% if query %}q={{ query }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if district_filter %}district={{ district_filter }}&{% endif %}status=Submitted" class="status-tab-btn tab-pending {% if status_filter == 'Submitted' %}active{% endif %}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>Under Review</span>
+        <span class="count-pill pill-amber">{{ pending_count }}</span>
+    </a>
+    <a href="?{% if query %}q={{ query }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if district_filter %}district={{ district_filter }}&{% endif %}status=Rejected" class="status-tab-btn tab-rejected {% if status_filter == 'Rejected' %}active{% endif %}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span>Rejected (Media Deleted)</span>
+        <span class="count-pill pill-red">{{ rejected_count }}</span>
+    </a>
+</div>
+
 <!-- Top Toolbar: Search & Filters -->
 <div class="list-toolbar">
     <form method="GET" action="{% url 'news_list' %}" class="filters-form">
@@ -293,19 +461,19 @@
             {% endfor %}
         </select>
 
-        {% if is_reporter %}
-        <!-- Reporter My News Toggle -->
-        <select name="scope" class="filter-select" onchange="this.form.submit()">
-            <option value="" {% if not scope %}selected{% endif %}>All Channel News</option>
-            <option value="my" {% if scope == 'my' %}selected{% endif %}>My Submitted News Only</option>
+        <!-- Status Filter -->
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Selected</option>
+            <option value="Submitted" {% if status_filter == 'Submitted' %}selected{% endif %}>Under Review</option>
+            <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
         </select>
-        {% endif %}
 
         <button type="submit" class="btn btn-secondary btn-sm" style="padding: 9px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; font-weight: 600; cursor: pointer;">
             Filter
         </button>
 
-        {% if query or type_filter or category_filter or district_filter or status_filter or scope %}
+        {% if query or type_filter or category_filter or district_filter or status_filter %}
         <a href="{% url 'news_list' %}" class="btn btn-secondary btn-sm" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; color: #64748b;" title="Clear Filters">
             Clear
         </a>
@@ -335,6 +503,7 @@
                     <th style="width: 120px; padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">District</th>
                     <th style="width: 160px; padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Reporter / Author</th>
                     <th style="width: 110px; padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Date</th>
+                    <th style="width: 130px; padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Status</th>
                     <th style="width: 120px; padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; text-align: right;">Actions</th>
                 </tr>
             </thead>
@@ -344,8 +513,16 @@
                     <!-- Media Thumbnail / Icon -->
                     <td style="padding: 12px 16px; vertical-align: middle;">
                         <a href="{% url 'news_view' item.pk %}" style="display: block;">
-                            <div class="media-thumb-box">
-                                {% if item.media_file %}
+                            {% if item.status == 'Rejected' and not item.media_file %}
+                                <div class="media-deleted-box" title="Video / Media permanently deleted upon rejection">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    <span>DELETED</span>
+                                </div>
+                            {% elif item.media_file %}
+                                <div class="media-thumb-box">
                                     {% if item.is_image %}
                                         <img src="{{ item.media_file.url }}" alt="{{ item.headline }}" class="media-thumb-img">
                                     {% elif item.is_video %}
@@ -357,14 +534,21 @@
                                             <rect x="2" y="2" width="20" height="20" rx="2"></rect>
                                         </svg>
                                     {% endif %}
-                                {% else %}
+                                </div>
+                            {% else %}
+                                <div class="media-thumb-box">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8">
                                         <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                                         <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                         <polyline points="21 15 16 10 5 21"></polyline>
                                     </svg>
-                                {% endif %}
-                            </div>
+                                </div>
+                            {% endif %}
+                            {% if item.additional_media.count %}
+                                <div style="font-size: 10px; font-weight: 700; color: #0284c7; background: #e0f2fe; border-radius: 4px; padding: 2px 4px; margin-top: 3px; text-align: center; white-space: nowrap;" title="{{ item.total_media_count }} total media files attached">
+                                    +{{ item.additional_media.count }} more
+                                </div>
+                            {% endif %}
                         </a>
                     </td>
 
@@ -432,6 +616,29 @@
                     <td style="padding: 12px 16px; vertical-align: middle; font-size: 12px; color: #64748b;">
                         <div>{{ item.created_at|date:"d M, Y" }}</div>
                         <div style="font-size: 11px; color: #94a3b8;">{{ item.created_at|date:"h:i A" }}</div>
+                    </td>
+
+                    <!-- Status -->
+                    <td style="padding: 12px 16px; vertical-align: middle;">
+                        {% if item.status == 'Approved' %}
+                            <span class="status-badge badge-status-approved" title="Selected and approved for broadcast">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Selected
+                            </span>
+                        {% elif item.status == 'Rejected' %}
+                            <div style="display: inline-flex; flex-direction: column; gap: 3px;">
+                                <span class="status-badge badge-status-rejected" title="Story rejected by desk - media file deleted">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    Rejected
+                                </span>
+                                <span style="font-size: 10px; font-weight: 700; color: #dc2626; letter-spacing: 0.3px;">Media Deleted</span>
+                            </div>
+                        {% else %}
+                            <span class="status-badge badge-status-pending" title="Story submitted and pending review">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                Under Review
+                            </span>
+                        {% endif %}
                     </td>
 
                     <!-- Actions: View, Edit, Delete -->

@@ -1,0 +1,224 @@
+<!-- ============================================================
+     AI GRAPHIC IMAGE STUDIO MODAL (Nandilive)
+     Provides: AI Multimodal Image Generation, Reference Photo Upload,
+     Regional & Multilingual Prompt Understanding, Aspect Ratio Selection,
+     and Direct Story Attachment.
+     ============================================================ -->
+<div class="modal-backdrop" id="aiGeneratorModal">
+    <div class="modal-window" style="max-width: 660px;">
+        <div class="modal-header ai-header">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>AI Graphic Image Studio</span>
+            </h3>
+            <button type="button" class="modal-close-btn" onclick="closeAiModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="aiTargetTaskId" value="">
+
+            <!-- Tab Switcher -->
+            <div class="ai-modal-tabs">
+                <button type="button" class="ai-tab-btn active" id="tabBtnAiGen" onclick="switchAiModalTab('ai_gen')">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>✨ AI Image Generator</span>
+                </button>
+                <button type="button" class="ai-tab-btn" id="tabBtnUpload" onclick="switchAiModalTab('upload_pc')">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>📁 Upload from PC</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: AI Generator Pane -->
+            <div id="paneAiGen">
+                <p style="font-size: 13px; color: #475569; margin-bottom: 12px;">
+                    Generating artwork for: <strong id="aiStoryHeadline" style="color: #0f172a;"></strong>
+                </p>
+
+                <!-- AI Reference Image (Image-to-Image / Photo Guidance) Section -->
+                <div class="ai-ref-card" id="aiRefCard">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="margin: 0; display: flex; align-items: center; gap: 6px; font-weight: 700; color: #1e293b; font-size: 13px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2.2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <span>AI Reference Image (Image-to-Image)</span>
+                            <span style="font-size: 10.5px; font-weight: 700; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">Optional</span>
+                        </label>
+                        <span style="font-size: 11px; color: #4f46e5; font-weight: 700;">✨ Multimodal Vision AI</span>
+                    </div>
+
+                    <!-- Empty state: options to upload from PC or pick from story -->
+                    <div id="aiRefEmptyBox">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <button type="button" class="ai-ref-btn-upload" onclick="document.getElementById('aiRefFileInput').click()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2.3">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Upload Photo from PC / Phone</span>
+                            </button>
+                            <input type="file" id="aiRefFileInput" accept="image/*" style="display: none;" onchange="handleAiRefFileSelected(this)">
+                            <span style="font-size: 12px; color: #64748b;">(Photo of leader, incident, or scene)</span>
+                        </div>
+
+                        <!-- Story media picker chips -->
+                        <div id="aiStoryMediaPicker" style="display: none; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+                            <div style="font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 6px;">Or click to use Story Media as Reference:</div>
+                            <div id="aiStoryMediaList" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Active state when reference image is selected -->
+                    <div id="aiRefActiveBox" style="display: none; align-items: center; justify-content: space-between; background: #ffffff; border: 1.5px solid #3b82f6; border-radius: 8px; padding: 8px 12px; box-shadow: 0 1px 4px rgba(59, 130, 246, 0.1);">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img id="aiRefThumbImg" src="" alt="Reference Photo" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;">
+                            <div>
+                                <div id="aiRefFileName" style="font-size: 12.5px; font-weight: 700; color: #0f172a; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Reference Photo Attached</div>
+                                <div style="font-size: 11px; color: #059669; font-weight: 600;">
+                                    ✓ AI will recognize subject &amp; generate new artwork matching this photo!
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-ref-remove" onclick="clearAiReferenceImage()" title="Remove reference photo">
+                            ✕ Remove
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prompt Input with English Badges and Descriptions -->
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin: 0; font-weight: 700;">Image Description / Prompt (Hindi, Odia, or English)</label>
+                        <span style="font-size: 11px; color: #db2777; font-weight: 700; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 2px 8px; border-radius: 9999px;">
+                            Supports Hindi, Odia &amp; English Prompts
+                        </span>
+                    </div>
+                    <textarea id="aiPromptInput" class="form-textarea" rows="3" placeholder="Describe the scene or news visual you want to generate (e.g. Chief Minister speaking at blood donation camp press conference, breaking news graphic)..."></textarea>
+                    <div style="font-size: 11.5px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px; margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13px;">💡</span>
+                        <span><strong>Multilingual AI:</strong> You can enter instructions in Hindi, Odia, or English. The AI automatically understands regional context, translates, and generates broadcast-grade graphics.</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label class="form-label">Aspect Ratio &amp; Target</label>
+                        <select id="aiAspectRatio" class="form-select">
+                            <option value="16:9" selected>🖼️ 16:9 • YouTube Thumbnail (1280x720)</option>
+                            <option value="1:1">📱 1:1 • Social Media Post (1024x1024)</option>
+                            <option value="9:16">📱 9:16 • Story / Reel Cover (720x1280)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Art &amp; Visual Style</label>
+                        <select id="aiStyle" class="form-select">
+                            <option value="photorealistic news" selected>📸 Photorealistic News Broadcast</option>
+                            <option value="breaking news">🚨 Dramatic Breaking News Banner</option>
+                            <option value="3d render">🎨 3D High-End Render</option>
+                            <option value="vector art">📐 Clean Vector / Flat Graphic</option>
+                            <option value="cinematic">🎬 Cinematic Film Scene</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-action-ai" id="aiGenerateBtn" onclick="runAiImageGeneration()" style="padding: 10px; font-size: 13.5px; width: 100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Generate Artwork with AI</span>
+                </button>
+
+                <!-- Loading Spinner -->
+                <div class="ai-spinner" id="aiLoadingBox">
+                    <div class="spinner-ring"></div>
+                    <span id="aiLoadingText">Translating &amp; Generating high-resolution AI graphic... (takes 5-10s)</span>
+                </div>
+
+                <!-- Result Box -->
+                <div class="ai-result-preview-box" id="aiResultBox">
+                    <img id="aiResultImg" src="" alt="AI Generated Graphic" style="background:#0f172a; min-height: 200px;">
+                    <div id="aiPromptBadge" style="display:none; font-size:11.5px; color:#cbd5e1; padding:8px 14px; background:#1e293b; border-top:1px solid #334155; line-height: 1.45;"></div>
+                    <div class="ai-result-actions">
+                        <a id="aiDownloadLink" href="" download="nandilive_ai_graphic.jpg" class="btn-action-secondary" style="width: auto; padding: 7px 14px; color: #ffffff; background: #334155; border: none;" title="Download high-resolution image to PC">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Download to PC</span>
+                        </a>
+
+                        <button type="button" class="btn-action-primary" id="aiSaveDirectBtn" onclick="saveAiImageDirectlyToStory()" style="width: auto; padding: 7px 16px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Save Directly to Story Creatives</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Upload from PC Pane -->
+            <div id="paneUploadPc" style="display: none;">
+                <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">
+                    Upload custom artwork / downloaded edit for: <strong id="aiUploadStoryHeadline" style="color: #0f172a;"></strong>
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label">Asset Type / Preset</label>
+                    <select id="modalUploadAssetType" class="form-select">
+                        <option value="YouTube Thumbnail (16:9)" selected>🖼️ YouTube Thumbnail (16:9 • 1280x720)</option>
+                        <option value="Social Media Poster (1:1)">📱 Social Media Poster (1:1 Square)</option>
+                        <option value="Instagram Story / Reel (9:16)">📱 Instagram / Reel Story Cover (9:16)</option>
+                        <option value="Aston Lower-Third Overlay">📺 Aston / Lower-Third Strap (PNG Transparent)</option>
+                        <option value="Breaking News Banner">🚨 Breaking News Graphic / Banner</option>
+                        <option value="Custom Artwork">🎨 Custom Graphic Asset</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Caption / Description (Optional)</label>
+                    <input type="text" id="modalUploadCaption" class="form-input" placeholder="e.g., YouTube HD Thumbnail (Edited)">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Graphic Image(s) from PC</label>
+                    <div class="dropzone-box" onclick="document.getElementById('modalUploadFileInput').click()">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p style="font-weight:700; color:#1e293b; margin-bottom:3px;">Click to select file or drag &amp; drop</p>
+                        <span>Supports PNG, JPG, JPEG, WEBP, GIF, SVG, PSD</span>
+                        <div id="modalUploadChosen" style="margin-top: 8px; font-weight: 700; color: #db2777; font-size: 12px;"></div>
+                    </div>
+                    <input type="file" id="modalUploadFileInput" multiple accept="image/*,.psd,.ai" style="display: none;" onchange="handleModalFileChosen(this)">
+                </div>
+
+                <button type="button" class="btn-action-primary" id="modalUploadSubmitBtn" onclick="submitModalDirectUpload()" style="width: 100%; padding: 10px; font-size: 13.5px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Upload Directly to Story Creatives</span>
+                </button>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-action-secondary" onclick="closeAiModal()" style="width: auto;">Close</button>
+        </div>
+    </div>
+</div>

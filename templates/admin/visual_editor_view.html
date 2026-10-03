@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}View Visual Editor - {{ ve_item.name }} - Nandilive Admin{% endblock %}
+{% block page_title %}Visual Editor Details{% endblock %}
+
+{% block extra_head %}
+<style>
+    .view-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        max-width: 1000px;
+    }
+
+    .id-card-wrap {
+        background: linear-gradient(135deg, var(--sidebar-navy) 0%, #1e293b 100%);
+        border-radius: var(--radius-lg);
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .id-card-wrap::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    }
+
+    .id-card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(37, 99, 235, 0.25);
+        color: #bfdbfe;
+        border: 1px solid rgba(37, 99, 235, 0.4);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .ve-avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        color: #ffffff;
+        font-size: 38px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .id-name {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .id-role {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 20px;
+    }
+
+    .id-details-list {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    .id-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .id-row-label {
+        color: #94a3b8;
+    }
+
+    .id-row-val {
+        font-weight: 600;
+    }
+
+    .details-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .details-table tr {
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .details-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .details-table th {
+        width: 200px;
+        padding: 14px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-align: left;
+        background-color: #f8fafc;
+    }
+
+    .details-table td {
+        padding: 14px 18px;
+        font-size: 14px;
+        color: var(--text-main);
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    .modal-backdrop.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background-color: #ffffff;
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 440px;
+        padding: 28px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        animation: scaleIn 0.2s ease-out;
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background-color: #fee2e2;
+        color: var(--news-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+    }
+
+    .modal-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin-bottom: 8px;
+    }
+
+    .modal-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 24px;
+    }
+
+    .modal-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    @media (max-width: 840px) {
+        .view-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="view-layout">
+    <!-- Left Column: Visual Editor Digital ID Card -->
+    <div>
+        <div class="id-card-wrap">
+            <div class="id-card-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+                <span>Visual Editor ID</span>
+            </div>
+
+            <div class="ve-avatar-lg">
+                {{ ve_item.name|slice:":1"|upper }}
+            </div>
+
+            <div class="id-name">{{ ve_item.name }}</div>
+            <div class="id-role">Visual Editor &bull; Video &amp; Visuals</div>
+
+            <div class="id-details-list">
+                <div class="id-row">
+                    <span class="id-row-label">Phone / Login ID</span>
+                    <span class="id-row-val" style="font-family: monospace;">{{ ve_item.phone_number }}</span>
+                </div>
+                <div class="id-row">
+                    <span class="id-row-label">Status</span>
+                    <span class="id-row-val">
+                        {% if ve_item.is_active %}
+                            <span style="color: #4ade80;">Active</span>
+                        {% else %}
+                            <span style="color: #f87171;">Inactive</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="id-row">
+                    <span class="id-row-label">Joined</span>
+                    <span class="id-row-val">{{ ve_item.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Full Details & Management Actions -->
+    <div>
+        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 20px;">
+            <div class="card-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border-light);">
+                <div>
+                    <h3 class="card-title" style="font-size: 16px;">Visual Editor Account Record</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                        Registered user profile and authentication credentials.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="{% url 'visual_editor_edit' ve_item.pk %}" class="btn btn-secondary btn-sm" style="color: #2563eb; border-color: #bfdbfe;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Edit
+                    </a>
+                    <a href="{% url 'visual_editor_list' %}" class="btn btn-secondary btn-sm">
+                        Back to List
+                    </a>
+                </div>
+            </div>
+
+            <table class="details-table">
+                <tr>
+                    <th>Full Name</th>
+                    <td><strong>{{ ve_item.name }}</strong></td>
+                </tr>
+                <tr>
+                    <th>Phone Number (Login ID)</th>
+                    <td>
+                        <span style="font-family: monospace; font-weight: 600; background: #f1f5f9; padding: 3px 8px; border-radius: 4px;">
+                            {{ ve_item.phone_number }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Auth Username</th>
+                    <td><code>{{ ve_item.user.username }}</code></td>
+                </tr>
+                <tr>
+                    <th>Access Status</th>
+                    <td>
+                        {% if ve_item.is_active %}
+                            <span class="badge badge-published">Active (Access Granted)</span>
+                        {% else %}
+                            <span class="badge badge-draft">Inactive (Access Suspended)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Assigned Role</th>
+                    <td>Visual Editor (Video Production, Footage Assembly, Visual Effects &amp; Broadcast Graphics)</td>
+                </tr>
+                <tr>
+                    <th>Registered On</th>
+                    <td>{{ ve_item.created_at|date:"F d, Y - h:i A" }}</td>
+                </tr>
+                <tr>
+                    <th>Last Updated</th>
+                    <td>{{ ve_item.updated_at|date:"F d, Y - h:i A" }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Danger Zone: Delete Account -->
+        <div class="card" style="border-color: #fecaca; background-color: #fffaf0;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h4 style="font-size: 14px; color: var(--news-red); margin: 0 0 4px;">Delete Visual Editor Account</h4>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                        Permanently removes this staff record and revokes portal login immediately.
+                    </p>
+                </div>
+                <button 
+                    type="button" 
+                    class="btn btn-danger btn-sm"
+                    onclick="openDeleteModal('{{ ve_item.pk }}', '{{ ve_item.name|escapejs }}')"
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" id="deleteModalBackdrop">
+    <div class="modal-box">
+        <div class="modal-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <h3 class="modal-title">Delete Visual Editor?</h3>
+        <p class="modal-desc">
+            Are you sure you want to permanently delete <strong id="deleteTargetName">this Visual Editor</strong>? 
+            This action will remove their account and portal access immediately.
+        </p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <a href="#" id="confirmDeleteLink" class="btn btn-danger">
+                Yes, Delete Account
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteTargetName').textContent = name;
+        document.getElementById('confirmDeleteLink').href = '/visual-editors/delete/' + id + '/';
+        document.getElementById('deleteModalBackdrop').classList.add('open');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModalBackdrop').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    document.getElementById('deleteModalBackdrop').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+</script>
+{% endblock %}

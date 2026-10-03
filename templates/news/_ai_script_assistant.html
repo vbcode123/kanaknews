@@ -1,0 +1,857 @@
+<!-- ============================================================
+     AI News Script Assistant Component (Nandilive)
+     Provides: AI Grammar & Spelling Check, TV News Script Formatting,
+     Preview Card, One-Click Apply, and Undo Functionality.
+============================================================ -->
+
+<style>
+    /* AI Assistant Toolbar */
+    .ai-assistant-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+    }
+
+    .ai-toolbar-left {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .ai-toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    /* Main "Check with AI" Button */
+    .btn-check-ai {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.32);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+    }
+
+    .btn-check-ai:hover:not(:disabled) {
+        transform: translateY(-1.5px);
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+        background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+    }
+
+    .btn-check-ai:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-check-ai:disabled {
+        opacity: 0.75;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .ai-sparkle-icon {
+        width: 16px;
+        height: 16px;
+        transition: transform 0.4s ease;
+    }
+
+    .btn-check-ai:hover:not(:disabled) .ai-sparkle-icon {
+        transform: rotate(15deg) scale(1.1);
+    }
+
+    /* Tone Selector Pills */
+    .ai-tone-group {
+        display: inline-flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 2px;
+        gap: 2px;
+    }
+
+    .ai-tone-btn {
+        background: transparent;
+        border: none;
+        padding: 5px 10px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #475569;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .ai-tone-btn:hover {
+        color: #1e293b;
+        background: #f1f5f9;
+    }
+
+    .ai-tone-btn.active {
+        background: #ede9fe;
+        color: #6d28d9;
+        box-shadow: 0 1px 2px rgba(109, 40, 217, 0.1);
+    }
+
+    /* Undo / Revert Button */
+    .btn-ai-revert {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-ai-revert:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #991b1b;
+        transform: translateY(-1px);
+    }
+
+    /* Settings Gear Button */
+    .btn-ai-settings {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-ai-settings:hover {
+        color: #0f172a;
+        background: #f8fafc;
+        border-color: #94a3b8;
+    }
+
+    /* Word / Char Counter */
+    .ai-script-stats {
+        font-size: 11.5px;
+        color: #64748b;
+        font-weight: 500;
+        margin-left: 4px;
+        white-space: nowrap;
+    }
+
+    /* AI Suggestion Card */
+    .ai-suggestion-card {
+        margin-top: 14px;
+        background: #ffffff;
+        border: 1.5px solid #c084fc;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(147, 51, 234, 0.08);
+        overflow: hidden;
+        animation: aiCardSlideDown 0.28s ease-out;
+    }
+
+    @keyframes aiCardSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .ai-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        border-bottom: 1px solid #e9d5ff;
+    }
+
+    .ai-card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #581c87;
+    }
+
+    .ai-badge-pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #10b981;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: aiPulse 2s infinite;
+    }
+
+    @keyframes aiPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    .ai-provider-tag {
+        font-size: 11px;
+        font-weight: 600;
+        color: #7e22ce;
+        background: #ede9fe;
+        padding: 2px 8px;
+        border-radius: 20px;
+        border: 1px solid #ddd6fe;
+    }
+
+    .ai-card-close {
+        background: transparent;
+        border: none;
+        color: #9333ea;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.15s;
+    }
+
+    .ai-card-close:hover {
+        background: #e9d5ff;
+        color: #581c87;
+    }
+
+    .ai-card-summary {
+        padding: 9px 16px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b21a8;
+        background: #faf5ff;
+        border-bottom: 1px dashed #e9d5ff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-card-body {
+        padding: 14px 16px;
+    }
+
+    .ai-preview-textarea {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #0f172a;
+        background-color: #fcfaff;
+        border: 1px solid #e9d5ff;
+        border-radius: 8px;
+        resize: vertical;
+        font-family: inherit;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .ai-preview-textarea:focus {
+        border-color: #a855f7;
+        box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+    }
+
+    .ai-card-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fdfcff;
+        border-top: 1px solid #f3e8ff;
+    }
+
+    .btn-ai-apply {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        background-color: #15803d;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 2px 6px rgba(21, 128, 61, 0.25);
+    }
+
+    .btn-ai-apply:hover {
+        background-color: #166534;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(21, 128, 61, 0.35);
+    }
+
+    .btn-ai-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #334155;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-ai-copy:hover {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
+    .btn-ai-dismiss {
+        margin-left: auto;
+        padding: 8px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #64748b;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.15s;
+    }
+
+    .btn-ai-dismiss:hover {
+        color: #334155;
+        background: #f1f5f9;
+    }
+
+    /* Pulse animation when AI replaces text */
+    @keyframes aiPulseTextarea {
+        0% {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.3);
+        }
+        50% {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3);
+        }
+        100% {
+            border-color: #e2e8f0;
+            box-shadow: none;
+        }
+    }
+
+    .ai-applied-pulse {
+        animation: aiPulseTextarea 1.2s ease-out;
+    }
+
+    /* Floating Toast */
+    .ai-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: #0f172a;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(16px);
+        transition: all 0.25s ease;
+        pointer-events: none;
+    }
+
+    .ai-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .ai-toast.toast-success {
+        background: #14532d;
+        border-left: 4px solid #22c55e;
+    }
+
+    .ai-toast.toast-warning {
+        background: #78350f;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .ai-toast.toast-info {
+        background: #1e1b4b;
+        border-left: 4px solid #818cf8;
+    }
+
+    /* Loading Spinner */
+    .ai-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-radius: 50%;
+        border-top-color: #ffffff;
+        animation: aiSpin 0.7s linear infinite;
+    }
+
+    @keyframes aiSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Settings Modal */
+    .ai-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(3px);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .ai-modal-overlay.show {
+        display: flex;
+    }
+
+    .ai-modal-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 480px;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: aiCardSlideDown 0.2s ease-out;
+    }
+
+    .ai-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .ai-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .ai-modal-body {
+        padding: 20px;
+    }
+
+    .ai-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 20px;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+</style>
+
+<!-- AI Script Assistant Toolbar -->
+<div class="ai-assistant-toolbar">
+    <div class="ai-toolbar-left">
+        <!-- Main Button -->
+        <button type="button" class="btn-check-ai" id="btnCheckWithAI" onclick="triggerAICheck()" title="AI se spelling aur grammar check karein">
+            <svg class="ai-sparkle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+            <span id="aiBtnLabel">✨ Check with AI</span>
+        </button>
+
+        <!-- Tone Selector Pills -->
+        <div class="ai-tone-group" title="Select AI improvement style">
+            <button type="button" class="ai-tone-btn active" data-tone="standard" onclick="selectAITone('standard', this)">
+                ✍️ Fix Grammar &amp; Spelling
+            </button>
+            <button type="button" class="ai-tone-btn" data-tone="broadcast" onclick="selectAITone('broadcast', this)">
+                🎙️ TV Anchor Script
+            </button>
+            <button type="button" class="ai-tone-btn" data-tone="concise" onclick="selectAITone('concise', this)">
+                ⚡ Crisp &amp; Short
+            </button>
+        </div>
+
+        <span class="ai-script-stats" id="aiDescStats">0 words</span>
+    </div>
+
+    <div class="ai-toolbar-right">
+        <!-- Undo / Revert Button -->
+        <button type="button" class="btn-ai-revert" id="btnAIRevert" onclick="revertOriginalText()" style="display: none;" title="Restore your original handwritten text">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span>↩ Revert Original</span>
+        </button>
+
+        <!-- AI Settings Gear -->
+        <button type="button" class="btn-ai-settings" onclick="toggleAIKeyModal()" title="AI Engine &amp; API Key Settings">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- AI Suggestion / Result Card -->
+<div class="ai-suggestion-card" id="aiSuggestionCard" style="display: none;">
+    <div class="ai-card-header">
+        <div class="ai-card-title">
+            <span class="ai-badge-pulse"></span>
+            <span>✨ AI Polished News Script</span>
+            <span class="ai-provider-tag" id="aiProviderTag">Gemini AI</span>
+        </div>
+        <button type="button" class="ai-card-close" onclick="closeAISuggestion()" title="Dismiss">✕</button>
+    </div>
+
+    <div class="ai-card-summary" id="aiCardSummary">
+        Spelling, grammar, and journalistic structure improved.
+    </div>
+
+    <div class="ai-card-body">
+        <textarea id="aiImprovedPreview" class="ai-preview-textarea" rows="6" spellcheck="false"></textarea>
+    </div>
+
+    <div class="ai-card-actions">
+        <button type="button" class="btn-ai-apply" onclick="applyAIText()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Apply to Script Box</span>
+        </button>
+
+        <button type="button" class="btn-ai-copy" onclick="copyAIText()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="aiCopyBtnLabel">Copy Script</span>
+        </button>
+
+        <button type="button" class="btn-ai-dismiss" onclick="closeAISuggestion()">Dismiss</button>
+    </div>
+</div>
+
+<!-- Floating Toast -->
+<div id="aiToast" class="ai-toast">
+    <span id="aiToastMessage">Message</span>
+</div>
+
+<!-- AI Key & Engine Settings Modal -->
+<div id="aiKeyModal" class="ai-modal-overlay" onclick="handleModalOverlayClick(event)">
+    <div class="ai-modal-card" onclick="event.stopPropagation()">
+        <div class="ai-modal-header">
+            <h3>🤖 AI Assistant Settings</h3>
+            <button type="button" class="ai-card-close" onclick="toggleAIKeyModal()">✕</button>
+        </div>
+        <div class="ai-modal-body">
+            <p style="font-size: 13px; color: #475569; margin: 0 0 14px 0; line-height: 1.5;">
+                Nandilive AI Assistant supports <strong>Google Gemini</strong> (Free tier available), <strong>OpenAI</strong>, and an offline broadcast formatter.
+            </p>
+            
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                Personal Google Gemini API Key (Optional)
+            </label>
+            <input 
+                type="password" 
+                id="userGeminiKeyInput" 
+                class="form-control" 
+                placeholder="AIzaSy... (Saved in your browser)"
+                style="font-size: 13px;"
+            >
+            <small style="display: block; font-size: 11px; color: #64748b; margin-top: 6px;">
+                Agar server par key set nahi hai to aap apni free Google Gemini key daal sakte hain. Key prapt karne ke liye <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #4f46e5; text-decoration: underline;">Google AI Studio</a> par jayein.
+            </small>
+        </div>
+        <div class="ai-modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleAIKeyModal()" style="padding: 6px 12px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer;">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveClientAIKey()" style="padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 6px; background: #4f46e5; color: #fff; border: none; cursor: pointer;">Save Key</button>
+        </div>
+    </div>
+</div>
+
+<!-- AI JavaScript Engine -->
+<script>
+    let currentAITone = 'standard';
+    let originalScriptBackup = '';
+
+    // Initialize stats counter on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const descArea = document.getElementById('description');
+        if (descArea) {
+            descArea.addEventListener('input', updateDescWordCount);
+            updateDescWordCount();
+        }
+
+        // Load saved client API key if any
+        const savedKey = localStorage.getItem('nandilive_ai_key');
+        const keyInput = document.getElementById('userGeminiKeyInput');
+        if (savedKey && keyInput) {
+            keyInput.value = savedKey;
+        }
+    });
+
+    function updateDescWordCount() {
+        const descArea = document.getElementById('description');
+        const statsElem = document.getElementById('aiDescStats');
+        if (!descArea || !statsElem) return;
+
+        const text = descArea.value.trim();
+        if (!text) {
+            statsElem.textContent = '0 words';
+            return;
+        }
+        const words = text.split(/\s+/).filter(w => w.length > 0).length;
+        const chars = text.length;
+        statsElem.textContent = `${words} words, ${chars} chars`;
+    }
+
+    function selectAITone(tone, btnElem) {
+        currentAITone = tone;
+        document.querySelectorAll('.ai-tone-btn').forEach(btn => btn.classList.remove('active'));
+        if (btnElem) {
+            btnElem.classList.add('active');
+        }
+    }
+
+    function showAIToast(message, type = 'info') {
+        const toast = document.getElementById('aiToast');
+        const msgElem = document.getElementById('aiToastMessage');
+        if (!toast || !msgElem) return;
+
+        msgElem.textContent = message;
+        toast.className = `ai-toast toast-${type} show`;
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3600);
+    }
+
+    function triggerAICheck() {
+        const descElem = document.getElementById('description');
+        if (!descElem) return;
+
+        const rawText = descElem.value.trim();
+        if (!rawText || rawText.length < 5) {
+            showAIToast('⚠️ Kripya pehle Description box me kuch news script likhein!', 'warning');
+            descElem.focus();
+            return;
+        }
+
+        const headlineElem = document.getElementById('headline');
+        const newsTypeElem = document.getElementById('news_type');
+        const headline = headlineElem ? headlineElem.value.trim() : '';
+        const newsType = newsTypeElem ? newsTypeElem.value.trim() : 'AVO';
+        const clientKey = localStorage.getItem('nandilive_ai_key') || '';
+
+        // UI Loading State
+        const btn = document.getElementById('btnCheckWithAI');
+        const label = document.getElementById('aiBtnLabel');
+        btn.disabled = true;
+        label.innerHTML = '<span class="ai-spinner"></span> Checking with AI...';
+
+        // Retrieve CSRF token
+        let csrfToken = '';
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+            csrfToken = csrfInput.value;
+        }
+
+        fetch('/news/ai-check/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                text: rawText,
+                headline: headline,
+                news_type: newsType,
+                tone: currentAITone,
+                api_key: clientKey
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            label.textContent = '✨ Check with AI';
+
+            if (data.success && data.improved_text) {
+                // Populate suggestion card
+                document.getElementById('aiImprovedPreview').value = data.improved_text;
+                document.getElementById('aiCardSummary').textContent = data.summary || 'Spelling & grammar corrected.';
+                document.getElementById('aiProviderTag').textContent = data.provider || 'AI Polished';
+
+                const card = document.getElementById('aiSuggestionCard');
+                card.style.display = 'block';
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                showAIToast('✨ AI ne script check kar liya hai! Niche preview dekhein.', 'success');
+            } else {
+                showAIToast(data.error || 'AI check failed. Kripya punah prayas karein.', 'warning');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            label.textContent = '✨ Check with AI';
+            console.error('AI Check Error:', err);
+            showAIToast('⚠️ AI service se connect karne me dikkat aayi. Kripya check karein.', 'warning');
+        });
+    }
+
+    function applyAIText() {
+        const descElem = document.getElementById('description');
+        const previewElem = document.getElementById('aiImprovedPreview');
+        if (!descElem || !previewElem) return;
+
+        // Save original before overwriting for undo capability
+        originalScriptBackup = descElem.value;
+
+        descElem.value = previewElem.value;
+        updateDescWordCount();
+
+        // Show Revert button
+        const revertBtn = document.getElementById('btnAIRevert');
+        if (revertBtn) {
+            revertBtn.style.display = 'inline-flex';
+        }
+
+        // Add visual pulse effect on textarea
+        descElem.classList.add('ai-applied-pulse');
+        setTimeout(() => {
+            descElem.classList.remove('ai-applied-pulse');
+        }, 1300);
+
+        // Hide suggestion card
+        document.getElementById('aiSuggestionCard').style.display = 'none';
+
+        showAIToast('✔ AI polished script box me daal diya gaya hai!', 'success');
+        descElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function revertOriginalText() {
+        if (!originalScriptBackup) return;
+
+        const descElem = document.getElementById('description');
+        if (descElem) {
+            descElem.value = originalScriptBackup;
+            updateDescWordCount();
+        }
+
+        const revertBtn = document.getElementById('btnAIRevert');
+        if (revertBtn) {
+            revertBtn.style.display = 'none';
+        }
+
+        originalScriptBackup = '';
+        showAIToast('↩ Original script wapas le aaya gaya hai.', 'info');
+    }
+
+    function copyAIText() {
+        const previewElem = document.getElementById('aiImprovedPreview');
+        if (!previewElem) return;
+
+        previewElem.select();
+        navigator.clipboard.writeText(previewElem.value)
+            .then(() => {
+                const label = document.getElementById('aiCopyBtnLabel');
+                label.textContent = '✔ Copied!';
+                setTimeout(() => {
+                    label.textContent = 'Copy Script';
+                }, 2000);
+                showAIToast('📋 Script clipboard par copy ho gaya!', 'success');
+            })
+            .catch(() => {
+                document.execCommand('copy');
+                showAIToast('📋 Copied!', 'success');
+            });
+    }
+
+    function closeAISuggestion() {
+        const card = document.getElementById('aiSuggestionCard');
+        if (card) {
+            card.style.display = 'none';
+        }
+    }
+
+    function toggleAIKeyModal() {
+        const modal = document.getElementById('aiKeyModal');
+        if (modal) {
+            modal.classList.toggle('show');
+        }
+    }
+
+    function handleModalOverlayClick(e) {
+        if (e.target.id === 'aiKeyModal') {
+            toggleAIKeyModal();
+        }
+    }
+
+    function saveClientAIKey() {
+        const keyInput = document.getElementById('userGeminiKeyInput');
+        if (keyInput) {
+            const val = keyInput.value.trim();
+            if (val) {
+                localStorage.setItem('nandilive_ai_key', val);
+                showAIToast('✔ Gemini API key browser me save ho gayi!', 'success');
+            } else {
+                localStorage.removeItem('nandilive_ai_key');
+                showAIToast('API key removed from browser storage.', 'info');
+            }
+        }
+        toggleAIKeyModal();
+    }
+</script>

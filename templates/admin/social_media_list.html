@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}Social Media Staff List - Nandilive Admin{% endblock %}
+{% block page_title %}Social Media Staff Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .list-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filters-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        min-width: 260px;
+        flex: 1;
+    }
+
+    .search-input-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        width: 16px;
+        height: 16px;
+    }
+
+    .search-input-wrapper input {
+        width: 100%;
+        height: 38px;
+        padding: 8px 12px 8px 36px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        background-color: #ffffff;
+    }
+
+    .search-input-wrapper input:focus {
+        border-color: #6366f1;
+    }
+
+    .filter-select {
+        height: 38px;
+        padding: 0 12px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        background-color: #ffffff;
+        color: var(--text-main);
+    }
+
+    .filter-select:focus {
+        border-color: #6366f1;
+    }
+
+    .sm-avatar-cell {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background-color: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+        border: 2px solid #c7d2fe;
+    }
+
+    .sm-name-main {
+        font-weight: 700;
+        color: var(--primary-navy);
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .sm-role-sub {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .phone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--primary-navy);
+    }
+
+    .table-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background-color: #f1f5f9;
+        color: var(--text-main);
+    }
+
+    .action-btn svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .action-btn.view:hover {
+        background-color: #e0e7ff;
+        color: #4f46e5;
+    }
+
+    .action-btn.edit:hover {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+
+    .action-btn.delete:hover {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-add-sm {
+        background-color: #6366f1;
+        color: #ffffff;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+        transition: background-color 0.15s ease;
+    }
+
+    .btn-add-sm:hover {
+        background-color: #4f46e5;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 440px;
+        padding: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        animation: scaleIn 0.2s ease;
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #fee2e2;
+        color: var(--news-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin-bottom: 8px;
+    }
+
+    .modal-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 22px;
+    }
+
+    .modal-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Toolbar with Search & Filter -->
+<div class="list-toolbar">
+    <form method="GET" action="{% url 'social_media_list' %}" class="filters-form">
+        <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ query }}" 
+                placeholder="Search by Name or Phone Number..."
+            >
+        </div>
+
+        <select name="status" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive Only</option>
+        </select>
+
+        <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;">
+            Filter
+        </button>
+
+        {% if query or status_filter %}
+        <a href="{% url 'social_media_list' %}" class="btn btn-secondary btn-sm" style="height: 38px; color: var(--news-red);">
+            Reset
+        </a>
+        {% endif %}
+    </form>
+
+    <!-- Add Social Media Button -->
+    <a href="{% url 'social_media_add' %}" class="btn-add-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Add Social Media</span>
+    </a>
+</div>
+
+<!-- Social Media Staff Table Card -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); background-color: #f8fafc;">
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted); width: 60px;">#</th>
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Social Media Staff</th>
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Phone (Login ID)</th>
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Status</th>
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Registered On</th>
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: right; width: 140px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sm in social_media_members %}
+                <tr style="border-bottom: 1px solid var(--border-light); transition: background 0.15s ease;">
+                    <td style="padding: 14px 18px;">
+                        <div class="sm-avatar-cell">
+                            {{ sm.name|slice:":1"|upper }}
+                        </div>
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        <div class="sm-name-main">{{ sm.name }}</div>
+                        <div class="sm-role-sub">
+                            <span>Social Media Team</span>
+                        </div>
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        <div class="phone-badge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            {{ sm.phone_number }}
+                        </div>
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        {% if sm.is_active %}
+                            <span class="badge badge-published">Active</span>
+                        {% else %}
+                            <span class="badge badge-draft">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 14px 18px; font-size: 13px; color: var(--text-muted);">
+                        {{ sm.created_at|date:"M d, Y" }}
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        <div class="table-actions-group" style="justify-content: flex-end;">
+                            <!-- 1. View Button -->
+                            <a href="{% url 'social_media_view' sm.pk %}" class="action-btn view" title="View Social Media Staff Details">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+
+                            <!-- 2. Edit Button -->
+                            <a href="{% url 'social_media_edit' sm.pk %}" class="action-btn edit" title="Edit Social Media Staff">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </a>
+
+                            <!-- 3. Delete Button -->
+                            <button 
+                                type="button" 
+                                class="action-btn delete" 
+                                title="Delete Social Media Staff" 
+                                onclick="openDeleteModal('{{ sm.pk }}', '{{ sm.name|escapejs }}')"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 48px 24px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                            </div>
+                            <p style="font-weight: 700; color: var(--primary-navy); font-size: 15px;">No Social Media Staff Found</p>
+                            <p style="font-size: 13px; color: var(--text-muted); max-width: 380px;">
+                                {% if query or status_filter %}
+                                    No records match your filter criteria. Try resetting your search filters.
+                                {% else %}
+                                    No Social Media staff have been registered yet. Click "Add Social Media" to register your first team member.
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'social_media_add' %}" class="btn-add-sm" style="margin-top: 10px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Add Social Media Staff</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <div class="modal-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <h3 class="modal-title">Confirm Deletion</h3>
+        <p class="modal-desc">
+            Are you sure you want to delete Social Media user <strong id="deleteTargetName"></strong>? This action is permanent and removes login credentials.
+        </p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <form id="deleteForm" method="POST" action="">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    Delete User
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openDeleteModal(pk, name) {
+        document.getElementById('deleteTargetName').textContent = `"${name}"`;
+        document.getElementById('deleteForm').action = `/social-media/delete/${pk}/`;
+        document.getElementById('deleteModal').classList.add('open');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+
+    // Close on clicking outside modal box
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+</script>
+{% endblock %}

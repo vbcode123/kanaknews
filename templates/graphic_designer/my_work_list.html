@@ -1,0 +1,761 @@
+{% extends "graphic_designer/base_graphic_designer.html" %}
+{% load static %}
+
+{% block title %}My Work List - Graphic Designer - Nandilive{% endblock %}
+{% block page_title %}My Work List — Dispatched Graphics{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Top Banner */
+    .worklist-banner {
+        background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        color: #ffffff;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.35);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .worklist-banner::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -40px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .banner-text h2 {
+        font-size: 21px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .banner-text p {
+        color: #d1fae5;
+        font-size: 13.5px;
+        max-width: 650px;
+        line-height: 1.45;
+    }
+
+    .worklist-count-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-weight: 800;
+        font-size: 13.5px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Tabs Bar */
+    .gd-tabs-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .gd-tab-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #64748b;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        transition: all 0.15s ease;
+    }
+
+    .gd-tab-link:hover {
+        color: #047857;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+    }
+
+    .gd-tab-link.active {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669;
+        box-shadow: 0 3px 10px rgba(5, 150, 105, 0.3);
+    }
+
+    .gd-tab-link .tab-pill {
+        background: rgba(0, 0, 0, 0.08);
+        padding: 2px 7px;
+        border-radius: 9999px;
+        font-size: 11px;
+    }
+
+    .gd-tab-link.active .tab-pill {
+        background: rgba(255, 255, 255, 0.28);
+        color: #ffffff;
+    }
+
+    /* Search & Filter Card */
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 12px 18px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .search-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .search-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .search-input:focus {
+        border-color: #059669;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    }
+
+    .search-clear-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    /* Cards */
+    .worklist-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 20px 22px;
+        margin-bottom: 18px;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .worklist-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -3px rgba(0, 0, 0, 0.08);
+        border-color: #a7f3d0;
+    }
+
+    .worklist-main {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .worklist-thumb {
+        width: 120px;
+        height: 82px;
+        border-radius: 10px;
+        background: #0f172a;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+    }
+
+    .worklist-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .worklist-thumb.placeholder-thumb {
+        background: #1e1b4b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .worklist-thumb.placeholder-thumb img {
+        width: 80%;
+        height: 80%;
+        object-fit: contain;
+    }
+
+    .worklist-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .badge-status-sent {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+    }
+
+    .worklist-headline {
+        font-size: 16px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 6px 0;
+        line-height: 1.45;
+    }
+
+    .worklist-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .worklist-actions-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+        width: 170px;
+    }
+
+    .btn-action-emerald {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: #059669;
+        color: #ffffff;
+        font-size: 12.5px;
+        font-weight: 700;
+        border-radius: 8px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .btn-action-emerald:hover {
+        background: #047857;
+    }
+
+    .btn-action-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid #cbd5e1;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-secondary:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+
+    .btn-recall-amber {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 12px;
+        background: #fffbeb;
+        color: #b45309;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid #fde68a;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-recall-amber:hover {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* Creatives Gallery in Card */
+    .gallery-row {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px dashed #e2e8f0;
+    }
+
+    .gallery-title {
+        font-size: 12px;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .gallery-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .gallery-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 5px 10px 5px 6px;
+        font-size: 12px;
+        color: #166534;
+    }
+
+    .gallery-thumb {
+        width: 32px;
+        height: 24px;
+        border-radius: 4px;
+        object-fit: cover;
+        background: #0f172a;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-backdrop.show {
+        display: flex;
+    }
+
+    .modal-window {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 580px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: 16px 22px;
+        background: linear-gradient(135deg, #047857 0%, #059669 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-header h3 {
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .modal-body {
+        padding: 22px;
+    }
+
+    .modal-footer {
+        padding: 14px 22px;
+        background: #f8fafc;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .preview-modal-window {
+        background: #000000;
+        border-radius: 12px;
+        max-width: 820px;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .preview-modal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 12px 18px;
+        background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 10;
+        color: #ffffff;
+    }
+
+    .preview-modal-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 350px;
+        max-height: 80vh;
+        background: #000000;
+    }
+
+    .preview-modal-content img,
+    .preview-modal-content video {
+        max-width: 100%;
+        max-height: 75vh;
+        object-fit: contain;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Header Banner -->
+<div class="worklist-banner">
+    <div class="banner-text">
+        <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>My Work List — Completed Graphics</span>
+        </h2>
+        <p>News stories where you have completed graphics, social banners, thumbnails, and lower-third artwork and successfully dispatched them to the Visual Editor.</p>
+    </div>
+    <div class="worklist-count-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>{{ tasks_count }} Completed Task{{ tasks_count|pluralize }}</span>
+    </div>
+</div>
+
+<!-- Tabs Bar -->
+<div class="gd-tabs-bar">
+    <a href="{% url 'graphic_designer_my_task' %}" class="gd-tab-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Pending Graphics</span>
+        <span class="tab-pill">{{ pending_count }}</span>
+    </a>
+
+    <a href="{% url 'graphic_designer_my_work_list' %}" class="gd-tab-link active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>My Work List</span>
+        <span class="tab-pill">{{ tasks_count }}</span>
+    </a>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="{% url 'graphic_designer_my_work_list' %}" style="display: flex; gap: 10px; width: 100%;">
+        <div class="search-wrapper">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search dispatched stories by headline, district, category...">
+            {% if query %}
+            <a href="{% url 'graphic_designer_my_work_list' %}" class="search-clear-btn" title="Clear Search">&times;</a>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn-action-emerald" style="width: auto; padding: 8px 18px;">
+            Search
+        </button>
+    </form>
+</div>
+
+<!-- Work List Cards -->
+{% if tasks %}
+<div>
+    {% for task in tasks %}
+    <div class="worklist-card">
+        <div class="worklist-main">
+            <!-- Media Thumbnail -->
+            {% if task.media_file %}
+                {% if task.is_image %}
+                <div class="worklist-thumb" onclick="openImageModal('{{ task.media_file.url }}', '{{ task.headline|escapejs }}')">
+                    <img src="{{ task.media_file.url }}" alt="Story">
+                </div>
+                {% elif task.is_video %}
+                <div class="worklist-thumb" onclick="openVideoModal('{{ task.media_file.url }}', '{{ task.headline|escapejs }}')">
+                    <video src="{{ task.media_file.url }}#t=0.5" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                </div>
+                {% else %}
+                <div class="worklist-thumb placeholder-thumb">
+                    <img src="{% static 'images/nandi.png' %}" alt="Nandilive">
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="worklist-thumb placeholder-thumb">
+                    <img src="{% static 'images/nandi.png' %}" alt="Nandilive">
+                </div>
+            {% endif %}
+
+            <!-- Story Info -->
+            <div class="worklist-info">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                    <span class="badge-status-sent">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Sent to Visual Editor</span>
+                    </span>
+                    <span style="font-size: 11px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 2px 7px; border-radius: 4px;">{{ task.news_type }}</span>
+                    <span style="font-size: 11px; color: #64748b;">{{ task.category }} &bull; {{ task.district }}</span>
+                </div>
+
+                <h3 class="worklist-headline">{{ task.headline }}</h3>
+
+                <div class="worklist-meta-row">
+                    <span><strong>Reporter:</strong> {{ task.reporter.name|default:task.author.get_full_name|default:'Desk' }}</span>
+                    <span>&bull;</span>
+                    <span><strong>Visual Editor:</strong> {{ task.assigned_visual_editor.name|default:'Visual Editor Desk' }}</span>
+                    <span>&bull;</span>
+                    <span><strong>Dispatched at:</strong> {{ task.graphics_sent_to_visual_editor_at|date:"M d, Y - h:i A"|default:task.updated_at|date:"M d, Y - h:i A" }}</span>
+                </div>
+            </div>
+
+            <!-- Actions Column -->
+            <div class="worklist-actions-col">
+                <a href="{% url 'news_view' task.pk %}" class="btn-action-emerald">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>View Story</span>
+                </a>
+
+                <!-- Team Production Files Button -->
+                <button type="button" class="btn-action-files" onclick="openTeamFilesModal('teamFilesModal-{{ task.pk }}')" title="View Team Files: Copy Editor Script, Voice Over & Footage" style="width: 100%;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Files</span>
+                    {% if task.byte_media or task.additional_media.all %}
+                    <span class="files-badge-dot" title="Assets uploaded"></span>
+                    {% endif %}
+                </button>
+
+                {% if task.media_file %}
+                <a href="{{ task.media_file.url }}" download class="btn-action-secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Download Media</span>
+                </a>
+                {% endif %}
+
+                <!-- Recall back to My Task -->
+                <form method="POST" action="{% url 'graphic_designer_recall_task' task.pk %}" onsubmit="return confirm('Recall this story back to Pending Tasks to make further updates?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-recall-amber" style="width: 100%;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"></polyline>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                        </svg>
+                        <span>Recall to My Task</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Team Files Modal for Graphic Designer Work List -->
+            {% include "common/_team_files_modal.html" with story=task %}
+        </div>
+
+        <!-- Creatives Gallery -->
+        <div class="gallery-row">
+            <div class="gallery-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Dispatched Artwork Assets ({{ task.additional_media.count }})</span>
+            </div>
+
+            {% if task.additional_media.all %}
+            <div class="gallery-grid">
+                {% for media in task.additional_media.all %}
+                <div class="gallery-chip">
+                    {% if media.is_image %}
+                    <img src="{{ media.file.url }}" alt="Asset" class="gallery-thumb" onclick="openImageModal('{{ media.file.url }}', '{{ media.caption|default:'Asset'|escapejs }}')" style="cursor: pointer;">
+                    {% else %}
+                    <div class="gallery-thumb" style="display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff;">FILE</div>
+                    {% endif %}
+                    <span style="font-weight: 600; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ media.caption|default:media.file.name }}</span>
+                    <a href="{{ media.file.url }}" download style="color: #059669; display: flex; align-items: center;" title="Download">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size: 12px; color: #94a3b8; font-style: italic;">No additional creative files attached.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="padding: 60px 20px; text-align: center; color: var(--text-muted); background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-lg);">
+    <div style="width: 64px; height: 64px; border-radius: 50%; background: #ecfdf5; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: #059669;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+    </div>
+    <h3 style="font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 6px;">No Dispatched Graphics Yet</h3>
+    <p style="font-size: 13.5px; max-width: 480px; margin: 0 auto; color: #64748b; line-height: 1.5;">
+        When you complete artwork on <a href="{% url 'graphic_designer_my_task' %}" style="color: #059669; font-weight: 700;">My Task</a> and click <strong>"Send to Visual Editor"</strong>, the completed stories will appear here for your records.
+    </p>
+</div>
+{% endif %}
+
+<!-- Lightbox Modal for Image Preview -->
+<div class="modal-backdrop" id="imageModal">
+    <div class="preview-modal-window">
+        <div class="preview-modal-header">
+            <span id="imageModalTitle" style="font-size: 13px; font-weight: 700; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+            <button type="button" class="modal-close-btn" onclick="closeImageModal()">&times;</button>
+        </div>
+        <div class="preview-modal-content">
+            <img id="imagePreview" src="" alt="Preview">
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal for Video Preview -->
+<div class="modal-backdrop" id="videoModal">
+    <div class="preview-modal-window">
+        <div class="preview-modal-header">
+            <span id="videoModalTitle" style="font-size: 13px; font-weight: 700;"></span>
+            <button type="button" class="modal-close-btn" onclick="closeVideoModal()">&times;</button>
+        </div>
+        <div class="preview-modal-content">
+            <video id="videoPlayer" controls autoplay style="width: 100%; max-height: 75vh;"></video>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openImageModal(url, title) {
+        document.getElementById('imagePreview').src = url;
+        document.getElementById('imageModalTitle').textContent = title || 'Artwork Preview';
+        document.getElementById('imageModal').classList.add('show');
+    }
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.remove('show');
+        document.getElementById('imagePreview').src = '';
+    }
+
+    function openVideoModal(url, title) {
+        const player = document.getElementById('videoPlayer');
+        player.src = url;
+        document.getElementById('videoModalTitle').textContent = title || 'Video Preview';
+        document.getElementById('videoModal').classList.add('show');
+        player.play().catch(() => {});
+    }
+    function closeVideoModal() {
+        const player = document.getElementById('videoPlayer');
+        player.pause();
+        player.src = '';
+        document.getElementById('videoModal').classList.remove('show');
+    }
+
+    window.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-backdrop')) {
+            e.target.classList.remove('show');
+            const player = document.getElementById('videoPlayer');
+            if (player) { player.pause(); player.src = ''; }
+        }
+    });
+</script>
+{% endblock %}

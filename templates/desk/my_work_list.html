@@ -1,0 +1,1248 @@
+{% extends "desk/base_desk.html" %}
+{% load static %}
+
+{% block title %}My Work List - Dispatched News Stories - Nandilive{% endblock %}
+{% block page_title %}My Work List — Dispatched &amp; Assigned Stories{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Top Control Bar */
+    .word-topbar {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 22px 24px;
+        margin-bottom: 22px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .topbar-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .topbar-title-group h2 {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .topbar-title-group p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin: 0;
+    }
+
+    /* Tabs Bar */
+    .desk-tabs-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 18px;
+        border-bottom: 1.5px solid #e2e8f0;
+        padding-bottom: 10px;
+    }
+
+    .desk-tab-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.15s ease;
+    }
+
+    .desk-tab-link:hover {
+        color: #0f172a;
+        background: #f1f5f9;
+    }
+
+    .desk-tab-link.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #1d4ed8;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .desk-tab-link .tab-count {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 1px 7px;
+        border-radius: 9999px;
+        font-size: 11px;
+    }
+
+    .desk-tab-link.active .tab-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    /* Filter Controls */
+    .filter-controls-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .date-filter-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .date-filter-box label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .date-input {
+        padding: 7px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        color: var(--text-main);
+        outline: none;
+        background: #ffffff;
+    }
+
+    .date-input:focus {
+        border-color: #2563eb;
+    }
+
+    .date-quick-btn {
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .date-quick-btn:hover {
+        background: #f1f5f9;
+        color: var(--text-main);
+    }
+
+    .date-quick-btn.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #1d4ed8;
+    }
+
+    .search-filter-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        min-width: 320px;
+    }
+
+    .search-input-wrap {
+        position: relative;
+        flex: 1;
+        max-width: 320px;
+    }
+
+    .search-input-wrap svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 7px 10px 7px 32px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        outline: none;
+    }
+
+    .search-input:focus {
+        border-color: #2563eb;
+    }
+
+    .filter-select {
+        padding: 7px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        color: var(--text-main);
+        outline: none;
+        background: #ffffff;
+    }
+
+    .filter-select:focus {
+        border-color: #2563eb;
+    }
+
+    /* Metric Summary Strip */
+    .metrics-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .metric-pill-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .metric-pill-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .metric-pill-value {
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    @media (max-width: 1200px) {
+        .metrics-summary-strip {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .metrics-summary-strip {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* Table Container */
+    .word-table-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .word-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .word-table thead {
+        background: #f8fafc;
+        border-bottom: 1.5px solid var(--border-color);
+    }
+
+    .word-table th {
+        padding: 13px 16px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .word-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+    }
+
+    .word-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .word-table td {
+        padding: 14px 16px;
+        vertical-align: top;
+    }
+
+    /* Media Thumbnail */
+    .media-thumb-box {
+        width: 72px;
+        height: 50px;
+        border-radius: 6px;
+        background-color: #0b0f19;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+        border: 1px solid #cbd5e1;
+    }
+
+    .media-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .media-play-icon {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        background: rgba(220, 38, 38, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+    }
+
+    /* Format & District */
+    .format-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+    }
+
+    .format-byte { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+    .format-avo { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .format-pkg { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+    .format-default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Headline & Script */
+    .story-headline-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.4;
+        margin-bottom: 4px;
+    }
+
+    .story-headline-title a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .story-headline-title a:hover {
+        color: #2563eb;
+    }
+
+    .story-script-snippet {
+        font-size: 12.5px;
+        color: #64748b;
+        line-height: 1.5;
+        max-width: 440px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .story-desk-notes {
+        background: #fffbeb;
+        border-left: 3px solid #f59e0b;
+        padding: 4px 8px;
+        border-radius: 0 4px 4px 0;
+        font-size: 11px;
+        color: #92400e;
+        margin-top: 6px;
+    }
+
+    /* Dispatched Team Members Pills */
+    .team-dispatch-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 220px;
+    }
+
+    .team-dispatch-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+    }
+
+    .team-role-tag {
+        font-size: 9.5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 1px 5px;
+        border-radius: 3px;
+        min-width: 82px;
+        text-align: center;
+    }
+
+    .role-vo { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .role-ce { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .role-gd { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+    .role-ve { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .role-sm { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+
+    .team-person-name {
+        font-weight: 700;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+
+    .team-not-assigned {
+        color: #94a3b8;
+        font-style: italic;
+        font-size: 11px;
+    }
+
+    /* Action Controls */
+    .action-controls {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .btn-action-resend {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #2563eb;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-resend:hover {
+        background: #eff6ff;
+        border-color: #93c5fd;
+    }
+
+    .btn-action-view {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: #475569;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-view:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .btn-action-download {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: #059669;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-download:hover {
+        background: #d1fae5;
+        border-color: #059669;
+    }
+
+    /* Modal Styles */
+    .send-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .send-modal-container {
+        background: #ffffff;
+        border-radius: 14px;
+        max-width: 680px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    .send-modal-header {
+        padding: 18px 24px;
+        background: #0f172a;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dept-card {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: #f8fafc;
+        margin-bottom: 10px;
+        transition: all 0.15s ease;
+    }
+
+    .dept-card.selected {
+        border-color: #2563eb;
+        background: #eff6ff;
+    }
+
+    .dept-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .dept-card-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        color: #1e293b;
+        cursor: pointer;
+    }
+
+    .dept-dropdown {
+        width: 100%;
+        padding: 7px 10px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        font-size: 12.5px;
+        outline: none;
+        background: #ffffff;
+    }
+
+    .dept-dropdown:disabled {
+        background: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Control Bar -->
+<div class="word-topbar">
+    <div class="topbar-header-row">
+        <div class="topbar-title-group">
+            <h2>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span>My Work List — Dispatched &amp; Assigned Stories</span>
+            </h2>
+            <p>
+                Stories assigned and forwarded by Desk to Voice Hover, Copy Editor, Graphic Designer, Visual Editor, and Social Media.
+            </p>
+        </div>
+
+        <div>
+            <span style="background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 13px; padding: 8px 16px; border-radius: 9999px; border: 1px solid #bfdbfe;">
+                {{ total_sent_count }} Stories Dispatched
+            </span>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs between Pending and Dispatched -->
+    <div class="desk-tabs-bar">
+        <a href="{% url 'desk_my_word' %}" class="desk-tab-link">
+            <span>⏳ My Work (Pending to Send)</span>
+            <span class="tab-count">{{ my_word_count }}</span>
+        </a>
+        <a href="{% url 'desk_my_work_list' %}" class="desk-tab-link active">
+            <span>📋 My Work List (Dispatched)</span>
+            <span class="tab-count">{{ total_sent_count }}</span>
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{% url 'desk_my_work_list' %}" id="filterForm">
+        <div class="filter-controls-row">
+            <!-- Date Filter -->
+            <div class="date-filter-box">
+                <label for="dateInput">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Date:</span>
+                </label>
+                <input 
+                    type="date" 
+                    id="dateInput" 
+                    name="date" 
+                    value="{% if selected_date != 'all' %}{{ selected_date }}{% endif %}" 
+                    class="date-input"
+                    onchange="document.getElementById('filterForm').submit();"
+                >
+                <a href="{% url 'desk_my_work_list' %}?date={{ today_str }}{% if query %}&q={{ query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="date-quick-btn {% if selected_date == today_str %}active{% endif %}">
+                    Today
+                </a>
+                <a href="{% url 'desk_my_work_list' %}?date=all{% if query %}&q={{ query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="date-quick-btn {% if selected_date == 'all' or not selected_date %}active{% endif %}">
+                    All Dates
+                </a>
+            </div>
+
+            <!-- Role & Search Filters -->
+            <div class="search-filter-box">
+                <div class="search-input-wrap">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ query|default:'' }}" 
+                        class="search-input" 
+                        placeholder="Search headline, reporter, staff..."
+                    >
+                </div>
+
+                <!-- Role Filter -->
+                <select name="role" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                    <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All Assigned Roles</option>
+                    <option value="voice_over" {% if role_filter == 'voice_over' %}selected{% endif %}>🎙️ Voice Hover ({{ vo_sent_count }})</option>
+                    <option value="copy_editor" {% if role_filter == 'copy_editor' %}selected{% endif %}>✍️ Copy Editor ({{ ce_sent_count }})</option>
+                    <option value="graphic_designer" {% if role_filter == 'graphic_designer' %}selected{% endif %}>🎨 Graphic Designer ({{ gd_sent_count }})</option>
+                    <option value="visual_editor" {% if role_filter == 'visual_editor' %}selected{% endif %}>🎬 Visual Editor ({{ ve_sent_count }})</option>
+                    <option value="social_media" {% if role_filter == 'social_media' %}selected{% endif %}>🌐 Social Media ({{ sm_sent_count }})</option>
+                </select>
+
+                <!-- District Filter -->
+                <select name="district" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">All Districts</option>
+                    {% for d in all_districts %}
+                    <option value="{{ d }}" {% if district_filter == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn" style="padding: 7px 14px; font-size: 13px; background: #2563eb; color: #ffffff; font-weight: 700; border-radius: 6px; border: none; cursor: pointer;">
+                    Filter
+                </button>
+
+                {% if query or role_filter != 'all' or district_filter or selected_date != 'all' %}
+                <a href="{% url 'desk_my_work_list' %}" class="btn btn-secondary" style="padding: 7px 12px; font-size: 13px;" title="Clear Filters">
+                    Clear
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Metrics Summary Strip -->
+<div class="metrics-summary-strip">
+    <div class="metric-pill-card" style="border-left: 4px solid #2563eb;">
+        <div>
+            <div class="metric-pill-label">Total Dispatched</div>
+            <div class="metric-pill-value" style="color: #2563eb;">{{ total_sent_count }}</div>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #7c3aed;">
+        <div>
+            <div class="metric-pill-label">Voice Hover</div>
+            <div class="metric-pill-value" style="color: #7c3aed;">{{ vo_sent_count }}</div>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #0284c7;">
+        <div>
+            <div class="metric-pill-label">Copy Editor</div>
+            <div class="metric-pill-value" style="color: #0284c7;">{{ ce_sent_count }}</div>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #db2777;">
+        <div>
+            <div class="metric-pill-label">Graphic Designer</div>
+            <div class="metric-pill-value" style="color: #db2777;">{{ gd_sent_count }}</div>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #059669;">
+        <div>
+            <div class="metric-pill-label">Visual Editor</div>
+            <div class="metric-pill-value" style="color: #059669;">{{ ve_sent_count }}</div>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #4f46e5;">
+        <div>
+            <div class="metric-pill-label">Social Media</div>
+            <div class="metric-pill-value" style="color: #4f46e5;">{{ sm_sent_count }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dispatched Stories Table -->
+<div class="word-table-card">
+    {% if news_list %}
+    <div style="overflow-x: auto;">
+        <table class="word-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Media</th>
+                    <th style="width: 100px;">Format</th>
+                    <th>Story Headline &amp; Script</th>
+                    <th style="width: 250px;">Dispatched Team (Kisko Send Kiya)</th>
+                    <th style="width: 140px;">Field Reporter</th>
+                    <th style="width: 120px;">Sent Time</th>
+                    <th style="width: 140px; text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in news_list %}
+                <tr>
+                    <!-- Media Preview -->
+                    <td>
+                        {% if item.has_edited_video %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ item.edited_video.url }}', '{{ item.headline|escapejs }} [Final Broadcast Video]')" title="Click to preview Final Broadcast Video" style="border: 2px solid #6366f1;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon" style="background: #4f46e5;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% elif item.media_file %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ item.media_file.url }}', '{{ item.headline|escapejs }}')" title="Click to preview video">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="media-thumb-box" style="cursor: default;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 6px;">
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Format & District -->
+                    <td>
+                        <span class="format-badge {% if item.news_type == 'Byte' %}format-byte{% elif item.news_type == 'AVO' or item.news_type == 'AVO Byte' %}format-avo{% elif item.news_type == 'PKG' %}format-pkg{% else %}format-default{% endif %}">
+                            {{ item.news_type|default:"News" }}
+                        </span>
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-top: 4px;">
+                            {{ item.category|default:"General" }}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
+                            📍 {{ item.district }}
+                        </div>
+                    </td>
+
+                    <!-- Story Headline & Script -->
+                    <td>
+                        <div class="story-headline-title">
+                            <a href="{% url 'news_view' item.pk %}">
+                                {{ item.headline }}
+                            </a>
+                        </div>
+                        <div class="story-script-snippet">
+                            {{ item.description|truncatewords:24 }}
+                        </div>
+                        {% if item.desk_notes %}
+                        <div class="story-desk-notes">
+                            <strong>Desk Notes:</strong> {{ item.desk_notes }}
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Dispatched Team Members (KISKO SEND KIYA) -->
+                    <td>
+                        <div class="team-dispatch-grid">
+                            <!-- Voice Hover -->
+                            <div class="team-dispatch-row">
+                                <span class="team-role-tag role-vo">🎙️ Voice Hover</span>
+                                {% if item.assigned_voice_over %}
+                                    <span class="team-person-name" title="{{ item.assigned_voice_over.name }} ({{ item.assigned_voice_over.phone_number }})">
+                                        {{ item.assigned_voice_over.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="team-not-assigned">—</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Copy Editor -->
+                            <div class="team-dispatch-row">
+                                <span class="team-role-tag role-ce">✍️ Copy Editor</span>
+                                {% if item.assigned_copy_editor %}
+                                    <span class="team-person-name" title="{{ item.assigned_copy_editor.name }} ({{ item.assigned_copy_editor.phone_number }})">
+                                        {{ item.assigned_copy_editor.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="team-not-assigned">—</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Graphic Designer -->
+                            <div class="team-dispatch-row">
+                                <span class="team-role-tag role-gd">🎨 Designer</span>
+                                {% if item.assigned_graphic_designer %}
+                                    <span class="team-person-name" title="{{ item.assigned_graphic_designer.name }} ({{ item.assigned_graphic_designer.phone_number }})">
+                                        {{ item.assigned_graphic_designer.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="team-not-assigned">—</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Visual Editor -->
+                            <div class="team-dispatch-row">
+                                <span class="team-role-tag role-ve">🎬 Visual Editor</span>
+                                {% if item.assigned_visual_editor %}
+                                    <span class="team-person-name" title="{{ item.assigned_visual_editor.name }} ({{ item.assigned_visual_editor.phone_number }})">
+                                        {{ item.assigned_visual_editor.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="team-not-assigned">—</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Social Media -->
+                            <div class="team-dispatch-row">
+                                <span class="team-role-tag role-sm">🌐 Social Media</span>
+                                {% if item.sent_to_social_media or item.assigned_social_media %}
+                                    <span class="team-person-name" style="color: #4338ca;">
+                                        {% if item.assigned_social_media %}{{ item.assigned_social_media.name }}{% else %}Forwarded{% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="team-not-assigned">—</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Field Reporter -->
+                    <td>
+                        <div style="font-weight: 700; color: #0f172a;">
+                            {{ item.reporter.name|default:item.author.get_full_name|default:"Desk Staff" }}
+                        </div>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                            {{ item.location|default:item.district }}
+                        </div>
+                    </td>
+
+                    <!-- Sent Time -->
+                    <td>
+                        <div style="font-size: 12px; font-weight: 700; color: #334155;">
+                            {{ item.assigned_at|date:"h:i A"|default:item.created_at|date:"h:i A" }}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
+                            {{ item.assigned_at|date:"d M, Y"|default:item.created_at|date:"d M, Y" }}
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="action-controls">
+                            <!-- Re-assign / Edit Team Button -->
+                            <button type="button" 
+                                    class="btn-action-resend" 
+                                    onclick="openSendModal({{ item.pk }}, '{{ item.headline|escapejs }}', '{{ item.reporter.name|default:item.author.get_full_name|escapejs }}', '{{ item.district|escapejs }}', '{{ item.news_type|escapejs }}', {% if item.has_edited_video or item.is_video_edited_by_desk %}true{% else %}false{% endif %}, {% if item.media_file or item.byte_media or item.has_edited_video or item.additional_media.exists %}true{% else %}false{% endif %}, '{{ item.desk_notes|default:''|escapejs }}', {% if item.sent_to_social_media %}true{% else %}false{% endif %}, '{{ item.sent_to_social_media_at|date:"d M, Y - h:i A"|default:""|escapejs }}', '{{ item.assigned_social_media.pk|default:"" }}', '{{ item.assigned_graphic_designer.pk|default:"" }}', '{{ item.assigned_voice_over.pk|default:"" }}', '{{ item.assigned_visual_editor.pk|default:"" }}', '{{ item.assigned_copy_editor.pk|default:"" }}')"
+                                    title="Update or Re-assign Team">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                    <path d="M23 4v6h-6"></path>
+                                    <path d="M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                                <span>Re-assign</span>
+                            </button>
+
+                            <!-- View Story -->
+                            <a href="{% url 'news_view' item.pk %}" class="btn-action-view" title="View Full Story Details">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+
+                            <!-- Team Production Files Button -->
+                            <button type="button" class="btn-action-files" onclick="openTeamFilesModal('teamFilesModal-{{ item.pk }}')" title="View Team Files: Copy Editor, Graphics, Voice Over & Footage">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Files</span>
+                                {% if item.byte_media or item.additional_media.all %}
+                                <span class="files-badge-dot" title="Assets uploaded"></span>
+                                {% endif %}
+                            </button>
+
+                            <!-- Download Media -->
+                            {% if item.has_edited_video %}
+                            <a href="{{ item.edited_video.url }}" download class="btn-action-download" title="Download Final Broadcast Video">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            {% elif item.media_file %}
+                            <a href="{{ item.media_file.url }}" download class="btn-action-download" title="Download Story Footage">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        <!-- Team Files Modal for Desk Work List -->
+                        {% include "common/_team_files_modal.html" with story=item %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="padding: 56px 20px; text-align: center; color: var(--text-muted);">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #2563eb;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No Dispatched Stories in "My Work List"</h3>
+        <p style="font-size: 13px; max-width: 480px; margin: 0 auto; color: #64748b;">
+            When you select a news story in <strong>My Work</strong> and click <strong>"Send"</strong> to assign Voice Hover, Copy Editor, Graphic Designer, or Visual Editor, it will appear here with complete details!
+        </p>
+        <div style="margin-top: 18px;">
+            <a href="{% url 'desk_my_word' %}" class="btn" style="background: #2563eb; color: #fff; font-weight: 700; padding: 8px 18px; border-radius: 8px; text-decoration: none;">
+                Go to My Work ({{ my_word_count }} Pending) &rarr;
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Send & Assignment Modal -->
+<div id="sendModal" class="send-modal-overlay">
+    <div class="send-modal-container">
+        <div class="send-modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span id="modalHeaderTitle" style="font-weight: 800; font-size: 16px;">Assign &amp; Send News Story</span>
+            </div>
+            <button type="button" onclick="closeSendModal()" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <form id="sendForm" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="modalActionInput" value="send_team">
+            <input type="hidden" name="next" value="{% url 'desk_my_work_list' %}">
+
+            <div style="padding: 20px 24px;">
+                <!-- Story Details Preview -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span id="modalStoryFormat" class="format-badge format-avo">AVO Byte</span>
+                        <span id="modalStoryDistrict" style="font-size: 11px; font-weight: 700; color: #64748b;">District</span>
+                    </div>
+                    <h4 id="modalStoryHeadline" style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; line-height: 1.4;">Story Headline</h4>
+                    <div id="modalStoryReporter" style="font-size: 12px; color: #64748b;">Reporter Name</div>
+                </div>
+
+                <!-- Assignment Choices -->
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 12.5px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
+                        Select Team Members to Forward:
+                    </label>
+
+                    <!-- 1. Voice Hover -->
+                    <div class="dept-card" id="cardVoiceOver">
+                        <div class="dept-card-header">
+                            <label class="dept-card-label" for="chkVoiceOver">
+                                <input type="checkbox" id="chkVoiceOver" onchange="toggleDept('VoiceOver')">
+                                <span>🎙️ Voice Hover (Voice Over Artist)</span>
+                            </label>
+                        </div>
+                        <select name="voice_over_id" id="selVoiceOver" class="dept-dropdown" disabled>
+                            <option value="">-- Select Voice Over Artist --</option>
+                            {% for vo in voice_overs %}
+                            <option value="{{ vo.pk }}">{{ vo.name }} ({{ vo.phone_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- 2. Copy Editor -->
+                    <div class="dept-card" id="cardCopyEditor">
+                        <div class="dept-card-header">
+                            <label class="dept-card-label" for="chkCopyEditor">
+                                <input type="checkbox" id="chkCopyEditor" onchange="toggleDept('CopyEditor')">
+                                <span>✍️ Copy Editor</span>
+                            </label>
+                        </div>
+                        <select name="copy_editor_id" id="selCopyEditor" class="dept-dropdown" disabled>
+                            <option value="">-- Select Copy Editor --</option>
+                            {% for ce in copy_editors %}
+                            <option value="{{ ce.pk }}">{{ ce.name }} ({{ ce.phone_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- 3. Graphic Designer -->
+                    <div class="dept-card" id="cardGraphicDesigner">
+                        <div class="dept-card-header">
+                            <label class="dept-card-label" for="chkGraphicDesigner">
+                                <input type="checkbox" id="chkGraphicDesigner" onchange="toggleDept('GraphicDesigner')">
+                                <span>🎨 Graphic Designer</span>
+                            </label>
+                        </div>
+                        <select name="graphic_designer_id" id="selGraphicDesigner" class="dept-dropdown" disabled>
+                            <option value="">-- Select Graphic Designer --</option>
+                            {% for gd in graphic_designers %}
+                            <option value="{{ gd.pk }}">{{ gd.name }} ({{ gd.phone_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- 4. Visual Editor -->
+                    <div class="dept-card" id="cardVisualEditor">
+                        <div class="dept-card-header">
+                            <label class="dept-card-label" for="chkVisualEditor">
+                                <input type="checkbox" id="chkVisualEditor" onchange="toggleDept('VisualEditor')">
+                                <span>🎬 Visual Editor (Studio &amp; Video)</span>
+                            </label>
+                        </div>
+                        <select name="visual_editor_id" id="selVisualEditor" class="dept-dropdown" disabled>
+                            <option value="">-- Select Visual Editor --</option>
+                            {% for ve in visual_editors %}
+                            <option value="{{ ve.pk }}">{{ ve.name }} ({{ ve.phone_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- 5. Social Media Desk -->
+                    <div class="dept-card" id="cardSocialMedia">
+                        <div class="dept-card-header">
+                            <label class="dept-card-label" for="chkSocialMedia">
+                                <input type="checkbox" id="chkSocialMedia" onchange="toggleDept('SocialMedia')">
+                                <span>🌐 Social Media Publishing Desk</span>
+                            </label>
+                        </div>
+                        <select name="social_media_id" id="selSocialMedia" class="dept-dropdown" disabled>
+                            <option value="">-- Select Social Media Staff --</option>
+                            {% for sm in social_medias %}
+                            <option value="{{ sm.pk }}">{{ sm.name }} ({{ sm.phone_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Editorial Instructions / Notes -->
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: #334155; display: block; margin-bottom: 5px;">
+                        Desk Editorial Instructions (Optional):
+                    </label>
+                    <textarea name="desk_notes" id="modalDeskNotes" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; font-size: 13px; outline: none; min-height: 70px;" placeholder="Add instructions or notes for the team..."></textarea>
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+                <button type="button" class="btn btn-secondary" onclick="closeSendModal()" style="font-size: 13px;">Cancel</button>
+                <button type="submit" class="btn" style="background: #2563eb; color: #ffffff; font-weight: 700; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Save &amp; Forward to Team</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Video Preview Modal -->
+<div id="videoModal" class="send-modal-overlay">
+    <div style="background: #0f172a; border-radius: 12px; max-width: 780px; width: 100%; overflow: hidden; box-shadow: 0 20px 25px rgba(0,0,0,0.5);">
+        <div style="padding: 14px 20px; background: #1e293b; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+            <span id="videoModalTitle" style="font-weight: 700; font-size: 14px;">Video Preview</span>
+            <button type="button" onclick="closeVideoModal()" style="background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer;">&times;</button>
+        </div>
+        <div style="background: #000; display: flex; justify-content: center;">
+            <video id="videoPlayer" controls playsinline style="width: 100%; max-height: 70vh;">
+                <source id="videoSource" src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewMedia(url, headline) {
+    if (!url) return;
+    const modal = document.getElementById('videoModal');
+    const player = document.getElementById('videoPlayer');
+    const source = document.getElementById('videoSource');
+    const title = document.getElementById('videoModalTitle');
+
+    source.src = url;
+    title.textContent = headline || 'Video Preview';
+    player.load();
+    modal.style.display = 'flex';
+    player.play().catch(() => {});
+}
+
+function closeVideoModal() {
+    const modal = document.getElementById('videoModal');
+    const player = document.getElementById('videoPlayer');
+    modal.style.display = 'none';
+    player.pause();
+}
+
+function toggleDept(deptName) {
+    const chk = document.getElementById('chk' + deptName);
+    const sel = document.getElementById('sel' + deptName);
+    const card = document.getElementById('card' + deptName);
+
+    if (chk && sel && card) {
+        sel.disabled = !chk.checked;
+        if (chk.checked) {
+            card.classList.add('selected');
+            if (!sel.value && sel.options.length > 1) {
+                sel.selectedIndex = 1; // default to first staff
+            }
+        } else {
+            card.classList.remove('selected');
+            sel.value = '';
+        }
+    }
+}
+
+function openSendModal(pk, headline, reporter, district, newsType, isEdited, hasMedia, deskNotes, isSentToSocial, sentSocialTime, smId, gdId, voId, veId, ceId) {
+    const modal = document.getElementById('sendModal');
+    const form = document.getElementById('sendForm');
+
+    form.action = '/desk/news/' + pk + '/assign/';
+    document.getElementById('modalStoryHeadline').textContent = headline || 'Story Details';
+    document.getElementById('modalStoryReporter').innerHTML = '<strong>Reporter:</strong> ' + (reporter || 'Desk Staff');
+    document.getElementById('modalStoryDistrict').textContent = district || '';
+    document.getElementById('modalStoryFormat').textContent = newsType || 'News';
+    document.getElementById('modalDeskNotes').value = deskNotes || '';
+
+    // Pre-populate depts
+    const depts = [
+        { name: 'VoiceOver', id: voId },
+        { name: 'CopyEditor', id: ceId },
+        { name: 'GraphicDesigner', id: gdId },
+        { name: 'VisualEditor', id: veId },
+        { name: 'SocialMedia', id: smId }
+    ];
+
+    depts.forEach(d => {
+        const chk = document.getElementById('chk' + d.name);
+        const sel = document.getElementById('sel' + d.name);
+        const card = document.getElementById('card' + d.name);
+        if (d.id) {
+            chk.checked = true;
+            sel.disabled = false;
+            sel.value = d.id;
+            card.classList.add('selected');
+        } else {
+            chk.checked = false;
+            sel.disabled = true;
+            sel.value = '';
+            card.classList.remove('selected');
+        }
+    });
+
+    modal.style.display = 'flex';
+}
+
+function closeSendModal() {
+    document.getElementById('sendModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const sendModal = document.getElementById('sendModal');
+    const videoModal = document.getElementById('videoModal');
+    if (event.target === sendModal) closeSendModal();
+    if (event.target === videoModal) closeVideoModal();
+};
+</script>
+{% endblock %}

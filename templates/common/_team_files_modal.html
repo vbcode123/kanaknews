@@ -1,0 +1,1013 @@
+<!-- ============================================================
+     SHARED COMPONENT: TEAM PRODUCTION FILES & DATA MODAL
+     Used by: Desk, Voice Over, Graphic Designer, Copy Editor, Visual Editor.
+     Shows: Who did what (Copy Editor script, Graphic Designer creatives,
+     Voice Over audio track, Reporter raw footage, Desk instructions).
+     Accepts context variable: story (passed via: with story=task or with story=item)
+     ============================================================ -->
+<div id="teamFilesModal-{{ story.pk }}" class="custom-modal-backdrop" onclick="handleBackdropClick(event, 'teamFilesModal-{{ story.pk }}')">
+    <div class="custom-modal-dialog">
+        <!-- Modal Header -->
+        <div class="custom-modal-header">
+            <div class="modal-title-wrap">
+                <div class="modal-title-text">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2" style="flex-shrink:0;">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Team Files &amp; Production Data</span>
+                    <span class="badge" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; font-size: 11px;">Story #{{ story.pk }}</span>
+                    {% if story.news_type %}
+                    <span class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px;">{{ story.news_type }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-header-actions">
+                <a href="{% url 'news_view' story.pk %}" target="_blank" class="modal-fullpage-link" title="Open full story page in new tab">
+                    <span>Full Details</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+                <button type="button" class="modal-close-btn" onclick="closeTeamFilesModal('teamFilesModal-{{ story.pk }}')" title="Close">&times;</button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="custom-modal-body">
+            <!-- Tabs Navigation -->
+            <div class="modal-tabs-header">
+                <button type="button" class="modal-tab-btn tab-active" onclick="switchTeamTab('{{ story.pk }}', 'ce', this)">
+                    <span>✍️ Copy Editor</span>
+                    <span class="modal-tab-badge">{% if story.is_script_edited_by_copy_editor %}Script Ready{% else %}Script{% endif %}</span>
+                </button>
+                <button type="button" class="modal-tab-btn tab-gd" onclick="switchTeamTab('{{ story.pk }}', 'gd', this)">
+                    <span>🎨 Graphic Designer</span>
+                    <span class="modal-tab-badge">{{ story.additional_media.count|default:'0' }}</span>
+                </button>
+                <button type="button" class="modal-tab-btn tab-vo" onclick="switchTeamTab('{{ story.pk }}', 'vo', this)">
+                    <span>🎙️ Voice Over</span>
+                    <span class="modal-tab-badge">{% if story.byte_media %}Audio Ready{% else %}Pending{% endif %}</span>
+                </button>
+                <button type="button" class="modal-tab-btn tab-rep" onclick="switchTeamTab('{{ story.pk }}', 'rep', this)">
+                    <span>📹 Reporter &amp; Media</span>
+                    <span class="modal-tab-badge">{% if story.media_file %}Footage Available{% else %}Field{% endif %}</span>
+                </button>
+            </div>
+
+            <!-- ======================================= -->
+            <!-- TAB 1: COPY EDITOR DATA                 -->
+            <!-- ======================================= -->
+            <div id="tab-ce-{{ story.pk }}" class="modal-tab-pane pane-active">
+                <!-- Staff Info Banner -->
+                <div class="tab-staff-banner banner-ce">
+                    <div class="staff-profile-info">
+                        <div class="staff-avatar-initial" style="background: #2563eb;">
+                            {{ story.assigned_copy_editor.name|default:'C'|slice:':1'|upper }}
+                        </div>
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #1e3a8a;">
+                                {{ story.assigned_copy_editor.name|default:'Desk / Editorial Copy' }}
+                            </div>
+                            <div style="font-size: 12px; color: #3b82f6;">
+                                Role: Copy Editor &bull; 📞 {{ story.assigned_copy_editor.phone_number|default:'-' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if story.is_script_edited_by_copy_editor %}
+                        <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-weight: 700;">✓ Script Edited &amp; Approved</span>
+                        {% elif story.assigned_copy_editor %}
+                        <span class="badge" style="background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe;">Assigned</span>
+                        {% else %}
+                        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Desk Staff</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Approved Odia Headline -->
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Headline (For Aston &amp; Title)</span>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ story.headline|escapejs }}`, 'Headline copied!')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Copy Headline</span>
+                        </button>
+                    </div>
+                    <div style="font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.45;">{{ story.headline }}</div>
+                </div>
+
+                <!-- Polished Broadcast Script -->
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">
+                            Edited Script (For Teleprompter &amp; Packaging)
+                        </span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span style="font-size: 11px; color: #64748b; font-weight: 600;">{{ story.description|wordcount }} words</span>
+                            <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ story.description|escapejs }}`, 'Full script copied to clipboard!')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span>Copy Script</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="odia-text-body">{{ story.description|linebreaksbr }}</div>
+                </div>
+
+                <!-- Editorial / Desk Guidance -->
+                {% if story.desk_notes %}
+                <div class="data-box-card" style="background: #fffbeb; border-color: #fde68a;">
+                    <div class="data-box-header">
+                        <span class="data-box-title" style="color: #92400e;">Editorial Instructions / Desk Notes</span>
+                    </div>
+                    <div style="font-size: 13px; color: #78350f; line-height: 1.5;">{{ story.desk_notes }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ======================================= -->
+            <!-- TAB 2: GRAPHIC DESIGNER DATA            -->
+            <!-- ======================================= -->
+            <div id="tab-gd-{{ story.pk }}" class="modal-tab-pane">
+                <!-- Staff Info Banner -->
+                <div class="tab-staff-banner banner-gd">
+                    <div class="staff-profile-info">
+                        <div class="staff-avatar-initial" style="background: #db2777;">
+                            {{ story.assigned_graphic_designer.name|default:'G'|slice:':1'|upper }}
+                        </div>
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #831843;">
+                                {{ story.assigned_graphic_designer.name|default:'Desk / Editorial Team' }}
+                            </div>
+                            <div style="font-size: 12px; color: #ec4899;">
+                                Role: Graphic Designer &bull; 📞 {{ story.assigned_graphic_designer.phone_number|default:'-' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if story.is_graphics_completed %}
+                        <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-weight: 700;">✓ Graphics Uploaded &amp; Sent</span>
+                        {% elif story.assigned_graphic_designer %}
+                        <span class="badge" style="background: #fce7f3; color: #db2777; border: 1px solid #fbcfe8;">Assigned</span>
+                        {% else %}
+                        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Desk Staff</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Creatives / Additional Media Gallery -->
+                {% if story.additional_media.all or story.is_image %}
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Graphics &amp; Visual Creatives ({{ story.additional_media.count }})</span>
+                    </div>
+                    <div class="gd-asset-grid">
+                        {% for media in story.additional_media.all %}
+                        <div class="gd-asset-card">
+                            <div class="gd-asset-preview">
+                                {% if media.is_image %}
+                                <img src="{{ media.file.url }}" alt="{{ media.caption|default:'Graphic Asset' }}">
+                                {% elif media.is_video %}
+                                <video controls style="width: 100%; height: 100%;" src="{{ media.file.url }}"></video>
+                                {% else %}
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <div class="gd-asset-meta">
+                                <div class="gd-asset-name">{{ media.caption|default:media.file.name }}</div>
+                                <a href="{{ media.file.url }}" download class="btn btn-sm btn-secondary" style="justify-content: center; font-size: 11.5px; padding: 5px; text-decoration: none;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    <span>Download File</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if story.is_image and story.media_file %}
+                        <div class="gd-asset-card">
+                            <div class="gd-asset-preview">
+                                <img src="{{ story.media_file.url }}" alt="Main Image Asset">
+                            </div>
+                            <div class="gd-asset-meta">
+                                <div class="gd-asset-name">Main Story Image</div>
+                                <a href="{{ story.media_file.url }}" download class="btn btn-sm btn-secondary" style="justify-content: center; font-size: 11.5px; padding: 5px; text-decoration: none;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    <span>Download Asset</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <!-- Empty State for Graphics -->
+                <div style="background: #fdf2f8; border: 1.5px dashed #f472b6; border-radius: 12px; padding: 32px 20px; text-align: center; color: #831843;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #fce7f3; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #db2777;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </div>
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">No Graphics Files Uploaded Yet</h4>
+                    <p style="font-size: 13px; max-width: 440px; margin: 0 auto; color: #9d174d; line-height: 1.45;">
+                        The Graphic Designer is currently preparing thumbnails, lower-thirds, and Aston overlays. Contact: <strong>{{ story.assigned_graphic_designer.name|default:'Desk' }}</strong> (📞 {{ story.assigned_graphic_designer.phone_number|default:'-' }}).
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ======================================= -->
+            <!-- TAB 3: VOICE OVER (VOICE HOVER) DATA    -->
+            <!-- ======================================= -->
+            <div id="tab-vo-{{ story.pk }}" class="modal-tab-pane">
+                <!-- Staff Info Banner -->
+                <div class="tab-staff-banner banner-vo">
+                    <div class="staff-profile-info">
+                        <div class="staff-avatar-initial" style="background: #059669;">
+                            {{ story.assigned_voice_over.name|default:'V'|slice:':1'|upper }}
+                        </div>
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #064e3b;">
+                                {{ story.assigned_voice_over.name|default:'Desk / Voice Artist' }}
+                            </div>
+                            <div style="font-size: 12px; color: #10b981;">
+                                Role: Voice Over Artist &bull; 📞 {{ story.assigned_voice_over.phone_number|default:'-' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if story.byte_media %}
+                        <span class="badge" style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-weight: 700;">🎙️ Audio Uploaded &amp; Ready</span>
+                        {% else %}
+                        <span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">Pending Recording</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Voiceover Audio Player Card -->
+                {% if story.byte_media %}
+                <div class="vo-audio-card">
+                    <div class="vo-audio-header">
+                        <div class="vo-audio-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                            <span>Voiceover Track Available</span>
+                        </div>
+                        <span style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 9999px;">
+                            Ready for Packaging
+                        </span>
+                    </div>
+
+                    <!-- HTML5 Audio Player -->
+                    <audio controls class="vo-audio-player" src="{{ story.byte_media.url }}"></audio>
+
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
+                        <a href="{{ story.byte_media.url }}" download class="vo-download-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Download Voiceover Audio</span>
+                        </a>
+                        <a href="{{ story.byte_media.url }}" target="_blank" style="color: #a7f3d0; font-size: 12.5px; text-decoration: underline;">
+                            Open in new tab ↗
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Voice Recording Pending Notice -->
+                <div style="background: #ecfdf5; border: 1.5px dashed #34d399; border-radius: 12px; padding: 28px 20px; text-align: center; color: #064e3b; margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #059669;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </div>
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Voiceover Audio Track Pending</h4>
+                    <p style="font-size: 13px; max-width: 440px; margin: 0 auto; color: #047857; line-height: 1.45;">
+                        Assigned Voice Over Artist: <strong>{{ story.assigned_voice_over.name|default:'Desk / Voice Artist' }}</strong> (📞 {{ story.assigned_voice_over.phone_number|default:'-' }}). Once recorded, the audio track will automatically appear here.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Field Interview / Byte Cue Text -->
+                {% if story.byte_interview %}
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Byte / Soundbyte Text Cue</span>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ story.byte_interview|escapejs }}`, 'Soundbyte text copied!')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Copy Text</span>
+                        </button>
+                    </div>
+                    <div class="odia-text-body">{{ story.byte_interview|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ======================================= -->
+            <!-- TAB 4: REPORTER & RAW FOOTAGE DATA      -->
+            <!-- ======================================= -->
+            <div id="tab-rep-{{ story.pk }}" class="modal-tab-pane">
+                <!-- Staff Info Banner -->
+                <div class="tab-staff-banner" style="background: #f8fafc; border: 1px solid #cbd5e1;">
+                    <div class="staff-profile-info">
+                        <div class="staff-avatar-initial" style="background: #0f172a;">
+                            {{ story.reporter.name|default:story.author.get_full_name|default:'R'|slice:':1'|upper }}
+                        </div>
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a;">
+                                {{ story.reporter.name|default:story.author.get_full_name|default:'Ground Reporter' }}
+                            </div>
+                            <div style="font-size: 12px; color: #475569;">
+                                District: <strong>{{ story.district|default:'State Bureau' }}</strong> &bull; Location: {{ story.location|default:'Field' }} &bull; 📞 {{ story.reporter.phone_number|default:'-' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge" style="background: #e2e8f0; color: #1e293b;">Field Reporter</span>
+                    </div>
+                </div>
+
+                <!-- Raw Footage Player / Downloader -->
+                {% if story.media_file %}
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Original Raw Media / Camera Footage</span>
+                        <a href="{{ story.media_file.url }}" download class="btn btn-sm btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 12px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span>Download Raw File</span>
+                        </a>
+                    </div>
+                    {% if story.is_video %}
+                    <div style="max-height: 320px; background: #000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <video controls style="max-height: 320px; width: 100%;" src="{{ story.media_file.url }}"></video>
+                    </div>
+                    {% elif story.is_image %}
+                    <div style="max-height: 320px; background: #0b0f19; border-radius: 8px; overflow: hidden; text-align: center;">
+                        <img src="{{ story.media_file.url }}" alt="Raw Reporter Image" style="max-height: 320px; max-width: 100%; object-fit: contain;">
+                    </div>
+                    {% else %}
+                    <p style="font-size: 13px; color: #475569;">Field footage attached: <a href="{{ story.media_file.url }}" download>{{ story.media_file.name }}</a></p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; color: #64748b; margin-bottom: 16px;">
+                    <p style="margin: 0; font-size: 13px;">No raw media file attached directly by reporter.</p>
+                </div>
+                {% endif %}
+
+                <!-- Edited Video if available -->
+                {% if story.edited_video %}
+                <div class="data-box-card" style="background: #f0fdf4; border-color: #86efac;">
+                    <div class="data-box-header">
+                        <span class="data-box-title" style="color: #15803d;">🎬 Final Packaged Broadcast Video</span>
+                        <a href="{{ story.edited_video.url }}" download class="btn btn-sm btn-secondary" style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 5px 12px; font-size: 12px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span>Download Final Video</span>
+                        </a>
+                    </div>
+                    <div style="max-height: 300px; background: #000; border-radius: 8px; overflow: hidden;">
+                        <video controls style="max-height: 300px; width: 100%;" src="{{ story.edited_video.url }}"></video>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeTeamFilesModal('teamFilesModal-{{ story.pk }}')">Close</button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <a href="{% url 'news_view' story.pk %}" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span>Full Story</span> &rarr;
+                </a>
+                {% if story.media_file %}
+                <a href="{{ story.media_file.url }}" download class="btn-action-raw-sm" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none;" title="Download camera raw media">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Raw Media</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Self-Contained Styles & Scripts (Guarded to inject once per page) -->
+<style>
+    /* Shared Files Button Styles */
+    .btn-action-files {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        gap: 6px;
+        padding: 7px 10px;
+        background: #f5f3ff !important;
+        color: #6d28d9 !important;
+        border: 1px solid #ddd6fe !important;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        line-height: 1.2;
+    }
+
+    .btn-action-files:hover {
+        background: #7c3aed !important;
+        color: #ffffff !important;
+        border-color: #7c3aed !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+    }
+
+    .btn-action-files svg {
+        flex-shrink: 0;
+    }
+
+    .files-badge-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10b981;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        box-shadow: 0 0 0 2px #f5f3ff;
+        animation: pulse-files-dot 1.8s infinite ease-in-out;
+    }
+
+    @keyframes pulse-files-dot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.35); opacity: 0.8; }
+    }
+
+    /* Modal Backdrop & Dialog */
+    .custom-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 99999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .custom-modal-backdrop.modal-open {
+        display: flex !important;
+        opacity: 1 !important;
+    }
+
+    .custom-modal-dialog {
+        background: #ffffff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 820px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        transform: scale(0.96);
+        transition: transform 0.2s ease-in-out;
+        text-align: left;
+    }
+
+    .custom-modal-backdrop.modal-open .custom-modal-dialog {
+        transform: scale(1);
+    }
+
+    .custom-modal-header {
+        padding: 16px 22px;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .modal-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .modal-title-text {
+        font-size: 16px;
+        font-weight: 800;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .modal-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .modal-fullpage-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid #bfdbfe;
+        transition: all 0.15s ease;
+    }
+
+    .modal-fullpage-link:hover {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    .modal-close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: #f1f5f9;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .custom-modal-body {
+        padding: 20px 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    /* Tabs Header inside Team Files Modal */
+    .modal-tabs-header {
+        display: flex;
+        gap: 4px;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 18px;
+        overflow-x: auto;
+    }
+
+    .modal-tab-btn {
+        padding: 9px 15px;
+        background: none;
+        border: none;
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        position: relative;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .modal-tab-btn:hover {
+        color: #0f172a;
+        background: #f8fafc;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .modal-tab-btn.tab-active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+
+    .modal-tab-btn.tab-active.tab-gd {
+        color: #db2777;
+        border-bottom-color: #db2777;
+    }
+
+    .modal-tab-btn.tab-active.tab-vo {
+        color: #059669;
+        border-bottom-color: #059669;
+    }
+
+    .modal-tab-btn.tab-active.tab-rep {
+        color: #0f172a;
+        border-bottom-color: #0f172a;
+    }
+
+    .modal-tab-badge {
+        font-size: 10.5px;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        background: #e2e8f0;
+        color: #475569;
+        font-weight: 700;
+    }
+
+    .modal-tab-btn.tab-active .modal-tab-badge {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .modal-tab-pane {
+        display: none;
+        animation: fadeInPane 0.2s ease-in-out;
+    }
+
+    .modal-tab-pane.pane-active {
+        display: block;
+    }
+
+    @keyframes fadeInPane {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staff Banner */
+    .tab-staff-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tab-staff-banner.banner-ce {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+    }
+
+    .tab-staff-banner.banner-gd {
+        background: #fdf2f8;
+        border: 1px solid #fbcfe8;
+    }
+
+    .tab-staff-banner.banner-vo {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+    }
+
+    .staff-profile-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .staff-avatar-initial {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #ffffff;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .data-box-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+    }
+
+    .data-box-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .data-box-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 9px;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .odia-text-body {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #0f172a;
+        font-weight: 500;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    /* Voiceover audio card */
+    .vo-audio-card {
+        background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+        border-radius: 12px;
+        padding: 18px;
+        color: #ffffff;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+    }
+
+    .vo-audio-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .vo-audio-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .vo-audio-player {
+        width: 100%;
+        border-radius: 8px;
+        outline: none;
+        margin-bottom: 10px;
+    }
+
+    .vo-download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 16px;
+        background: #10b981;
+        color: #ffffff;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.15s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .vo-download-btn:hover {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    /* Graphics asset grid */
+    .gd-asset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .gd-asset-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.15s ease;
+    }
+
+    .gd-asset-card:hover {
+        border-color: #f472b6;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .gd-asset-preview {
+        height: 110px;
+        background: #0b0f19;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .gd-asset-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .gd-asset-meta {
+        padding: 9px 11px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .gd-asset-name {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e293b;
+        word-break: break-all;
+        margin-bottom: 6px;
+    }
+
+    .custom-modal-footer {
+        padding: 12px 22px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    /* Toast Notification for Clipboard Copy */
+    .shared-clipboard-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 10px 18px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 999999;
+        transform: translateY(80px);
+        opacity: 0;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+    }
+
+    .shared-clipboard-toast.toast-visible {
+        transform: translateY(0);
+        opacity: 1;
+    }
+</style>
+
+<!-- Shared Clipboard Toast (Injected once) -->
+<div id="sharedClipboardToast" class="shared-clipboard-toast">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+        <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    <span id="sharedToastMessage">Copied to clipboard!</span>
+</div>
+
+<script>
+    if (!window._teamFilesModalInitDone) {
+        window._teamFilesModalInitDone = true;
+
+        window.openTeamFilesModal = function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        window.closeTeamFilesModal = function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('modal-open');
+                document.body.style.overflow = '';
+            }
+        };
+
+        window.handleBackdropClick = function(event, modalId) {
+            if (event.target && event.target.id === modalId) {
+                closeTeamFilesModal(modalId);
+            }
+        };
+
+        window.switchTeamTab = function(taskId, tabName, btnElement) {
+            const modal = document.getElementById('teamFilesModal-' + taskId);
+            if (!modal) return;
+
+            modal.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('tab-active'));
+            btnElement.classList.add('tab-active');
+
+            modal.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('pane-active'));
+            const targetPane = document.getElementById('tab-' + tabName + '-' + taskId);
+            if (targetPane) {
+                targetPane.classList.add('pane-active');
+            }
+        };
+
+        window.copyToClipboard = function(text, successMessage) {
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showSharedToast(successMessage || 'Copied to clipboard!');
+                }).catch(function() {
+                    fallbackCopy(text, successMessage);
+                });
+            } else {
+                fallbackCopy(text, successMessage);
+            }
+        };
+
+        function fallbackCopy(text, successMessage) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showSharedToast(successMessage || 'Copied to clipboard!');
+            } catch (err) {
+                alert('Could not copy text.');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        window.showSharedToast = function(message) {
+            const toast = document.getElementById('sharedClipboardToast');
+            const toastMsg = document.getElementById('sharedToastMessage');
+            if (toast && toastMsg) {
+                toastMsg.textContent = message;
+                toast.classList.add('toast-visible');
+                setTimeout(function() {
+                    toast.classList.remove('toast-visible');
+                }, 2500);
+            }
+        };
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.custom-modal-backdrop.modal-open').forEach(modal => {
+                    modal.classList.remove('modal-open');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+    }
+</script>

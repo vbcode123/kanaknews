@@ -1,0 +1,1526 @@
+{% extends "visual_editor/base_visual_editor.html" %}
+{% load static %}
+
+{% block title %}My Tasks - Visual Editor - Nandilive{% endblock %}
+{% block page_title %}My Assigned Tasks — Video &amp; Visual Packaging{% endblock %}
+
+{% block extra_head %}
+<style>
+    .task-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #2563eb 100%);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        color: #ffffff;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .task-banner h2 {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .task-banner p {
+        color: #bfdbfe;
+        font-size: 13.5px;
+    }
+
+    .task-count-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-weight: 800;
+        font-size: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        white-space: nowrap;
+    }
+
+    /* Filter / Search Bar */
+    .task-filter-bar {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .task-search-input-wrap {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .task-search-input-wrap svg {
+        position: absolute;
+        left: 14px;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+
+    .task-search-input {
+        width: 100%;
+        padding: 9px 14px 9px 38px;
+        border: 1.5px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .task-search-input:focus {
+        border-color: var(--ve-blue);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* Task Card Item */
+    .task-card-item {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        margin-bottom: 16px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .task-card-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: #93c5fd;
+    }
+
+    .task-media-thumb {
+        width: 120px;
+        height: 80px;
+        border-radius: 10px;
+        background: #0b0f19;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .task-media-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .task-play-overlay {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(220, 38, 38, 0.92);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .task-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .task-headline {
+        font-size: 15.5px;
+        font-weight: 800;
+        color: var(--ve-navy);
+        margin-bottom: 6px;
+        line-height: 1.45;
+    }
+
+    .task-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .task-notes-box {
+        background: #eff6ff;
+        border-left: 3px solid #2563eb;
+        padding: 8px 12px;
+        border-radius: 0 6px 6px 0;
+        font-size: 12px;
+        color: #1e3a8a;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    /* Team mini tags in card */
+    .task-team-tag-strip {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .team-mini-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .team-mini-pill.pill-active {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #166534;
+        font-weight: 600;
+    }
+
+    /* Actions Column */
+    .task-actions-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+        min-width: 175px;
+    }
+
+    .btn-studio-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 16px;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 800;
+        border-radius: 8px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .btn-studio-cta:hover {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.45);
+        color: #ffffff;
+    }
+
+    /* Two-button action row: View and Files */
+    .task-sub-actions-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .btn-action-view {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 10px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .btn-action-view:hover {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+        transform: translateY(-1px);
+    }
+
+    .btn-action-files {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        gap: 6px;
+        padding: 7px 10px;
+        background: #f5f3ff;
+        color: #6d28d9;
+        border: 1px solid #ddd6fe;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .btn-action-files:hover {
+        background: #7c3aed;
+        color: #ffffff;
+        border-color: #7c3aed;
+        transform: translateY(-1px);
+    }
+
+    .files-badge-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10b981;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        box-shadow: 0 0 0 2px #f5f3ff;
+        animation: pulse-dot 1.8s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { transform: scale(0.9); opacity: 0.8; }
+        50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .btn-action-raw {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-raw:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    /* ============================================================== */
+    /* MODAL SYSTEM (Story Details & Team Files Modals)               */
+    /* ============================================================== */
+    .custom-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.72);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 1050;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .custom-modal-backdrop.modal-open {
+        display: flex;
+        opacity: 1;
+    }
+
+    .custom-modal-dialog {
+        background: #ffffff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 820px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transform: scale(0.96);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .custom-modal-backdrop.modal-open .custom-modal-dialog {
+        transform: scale(1);
+    }
+
+    /* Modal Header */
+    .custom-modal-header {
+        padding: 18px 24px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .modal-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .modal-title-text {
+        font-size: 16.5px;
+        font-weight: 800;
+        color: var(--ve-navy);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .modal-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-fullpage-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid #bfdbfe;
+        transition: all 0.15s ease;
+    }
+
+    .modal-fullpage-link:hover {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    .modal-close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: #f1f5f9;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    /* Modal Body */
+    .custom-modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    /* Tabs Header inside Team Files Modal */
+    .modal-tabs-header {
+        display: flex;
+        gap: 4px;
+        border-bottom: 2px solid var(--border-color);
+        margin-bottom: 20px;
+    }
+
+    .modal-tab-btn {
+        padding: 10px 18px;
+        background: none;
+        border: none;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.15s ease;
+    }
+
+    .modal-tab-btn:hover {
+        color: var(--ve-navy);
+        background: #f8fafc;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .modal-tab-btn.tab-active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+
+    .modal-tab-btn.tab-active.tab-gd {
+        color: #db2777;
+        border-bottom-color: #db2777;
+    }
+
+    .modal-tab-btn.tab-active.tab-vo {
+        color: #059669;
+        border-bottom-color: #059669;
+    }
+
+    .modal-tab-badge {
+        font-size: 11px;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .modal-tab-btn.tab-active .modal-tab-badge {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    /* Modal tab content containers */
+    .modal-tab-pane {
+        display: none;
+        animation: fadeInPane 0.2s ease-in-out;
+    }
+
+    .modal-tab-pane.pane-active {
+        display: block;
+    }
+
+    @keyframes fadeInPane {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staff Profile Strip in Tabs */
+    .tab-staff-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tab-staff-banner.banner-ce {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+    }
+
+    .tab-staff-banner.banner-gd {
+        background: #fdf2f8;
+        border: 1px solid #fbcfe8;
+    }
+
+    .tab-staff-banner.banner-vo {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+    }
+
+    .staff-profile-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .staff-avatar-initial {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #ffffff;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    /* Data display cards inside modals */
+    .data-box-card {
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .data-box-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .data-box-title {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .odia-text-body {
+        font-size: 14.5px;
+        line-height: 1.7;
+        color: #0f172a;
+        font-weight: 500;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    /* Audio Player Card for Voice Over */
+    .vo-audio-card {
+        background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+        border-radius: 12px;
+        padding: 20px;
+        color: #ffffff;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
+    }
+
+    .vo-audio-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .vo-audio-title {
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .vo-audio-player {
+        width: 100%;
+        border-radius: 8px;
+        outline: none;
+        margin-bottom: 12px;
+    }
+
+    .vo-download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 18px;
+        background: #10b981;
+        color: #ffffff;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.15s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .vo-download-btn:hover {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    /* Graphics Asset Grid */
+    .gd-asset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 14px;
+        margin-top: 10px;
+    }
+
+    .gd-asset-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.15s ease;
+    }
+
+    .gd-asset-card:hover {
+        border-color: #f472b6;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .gd-asset-preview {
+        height: 120px;
+        background: #0b0f19;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .gd-asset-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .gd-asset-meta {
+        padding: 10px 12px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .gd-asset-name {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #1e293b;
+        word-break: break-all;
+        margin-bottom: 8px;
+    }
+
+    /* Modal Footer */
+    .custom-modal-footer {
+        padding: 14px 24px;
+        background: #f8fafc;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Toast Notification for Clipboard Copy */
+    .toast-pill {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 10px 18px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 2000;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: all 0.25s ease;
+        pointer-events: none;
+    }
+
+    .toast-pill.toast-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+        .task-card-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .task-media-thumb {
+            width: 100%;
+            height: 160px;
+        }
+
+        .task-actions-col {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Header Banner -->
+<div class="task-banner">
+    <div>
+        <h2>🎬 My Video &amp; Visual Tasks</h2>
+        <p>Stories dispatched by Editorial Desk for video trimming, packaging, graphics, and Aston lower-thirds.</p>
+    </div>
+    <div class="task-count-badge">
+        {{ tasks_count }} Assigned Task{{ tasks_count|pluralize }}
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="task-filter-bar">
+    <form method="GET" action="{% url 'visual_editor_my_task' %}" style="display: flex; width: 100%; gap: 10px; align-items: center;">
+        <div class="task-search-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="q" value="{{ query|default:'' }}" class="task-search-input" placeholder="Search tasks by headline, script text, or district...">
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;">Search</button>
+        {% if query %}
+        <a href="{% url 'visual_editor_my_task' %}" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px;">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Task List -->
+{% if tasks %}
+<div>
+    {% for task in tasks %}
+    <div class="task-card-item">
+        <!-- Media Thumb -->
+        <div class="task-media-thumb" onclick="openStoryModal('storyModal-{{ task.pk }}')" title="Click to view story details">
+            {% if task.media_file %}
+                <img src="{% static 'images/nandi.png' %}" alt="Footage Thumb">
+                <div class="task-play-overlay">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                </div>
+            {% else %}
+                <img src="{% static 'images/nandi.png' %}" alt="Nandilive">
+            {% endif %}
+        </div>
+
+        <!-- Task Info -->
+        <div class="task-info">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                <span class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 10.5px;">{{ task.news_type }}</span>
+                <span style="font-size: 11px; color: var(--text-muted);">{{ task.category }}</span>
+                <span style="font-size: 11px; color: var(--text-muted);">&bull;</span>
+                <span style="font-size: 11px; font-weight: 600; color: #334155;">📍 {{ task.district }}</span>
+                {% if task.has_edited_video or task.is_video_edited_by_desk %}
+                <span class="badge badge-published" style="font-size: 10px;">✅ Video Rendered</span>
+                {% endif %}
+            </div>
+
+            <h3 class="task-headline">{{ task.headline }}</h3>
+
+            <div class="task-meta-row">
+                <span><strong>Reporter:</strong> {{ task.reporter.name|default:task.author.get_full_name|default:'Desk Staff' }}</span>
+                <span>&bull;</span>
+                <span><strong>Assigned:</strong> {{ task.assigned_at|date:"M d, Y - h:i A"|default:task.created_at|date:"M d, Y - h:i A" }}</span>
+            </div>
+
+            <!-- Team status strip: Copy Editor, Graphic Designer, Voice Over -->
+            <div class="task-team-tag-strip">
+                <span class="team-mini-pill {% if task.assigned_copy_editor %}pill-active{% endif %}" title="Copy Editor">
+                    ✍️ Copy: {{ task.assigned_copy_editor.name|default:"Desk" }}
+                </span>
+                <span class="team-mini-pill {% if task.assigned_graphic_designer %}pill-active{% endif %}" title="Graphic Designer">
+                    🎨 Graphics: {{ task.assigned_graphic_designer.name|default:"Desk" }}
+                </span>
+                <span class="team-mini-pill {% if task.assigned_voice_over %}pill-active{% endif %}" title="Voice Over">
+                    🎙️ Voice: {{ task.assigned_voice_over.name|default:"Desk" }}
+                </span>
+            </div>
+
+            {% if task.desk_notes %}
+            <div class="task-notes-box">
+                <strong>Desk Instructions:</strong> {{ task.desk_notes }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions Column -->
+        <div class="task-actions-col">
+            <!-- 1. Open Video Studio Primary CTA -->
+            <a href="{% url 'visual_editor_studio' task.pk %}" class="btn-studio-cta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Open Video Studio</span>
+            </a>
+
+            <!-- 2. Dual Action Row: View Button & File Button -->
+            <div class="task-sub-actions-row">
+                <!-- View Button -->
+                <button type="button" class="btn-action-view" onclick="openStoryModal('storyModal-{{ task.pk }}')" title="View total story details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>View</span>
+                </button>
+
+                <!-- File Button: Copy Editor, Graphic Designer & Voice Over data -->
+                <button type="button" class="btn-action-files" onclick="openTeamFilesModal('teamFilesModal-{{ task.pk }}')" title="View team files: Copy Editor, Graphics & Voice Over">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Files</span>
+                    {% if task.byte_media or task.additional_media.all %}
+                    <span class="files-badge-dot" title="Assets uploaded"></span>
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- 3. Raw Footage Download -->
+            {% if task.media_file %}
+            <a href="{{ task.media_file.url }}" download class="btn-action-raw" title="Download original camera footage">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Raw Footage</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL 1: TOTAL STORY DETAILS MODAL                        -->
+    <!-- ========================================================= -->
+    <div id="storyModal-{{ task.pk }}" class="custom-modal-backdrop" onclick="handleBackdropClick(event, 'storyModal-{{ task.pk }}')">
+        <div class="custom-modal-dialog">
+            <!-- Modal Header -->
+            <div class="custom-modal-header">
+                <div class="modal-title-wrap">
+                    <div class="modal-title-text">
+                        <span>📰 Story Details</span>
+                        <span class="badge" style="background: #eff6ff; color: #2563eb; font-size: 11px; border: 1px solid #bfdbfe;">{{ task.news_type }}</span>
+                        <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px;">{{ task.category }}</span>
+                        <span class="badge" style="background: #f0fdf4; color: #166534; font-size: 11px;">📍 {{ task.district }}</span>
+                    </div>
+                </div>
+                <div class="modal-header-actions">
+                    <a href="{% url 'news_view' task.pk %}" target="_blank" class="modal-fullpage-link" title="Open full story page in new tab">
+                        <span>Full Page</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </a>
+                    <button type="button" class="modal-close-btn" onclick="closeStoryModal('storyModal-{{ task.pk }}')">&times;</button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="custom-modal-body">
+                <!-- Headline Card -->
+                <div class="data-box-card" style="border-left: 4px solid #2563eb; background: #ffffff;">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Headline</span>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ task.headline|escapejs }}`, 'Headline copied!')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; line-height: 1.45;">{{ task.headline }}</h3>
+                </div>
+
+                <!-- Story Meta Details -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Reporter</span>
+                        <div style="font-size: 13.5px; font-weight: 700; color: #1e293b; margin-top: 2px;">
+                            {{ task.reporter.name|default:task.author.get_full_name|default:'Desk Staff' }}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted);">📞 {{ task.reporter.phone_number|default:'Not provided' }}</div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Location &amp; District</span>
+                        <div style="font-size: 13.5px; font-weight: 700; color: #1e293b; margin-top: 2px;">
+                            {{ task.district }}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted);">📍 {{ task.location|default:'Location not specified' }}</div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Timestamps</span>
+                        <div style="font-size: 12.5px; font-weight: 700; color: #1e293b; margin-top: 2px;">
+                            Created: {{ task.created_at|date:"d M Y, h:i A" }}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Assigned: {{ task.assigned_at|date:"d M Y, h:i A"|default:"Recently" }}</div>
+                    </div>
+                </div>
+
+                <!-- Media Preview -->
+                {% if task.media_file %}
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Attached Media / Footage</span>
+                        <a href="{{ task.media_file.url }}" download class="copy-btn" style="text-decoration: none;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span>Download Media</span>
+                        </a>
+                    </div>
+                    {% if task.is_video %}
+                    <div style="border-radius: 8px; overflow: hidden; background: #000; text-align: center;">
+                        <video controls preload="metadata" style="width: 100%; max-height: 280px;" src="{{ task.media_file.url }}"></video>
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; background: #0b0f19; border-radius: 8px; padding: 8px;">
+                        <img src="{{ task.media_file.url }}" style="max-height: 260px; max-width: 100%; object-fit: contain; border-radius: 6px;" alt="Media Footage">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Full Script / Description -->
+                <div class="data-box-card">
+                    <div class="data-box-header">
+                        <span class="data-box-title">Full News Script / Story Text</span>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ task.description|escapejs }}`, 'Script copied to clipboard!')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Copy Script</span>
+                        </button>
+                    </div>
+                    <div class="odia-text-body">{{ task.description|linebreaksbr }}</div>
+                </div>
+
+                <!-- Byte Interview details (if any) -->
+                {% if task.byte_interview or task.byte_media %}
+                <div class="data-box-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                    <div class="data-box-header">
+                        <span class="data-box-title" style="color: #065f46;">🎙️ Field Byte / Interview</span>
+                    </div>
+                    {% if task.byte_media %}
+                    <div style="margin-bottom: 12px;">
+                        <audio controls style="width: 100%;" src="{{ task.byte_media.url }}"></audio>
+                    </div>
+                    {% endif %}
+                    {% if task.byte_interview %}
+                    <div style="font-size: 13.5px; color: #064e3b; line-height: 1.5; white-space: pre-wrap;">{{ task.byte_interview }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Desk Instructions -->
+                {% if task.desk_notes %}
+                <div class="data-box-card" style="background: #fffbeb; border-color: #fde68a;">
+                    <div class="data-box-header">
+                        <span class="data-box-title" style="color: #92400e;">⚠️ Desk Packaging Instructions</span>
+                    </div>
+                    <div style="font-size: 13px; color: #78350f; line-height: 1.5;">{{ task.desk_notes }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="custom-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeStoryModal('storyModal-{{ task.pk }}')">Close</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeStoryModal('storyModal-{{ task.pk }}'); openTeamFilesModal('teamFilesModal-{{ task.pk }}');">
+                        <span>View Team Files</span> &rarr;
+                    </button>
+                    <a href="{% url 'visual_editor_studio' task.pk %}" class="btn btn-danger" style="font-weight: 700;">
+                        <span>Open Video Studio</span> &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL 2: TEAM PRODUCTION DATA & FILES (CE, GD, VO)        -->
+    <!-- ========================================================= -->
+    <div id="teamFilesModal-{{ task.pk }}" class="custom-modal-backdrop" onclick="handleBackdropClick(event, 'teamFilesModal-{{ task.pk }}')">
+        <div class="custom-modal-dialog">
+            <!-- Modal Header -->
+            <div class="custom-modal-header">
+                <div class="modal-title-wrap">
+                    <div class="modal-title-text">
+                        <span>📁 Team Files &amp; Production Data</span>
+                        <span class="badge" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; font-size: 11px;">Story #{{ task.pk }}</span>
+                    </div>
+                </div>
+                <div class="modal-header-actions">
+                    <button type="button" class="modal-close-btn" onclick="closeTeamFilesModal('teamFilesModal-{{ task.pk }}')">&times;</button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="custom-modal-body">
+                <!-- Tabs Navigation -->
+                <div class="modal-tabs-header">
+                    <button type="button" class="modal-tab-btn tab-active" onclick="switchTeamTab('{{ task.pk }}', 'ce', this)">
+                        <span>✍️ Copy Editor</span>
+                        <span class="modal-tab-badge">Script</span>
+                    </button>
+                    <button type="button" class="modal-tab-btn tab-gd" onclick="switchTeamTab('{{ task.pk }}', 'gd', this)">
+                        <span>🎨 Graphic Designer</span>
+                        <span class="modal-tab-badge">{{ task.additional_media.count|default:'0' }}</span>
+                    </button>
+                    <button type="button" class="modal-tab-btn tab-vo" onclick="switchTeamTab('{{ task.pk }}', 'vo', this)">
+                        <span>🎙️ Voice Over</span>
+                        <span class="modal-tab-badge">{% if task.byte_media %}Audio Ready{% else %}Pending{% endif %}</span>
+                    </button>
+                </div>
+
+                <!-- ======================================= -->
+                <!-- TAB 1: COPY EDITOR DATA                 -->
+                <!-- ======================================= -->
+                <div id="tab-ce-{{ task.pk }}" class="modal-tab-pane pane-active">
+                    <!-- Staff Info Banner -->
+                    <div class="tab-staff-banner banner-ce">
+                        <div class="staff-profile-info">
+                            <div class="staff-avatar-initial" style="background: #2563eb;">
+                                {{ task.assigned_copy_editor.name|default:'C'|slice:':1'|upper }}
+                            </div>
+                            <div>
+                                <div style="font-size: 13.5px; font-weight: 700; color: #1e3a8a;">
+                                    {{ task.assigned_copy_editor.name|default:'Desk / Editorial Copy' }}
+                                </div>
+                                <div style="font-size: 12px; color: #3b82f6;">
+                                    Role: Copy Editor &bull; 📞 {{ task.assigned_copy_editor.phone_number|default:'-' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if task.assigned_copy_editor %}
+                            <span class="badge badge-published">Assigned</span>
+                            {% else %}
+                            <span class="badge badge-draft">Desk Staff</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Approved Odia Headline -->
+                    <div class="data-box-card">
+                        <div class="data-box-header">
+                            <span class="data-box-title">Headline (For Aston &amp; Title)</span>
+                            <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ task.headline|escapejs }}`, 'Headline copied!')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span>Copy Headline</span>
+                            </button>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.45;">{{ task.headline }}</div>
+                    </div>
+
+                    <!-- Polished Broadcast Script -->
+                    <div class="data-box-card">
+                        <div class="data-box-header">
+                            <span class="data-box-title">
+                                Edited Script (For Lower-Thirds &amp; Teleprompter)
+                            </span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="font-size: 11px; color: var(--text-muted);">{{ task.description|wordcount }} words</span>
+                                <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ task.description|escapejs }}`, 'Full script copied to clipboard!')">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    <span>Copy Script</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="odia-text-body">{{ task.description|linebreaksbr }}</div>
+                    </div>
+
+                    <!-- Editorial / Desk Guidance -->
+                    {% if task.desk_notes %}
+                    <div class="data-box-card" style="background: #fffbeb; border-color: #fde68a;">
+                        <div class="data-box-header">
+                            <span class="data-box-title" style="color: #92400e;">Editorial Instructions</span>
+                        </div>
+                        <div style="font-size: 13px; color: #78350f; line-height: 1.5;">{{ task.desk_notes }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ======================================= -->
+                <!-- TAB 2: GRAPHIC DESIGNER DATA            -->
+                <!-- ======================================= -->
+                <div id="tab-gd-{{ task.pk }}" class="modal-tab-pane">
+                    <!-- Staff Info Banner -->
+                    <div class="tab-staff-banner banner-gd">
+                        <div class="staff-profile-info">
+                            <div class="staff-avatar-initial" style="background: #db2777;">
+                                {{ task.assigned_graphic_designer.name|default:'G'|slice:':1'|upper }}
+                            </div>
+                            <div>
+                                <div style="font-size: 13.5px; font-weight: 700; color: #831843;">
+                                    {{ task.assigned_graphic_designer.name|default:'Desk / Editorial Team' }}
+                                </div>
+                                <div style="font-size: 12px; color: #ec4899;">
+                                    Role: Graphic Designer &bull; 📞 {{ task.assigned_graphic_designer.phone_number|default:'-' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if task.assigned_graphic_designer %}
+                            <span class="badge badge-published" style="background: #fce7f3; color: #db2777;">Assigned</span>
+                            {% else %}
+                            <span class="badge badge-draft">Desk Staff</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Creatives / Additional Media Gallery -->
+                    {% if task.additional_media.all or task.is_image %}
+                    <div class="data-box-card">
+                        <div class="data-box-header">
+                            <span class="data-box-title">Graphics &amp; Visual Creatives ({{ task.additional_media.count }})</span>
+                        </div>
+                        <div class="gd-asset-grid">
+                            {% for media in task.additional_media.all %}
+                            <div class="gd-asset-card">
+                                <div class="gd-asset-preview">
+                                    {% if media.is_image %}
+                                    <img src="{{ media.file.url }}" alt="{{ media.caption|default:'Graphic Asset' }}">
+                                    {% elif media.is_video %}
+                                    <video controls style="width: 100%; height: 100%;" src="{{ media.file.url }}"></video>
+                                    {% else %}
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                    {% endif %}
+                                </div>
+                                <div class="gd-asset-meta">
+                                    <div class="gd-asset-name">{{ media.caption|default:media.file.name }}</div>
+                                    <a href="{{ media.file.url }}" download class="btn btn-sm btn-secondary" style="justify-content: center; font-size: 11.5px; padding: 5px;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        <span>Download File</span>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% if task.is_image and task.media_file %}
+                            <div class="gd-asset-card">
+                                <div class="gd-asset-preview">
+                                    <img src="{{ task.media_file.url }}" alt="Main Image Asset">
+                                </div>
+                                <div class="gd-asset-meta">
+                                    <div class="gd-asset-name">Main Story Image</div>
+                                    <a href="{{ task.media_file.url }}" download class="btn btn-sm btn-secondary" style="justify-content: center; font-size: 11.5px; padding: 5px;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        <span>Download Asset</span>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Empty State for Graphics -->
+                    <div style="background: #fdf2f8; border: 1.5px dashed #f472b6; border-radius: 12px; padding: 32px 20px; text-align: center; color: #831843;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #fce7f3; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #db2777;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+                        </div>
+                        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">No Graphics Files Uploaded Yet</h4>
+                        <p style="font-size: 13px; max-width: 440px; margin: 0 auto; color: #9d174d; line-height: 1.45;">
+                            The Graphic Designer is currently preparing thumbnails, lower-thirds, and Aston overlays. You can coordinate directly with <strong>{{ task.assigned_graphic_designer.name|default:'Desk' }}</strong> (📞 {{ task.assigned_graphic_designer.phone_number|default:'-' }}).
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ======================================= -->
+                <!-- TAB 3: VOICE OVER (VOICE HOVER) DATA    -->
+                <!-- ======================================= -->
+                <div id="tab-vo-{{ task.pk }}" class="modal-tab-pane">
+                    <!-- Staff Info Banner -->
+                    <div class="tab-staff-banner banner-vo">
+                        <div class="staff-profile-info">
+                            <div class="staff-avatar-initial" style="background: #059669;">
+                                {{ task.assigned_voice_over.name|default:'V'|slice:':1'|upper }}
+                            </div>
+                            <div>
+                                <div style="font-size: 13.5px; font-weight: 700; color: #064e3b;">
+                                    {{ task.assigned_voice_over.name|default:'Desk / Voice Artist' }}
+                                </div>
+                                <div style="font-size: 12px; color: #10b981;">
+                                    Role: Voice Over Artist &bull; 📞 {{ task.assigned_voice_over.phone_number|default:'-' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if task.byte_media %}
+                            <span class="badge badge-published" style="background: #d1fae5; color: #065f46;">🎙️ Audio Uploaded</span>
+                            {% else %}
+                            <span class="badge" style="background: #fef3c7; color: #92400e;">Pending Recording</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Voiceover Audio Player Card -->
+                    {% if task.byte_media %}
+                    <div class="vo-audio-card">
+                        <div class="vo-audio-header">
+                            <div class="vo-audio-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg>
+                                <span>Voiceover Track Available</span>
+                            </div>
+                            <span style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 9999px;">
+                                Ready for Studio
+                            </span>
+                        </div>
+
+                        <!-- HTML5 Audio Player -->
+                        <audio controls class="vo-audio-player" src="{{ task.byte_media.url }}"></audio>
+
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
+                            <a href="{{ task.byte_media.url }}" download class="vo-download-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Download Voiceover Audio</span>
+                            </a>
+                            <a href="{{ task.byte_media.url }}" target="_blank" style="color: #a7f3d0; font-size: 12.5px; text-decoration: underline;">
+                                Open in new tab ↗
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Voice Recording Pending Notice -->
+                    <div style="background: #ecfdf5; border: 1.5px dashed #34d399; border-radius: 12px; padding: 28px 20px; text-align: center; color: #064e3b; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #059669;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </div>
+                        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Voiceover Audio Track Pending</h4>
+                        <p style="font-size: 13px; max-width: 440px; margin: 0 auto; color: #047857; line-height: 1.45;">
+                            Assigned Voice Over Artist: <strong>{{ task.assigned_voice_over.name|default:'Desk / Voice Artist' }}</strong> (📞 {{ task.assigned_voice_over.phone_number|default:'-' }}). Once recorded, the audio track will automatically appear here.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Field Interview / Byte Cue Text -->
+                    {% if task.byte_interview %}
+                    <div class="data-box-card">
+                        <div class="data-box-header">
+                            <span class="data-box-title">Byte / Soundbyte Text</span>
+                            <button type="button" class="copy-btn" onclick="copyToClipboard(`{{ task.byte_interview|escapejs }}`, 'Soundbyte text copied!')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span>Copy Text</span>
+                            </button>
+                        </div>
+                        <div class="odia-text-body">{{ task.byte_interview|linebreaksbr }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="custom-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTeamFilesModal('teamFilesModal-{{ task.pk }}')">Close</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTeamFilesModal('teamFilesModal-{{ task.pk }}'); openStoryModal('storyModal-{{ task.pk }}');">
+                        <span>View Full Story</span> &rarr;
+                    </button>
+                    <a href="{% url 'visual_editor_studio' task.pk %}" class="btn btn-danger" style="font-weight: 700;">
+                        <span>Open Video Studio</span> &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="card" style="padding: 56px 20px; text-align: center; color: var(--text-muted);">
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #2563eb;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+    </div>
+    <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No Tasks Assigned Yet</h3>
+    <p style="font-size: 13px; max-width: 460px; margin: 0 auto; color: #64748b;">
+        When the Editorial Desk selects your name from the <strong>Visual Editor</strong> dropdown and clicks Send, the stories will appear here for you to package in the Video Studio.
+    </p>
+</div>
+{% endif %}
+
+<!-- Global Toast Notification Pill -->
+<div id="clipboardToast" class="toast-pill">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+        <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    <span id="toastMessage">Copied to clipboard!</span>
+</div>
+
+<!-- Modal Control Scripts -->
+<script>
+    // Story Details Modal
+    function openStoryModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeStoryModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('modal-open');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Team Files Modal
+    function openTeamFilesModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeTeamFilesModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('modal-open');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close on backdrop click
+    function handleBackdropClick(event, modalId) {
+        if (event.target && event.target.id === modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('modal-open');
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.custom-modal-backdrop.modal-open').forEach(modal => {
+                modal.classList.remove('modal-open');
+            });
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Tab switcher inside Team Files Modal
+    function switchTeamTab(taskId, tabName, btnElement) {
+        const modal = document.getElementById('teamFilesModal-' + taskId);
+        if (!modal) return;
+
+        // Reset tabs
+        modal.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('tab-active'));
+        btnElement.classList.add('tab-active');
+
+        // Hide all panes
+        modal.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('pane-active'));
+
+        // Show selected pane
+        const targetPane = document.getElementById('tab-' + tabName + '-' + taskId);
+        if (targetPane) {
+            targetPane.classList.add('pane-active');
+        }
+    }
+
+    // Clipboard copy with toast notification
+    function copyToClipboard(text, successMessage) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(function() {
+            showToast(successMessage || 'Copied to clipboard!');
+        }).catch(function() {
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMessage || 'Copied to clipboard!');
+            } catch (err) {
+                alert('Could not copy text.');
+            }
+            document.body.removeChild(textArea);
+        });
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('clipboardToast');
+        const toastMsg = document.getElementById('toastMessage');
+        if (toast && toastMsg) {
+            toastMsg.textContent = message;
+            toast.classList.add('toast-visible');
+            setTimeout(function() {
+                toast.classList.remove('toast-visible');
+            }, 2500);
+        }
+    }
+</script>
+{% endblock %}

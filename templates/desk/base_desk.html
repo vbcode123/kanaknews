@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --desk-navy: #0f172a;
@@ -479,21 +480,27 @@
             .sidebar {
                 transform: translateX(-100%);
             }
+
             .sidebar.open {
                 transform: translateX(0);
             }
+
             .sidebar-overlay.open {
                 display: block;
             }
+
             .main-wrapper {
                 margin-left: 0;
             }
+
             .mobile-toggle {
                 display: block;
             }
+
             .page-content {
                 padding: 18px;
             }
+
             .top-header {
                 padding: 0 18px;
             }
@@ -501,6 +508,7 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
     <div class="app-container">
         <!-- Sidebar Navigation -->
@@ -522,8 +530,10 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="{% url 'desk_dashboard' %}" class="nav-item {% if active_page == 'desk_dashboard' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <a href="{% url 'desk_dashboard' %}"
+                    class="nav-item {% if active_page == 'desk_dashboard' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="9"></rect>
                         <rect x="14" y="3" width="7" height="5"></rect>
                         <rect x="14" y="12" width="7" height="9"></rect>
@@ -532,61 +542,142 @@
                     Dashboard
                 </a>
 
-                <!-- News Dropdown with 2 Sub-Buttons (Add News & News List) -->
-                <div class="nav-dropdown {% if active_page == 'news_add' or active_page == 'news_list' or active_page == 'news_view' or active_page == 'news_edit' %}open{% endif %}" id="newsDropdown">
-                    <button type="button" class="nav-item nav-dropdown-toggle {% if active_page == 'news_add' or active_page == 'news_list' or active_page == 'news_view' or active_page == 'news_edit' %}active{% endif %}" onclick="toggleNewsDropdown()">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1"></path>
-                                <path d="M18 2h4v18h-4"></path>
-                                <path d="M7 8h6"></path>
-                                <path d="M7 12h8"></path>
-                                <path d="M7 16h5"></path>
-                            </svg>
-                            <span>News</span>
-                        </div>
-                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-                    
-                    <div class="nav-submenu">
-                        <!-- Sub-Button 1: Add News -->
-                        <a href="{% url 'news_add' %}" class="sub-nav-item {% if active_page == 'news_add' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span>Add News</span>
-                        </a>
+                <a href="{% url 'desk_my_word' %}"
+                    class="nav-item {% if active_page == 'desk_my_word' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>My Work</span>
+                    {% if my_word_count %}
+                    <span
+                        style="margin-left: auto; background-color: var(--desk-emerald); color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(5,150,105,0.4);">{{ my_word_count }}</span>
+                    {% endif %}
+                </a>
 
-                        <!-- Sub-Button 2: News List -->
-                        <a href="{% url 'news_list' %}" class="sub-nav-item {% if active_page == 'news_list' or active_page == 'news_view' or active_page == 'news_edit' %}active{% endif %}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="8" y1="6" x2="21" y2="6"></line>
-                                <line x1="8" y1="12" x2="21" y2="12"></line>
-                                <line x1="8" y1="18" x2="21" y2="18"></line>
-                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                            </svg>
-                            <span>News List</span>
-                        </a>
-                    </div>
-                </div>
+                <a href="{% url 'desk_my_work_list' %}"
+                    class="nav-item {% if active_page == 'desk_my_work_list' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>My Work List</span>
+                    {% if sent_work_count %}
+                    <span
+                        style="margin-left: auto; background-color: #2563eb; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(37,99,235,0.4);">{{ sent_work_count }}</span>
+                    {% endif %}
+                </a>
 
-                <a href="{% url 'desk_profile' %}" class="nav-item {% if active_page == 'desk_profile' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <a href="{% url 'desk_profile' %}"
+                    class="nav-item {% if active_page == 'desk_profile' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     My Profile
                 </a>
+
+                <a href="{% url 'desk_teleprompter' %}"
+                    class="nav-item {% if active_page == 'desk_teleprompter' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                        <line x1="6" y1="8" x2="18" y2="8"></line>
+                        <line x1="6" y1="12" x2="14" y2="12"></line>
+                    </svg>
+                    <span>Teleprompter</span>
+                </a>
+
+                <a href="{% url 'desk_chat_visual_editor' %}"
+                    class="nav-item {% if active_page == 'desk_chat_visual_editor' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Chat with Visual Editor</span>
+                    {% if desk_unread_chat_count %}
+                    <span
+                        style="margin-left: auto; background-color: #ef4444; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(239,68,68,0.4);">{{ desk_unread_chat_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'desk_chat_copy_editor' %}"
+                    class="nav-item {% if active_page == 'desk_chat_copy_editor' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Chat with Copy Editor</span>
+                    {% if desk_unread_copy_chat_count %}
+                    <span
+                        style="margin-left: auto; background-color: #ef4444; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(239,68,68,0.4);">{{ desk_unread_copy_chat_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'desk_chat_voice_over' %}"
+                    class="nav-item {% if active_page == 'desk_chat_voice_over' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    <span>Chat with Voice Hover</span>
+                    {% if desk_unread_vo_chat_count %}
+                    <span
+                        style="margin-left: auto; background-color: #ef4444; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(239,68,68,0.4);">{{ desk_unread_vo_chat_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'desk_chat_social_media' %}"
+                    class="nav-item {% if active_page == 'desk_chat_social_media' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>Chat with Social Media</span>
+                    {% if desk_unread_social_chat_count %}
+                    <span
+                        style="margin-left: auto; background-color: #ef4444; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(239,68,68,0.4);">{{ desk_unread_social_chat_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'desk_chat_reporter' %}"
+                    class="nav-item {% if active_page == 'desk_chat_reporter' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Chat with Reporter</span>
+                    {% if desk_unread_reporter_chat_count %}
+                    <span
+                        style="margin-left: auto; background-color: #ef4444; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; box-shadow: 0 1px 4px rgba(239,68,68,0.4);">{{ desk_unread_reporter_chat_count }}</span>
+                    {% endif %}
+                </a>
             </nav>
 
             <div class="sidebar-footer">
                 <a href="{% url 'desk_logout' %}" class="nav-item" style="color: #fca5a5;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
                         <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -605,7 +696,8 @@
             <header class="top-header">
                 <div class="header-left">
                     <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -622,7 +714,8 @@
                         <span>Desk Active</span>
                     </div>
 
-                    <a href="{% url 'desk_profile' %}" style="text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text-main);">
+                    <a href="{% url 'desk_profile' %}"
+                        style="text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text-main);">
                         <div class="desk-avatar-fallback" style="width: 32px; height: 32px; font-size: 13px;">
                             {{ desk.name|slice:":1"|upper }}
                         </div>
@@ -636,7 +729,8 @@
                 {% if messages %}
                 <div style="margin-bottom: 20px;">
                     {% for message in messages %}
-                    <div style="background-color: var(--success-light); border: 1px solid #bbf7d0; color: var(--success-color); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 10px; font-weight: 500;">
+                    <div
+                        style="background-color: var(--success-light); border: 1px solid #bbf7d0; color: var(--success-color); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 10px; font-weight: 500;">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -655,12 +749,8 @@
             sidebar.classList.toggle('open');
             overlay.classList.toggle('open');
         }
-
-        function toggleNewsDropdown() {
-            const dropdown = document.getElementById('newsDropdown');
-            if (dropdown) dropdown.classList.toggle('open');
-        }
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>

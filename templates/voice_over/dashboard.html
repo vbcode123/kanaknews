@@ -1,0 +1,273 @@
+{% extends "voice_over/base_voice_over.html" %}
+
+{% block title %}Voice Hover Dashboard - {{ voice_over_user.name }} - Nandilive{% endblock %}
+{% block page_title %}Voice Hover Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    .vo-banner {
+        background: linear-gradient(135deg, #3b0764 0%, #6d28d9 60%, #7c3aed 100%);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        color: #ffffff;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .vo-banner::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.35) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .vo-banner-info h2 {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+        margin-bottom: 6px;
+    }
+
+    .vo-banner-info p {
+        color: #ddd6fe;
+        font-size: 14px;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 26px;
+    }
+
+    .metric-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .metric-info .metric-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .metric-info .metric-value {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--vo-navy);
+        line-height: 1.2;
+    }
+
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .metric-icon.avo-icon {
+        background-color: #f5f3ff;
+        color: #7c3aed;
+    }
+
+    .metric-icon.approved-icon {
+        background-color: #dcfce7;
+        color: #16a34a;
+    }
+
+    .metric-icon.total-icon {
+        background-color: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .metric-icon.active-icon {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+
+    @media (max-width: 900px) {
+        .metrics-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="vo-banner">
+    <div class="vo-banner-info">
+        <h2>Welcome, {{ voice_over_user.name }}!</h2>
+        <p>
+            Voice Hover / Voice Over Studio &bull; Nandilive News Network &bull; Logged in via {{ voice_over_user.phone_number }}
+        </p>
+    </div>
+</div>
+
+<!-- Metrics Overview -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">AVO &amp; VO Stories</div>
+            <div class="metric-value" style="color: #7c3aed;">{{ avo_news_count }}</div>
+        </div>
+        <div class="metric-icon avo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Approved Stories</div>
+            <div class="metric-value" style="color: #16a34a;">{{ total_approved }}</div>
+        </div>
+        <div class="metric-icon approved-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Total Stories in Rundown</div>
+            <div class="metric-value" style="color: #0284c7;">{{ total_news }}</div>
+        </div>
+        <div class="metric-icon total-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Account Status</div>
+            <div class="metric-value" style="font-size: 18px; color: #16a34a;">
+                {% if voice_over_user.is_active %}Active{% else %}Inactive{% endif %}
+            </div>
+        </div>
+        <div class="metric-icon active-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Recent News Feed Overview -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div class="card-header" style="padding: 18px 24px; margin-bottom: 0;">
+        <div>
+            <h3 class="card-title">Recent Broadcast Stories for Voice Over / Script Narration</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                Incoming stories with anchor scripts, byte interviews, and video footage
+            </p>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); background-color: #f8fafc;">
+                    <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Headline</th>
+                    <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">District</th>
+                    <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Format</th>
+                    <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Reporter</th>
+                    <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Status</th>
+                    <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recent_news %}
+                <tr style="border-bottom: 1px solid var(--border-light); font-size: 13px;">
+                    <td style="padding: 14px 18px; font-weight: 600; color: var(--text-main); max-width: 300px;">
+                        {{ item.headline }}
+                    </td>
+                    <td style="padding: 14px 18px; color: var(--text-muted);">
+                        {{ item.district|default:"All Districts" }}
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: {% if 'AVO' in item.news_type %}#f5f3ff; color: #7c3aed;{% else %}#f1f5f9; color: var(--text-main);{% endif %}">
+                            {{ item.news_type }}
+                        </span>
+                    </td>
+                    <td style="padding: 14px 18px; color: var(--text-main);">
+                        {% if item.reporter %}
+                            {{ item.reporter.name }}
+                        {% else %}
+                            {{ item.author.get_full_name|default:item.author.username }}
+                        {% endif %}
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        {% if item.status == 'Approved' %}
+                            <span class="badge badge-published">Approved</span>
+                        {% elif item.status == 'Rejected' %}
+                            <span class="badge" style="background-color: #fee2e2; color: var(--news-red);">Rejected</span>
+                        {% else %}
+                            <span class="badge badge-draft">Submitted</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 14px 18px; color: var(--text-muted);">
+                        {{ item.created_at|date:"M d, H:i" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
+                        No news stories available yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

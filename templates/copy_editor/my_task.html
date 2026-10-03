@@ -1,0 +1,1670 @@
+{% extends "copy_editor/base_copy_editor.html" %}
+{% load static %}
+
+{% block title %}My Tasks - Copy Editor - Nandilive{% endblock %}
+{% block page_title %}My Assigned Tasks — Editorial Copy Editing{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Top Banner */
+    .task-banner {
+        background: linear-gradient(135deg, #78350f 0%, #b45309 60%, #d97706 100%);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        color: #ffffff;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+        gap: 16px;
+        flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .task-banner::after {
+        content: "";
+        position: absolute;
+        right: -25px;
+        bottom: -25px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(254, 243, 199, 0.25) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .task-banner h2 {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        letter-spacing: -0.2px;
+    }
+
+    .task-banner p {
+        color: #fef3c7;
+        font-size: 13.5px;
+    }
+
+    .task-count-badge {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(6px);
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-weight: 800;
+        font-size: 13.5px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        white-space: nowrap;
+    }
+
+    /* Tabs Bar */
+    .ce-tabs-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 12px;
+    }
+
+    .ce-tab-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.15s ease;
+    }
+
+    .ce-tab-link:hover {
+        color: #78350f;
+        background: #fef3c7;
+    }
+
+    .ce-tab-link.active {
+        background: #d97706;
+        color: #ffffff;
+        border-color: #d97706;
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+    }
+
+    .ce-tab-link .tab-count {
+        background: rgba(0, 0, 0, 0.08);
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+    }
+
+    .ce-tab-link.active .tab-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    /* Filter & Search Bar */
+    .filter-bar-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-bar-form {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .search-input-wrapper svg {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 9px 14px 9px 38px;
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .search-input:focus {
+        border-color: #d97706;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+    }
+
+    .btn-search-submit {
+        padding: 9px 18px;
+        font-size: 13px;
+        background: #d97706;
+        color: #ffffff;
+        font-weight: 700;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.15s ease;
+    }
+
+    .btn-search-submit:hover {
+        background: #b45309;
+    }
+
+    .btn-search-clear {
+        padding: 9px 14px;
+        font-size: 13px;
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid #cbd5e1;
+        transition: background 0.15s ease;
+    }
+
+    /* Main Table Container */
+    .task-table-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .task-table thead {
+        background: #f8fafc;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .task-table th {
+        padding: 13px 16px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        white-space: nowrap;
+    }
+
+    .task-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease, opacity 0.3s ease;
+    }
+
+    .task-table tbody tr:hover {
+        background-color: #fffdf5;
+    }
+
+    .task-table td {
+        padding: 16px;
+        vertical-align: top;
+    }
+
+    /* Format Badges */
+    .format-badge {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+    }
+
+    .format-avo {
+        background-color: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .format-byte {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+    }
+
+    .format-pkg {
+        background-color: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .format-default {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .district-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #334155;
+        background: #f1f5f9;
+        padding: 2px 7px;
+        border-radius: 4px;
+        margin-top: 4px;
+        white-space: nowrap;
+    }
+
+    .category-text {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 600;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Media Thumbnail */
+    .media-thumb-box {
+        width: 72px;
+        height: 52px;
+        border-radius: 6px;
+        background: #06181b;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 1.5px solid #e2e8f0;
+        flex-shrink: 0;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .media-thumb-box:hover {
+        transform: scale(1.04);
+        border-color: #d97706;
+    }
+
+    .media-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .media-play-icon {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(217, 119, 6, 0.92);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+    }
+
+    /* Story Headline & Script Narrative */
+    .story-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.45;
+        margin-bottom: 8px;
+    }
+
+    .story-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .story-title a:hover {
+        color: #d97706;
+    }
+
+    .script-reading-box {
+        background: #fffdf5;
+        border: 1px solid #fde68a;
+        border-left: 3px solid #d97706;
+        border-radius: 7px;
+        padding: 10px 14px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #451a03;
+        margin-bottom: 8px;
+        max-height: 110px;
+        overflow-y: auto;
+    }
+
+    .script-reading-box::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .script-reading-box::-webkit-scrollbar-thumb {
+        background: #fde68a;
+        border-radius: 4px;
+    }
+
+    .script-box-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10.5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #92400e;
+        margin-bottom: 5px;
+    }
+
+    .quick-tools-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+    }
+
+    .btn-quick-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-quick-copy:hover {
+        background: #f8fafc;
+        border-color: #d97706;
+        color: #d97706;
+    }
+
+    .chip-desk-notes {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11.5px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        font-weight: 500;
+    }
+
+    .chip-soundbyte {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11.5px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        font-weight: 500;
+    }
+
+    .badge-ve-sent {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        padding: 3px 8px;
+        border-radius: 6px;
+        margin-top: 4px;
+    }
+
+    /* AI Polish Elements */
+    .btn-ai-polish {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+        transition: all 0.15s ease;
+    }
+
+    .btn-ai-polish:hover {
+        background: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%);
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .ai-tone-pill {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .ai-tone-pill.active {
+        background: #7c3aed;
+        border-color: #6d28d9;
+        color: #ffffff;
+    }
+
+    .ai-spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(124, 58, 237, 0.3);
+        border-top-color: #7c3aed;
+        border-radius: 50%;
+        animation: aiSpin 0.7s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes aiSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Reporter & Meta Details */
+    .reporter-name {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 13px;
+    }
+
+    .reporter-phone {
+        font-size: 11.5px;
+        margin-top: 3px;
+    }
+
+    .reporter-phone a {
+        color: #d97706;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .reporter-phone a:hover {
+        text-decoration: underline;
+    }
+
+    .location-text {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 3px;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: capitalize;
+        white-space: nowrap;
+    }
+
+    .status-submitted {
+        background-color: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .status-approved {
+        background-color: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-draft {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .status-review {
+        background-color: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
+    }
+
+    /* Action Buttons */
+    .action-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
+    }
+
+    .btn-edit-script {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        background: #d97706;
+        color: #ffffff;
+        font-size: 12.5px;
+        font-weight: 700;
+        border-radius: 7px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+        white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(217, 119, 6, 0.25);
+    }
+
+    .btn-edit-script:hover {
+        background: #b45309;
+        box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35);
+        color: #ffffff;
+    }
+
+    .btn-view-story {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 7px;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .btn-view-story:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    /* Script Editor Modal */
+    .script-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(5px);
+        z-index: 9998;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .script-modal-card {
+        background: #ffffff;
+        border-radius: 14px;
+        max-width: 760px;
+        width: 100%;
+        max-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+        animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalScaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .script-modal-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fffdfa;
+    }
+
+    .script-modal-header h3 {
+        font-size: 17px;
+        font-weight: 800;
+        color: #78350f;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .script-modal-close {
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 6px;
+    }
+
+    .script-modal-close:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .script-modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-story-meta {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .modal-script-textarea {
+        width: 100%;
+        min-height: 180px;
+        padding: 14px;
+        border-radius: 8px;
+        border: 1.5px solid #cbd5e1;
+        font-size: 14.5px;
+        line-height: 1.65;
+        font-family: inherit;
+        outline: none;
+        background-color: #fffdf5;
+        color: #1e293b;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        resize: vertical;
+    }
+
+    .modal-script-textarea:focus {
+        border-color: #d97706;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+        background-color: #ffffff;
+    }
+
+    .modal-ve-card {
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-left: 4px solid #d97706;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 20px;
+    }
+
+    .modal-ve-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #78350f;
+        margin-bottom: 6px;
+    }
+
+    .modal-ve-select {
+        width: 100%;
+        padding: 9px 12px;
+        border-radius: 7px;
+        border: 1.5px solid #cbd5e1;
+        font-size: 13px;
+        outline: none;
+        background-color: #ffffff;
+        margin-bottom: 10px;
+    }
+
+    .modal-ve-select:focus {
+        border-color: #d97706;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+    }
+
+    .script-modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .video-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .video-modal-container {
+        background: #0f172a;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .copy-toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        display: none;
+        align-items: center;
+        gap: 10px;
+        z-index: 10000;
+        border-left: 4px solid #d97706;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<!-- Top Header Banner -->
+<div class="task-banner">
+    <div>
+        <h2>✍️ My Copy Editing Tasks</h2>
+        <p>News stories assigned to you by the Editorial Desk for proofreading, grammar corrections, fact-checking, and script polishing.</p>
+    </div>
+    <div class="task-count-badge" id="taskCountBadge">
+        <span id="bannerPendingCount">{{ pending_count|default:tasks_count }}</span> Pending Task{{ pending_count|default:tasks_count|pluralize }}
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="ce-tabs-bar">
+    <a href="{% url 'copy_editor_my_task' %}" class="ce-tab-link active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        <span>Pending Copy Tasks</span>
+        <span class="tab-count" id="tabPendingCount">{{ pending_count|default:tasks_count }}</span>
+    </a>
+
+    <a href="{% url 'copy_editor_my_task_list' %}" class="ce-tab-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        <span>My Task List (Sent to VE)</span>
+        <span class="tab-count" id="tabCompletedCount">{{ completed_count|default:"0" }}</span>
+    </a>
+</div>
+
+<!-- Search / Filter Bar -->
+<div class="filter-bar-card">
+    <form method="GET" action="{% url 'copy_editor_my_task' %}" class="filter-bar-form">
+        <div class="search-input-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="q" id="taskSearchInput" value="{{ query|default:'' }}" class="search-input" placeholder="Search by headline, Odia/English narrative, district, or reporter..." oninput="filterTableRows(this.value)">
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn-search-submit">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Search</span>
+            </button>
+            {% if query %}
+            <a href="{% url 'copy_editor_my_task' %}" class="btn-search-clear">
+                Clear Filter
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Main Table Card -->
+<div class="task-table-card">
+    {% if tasks %}
+    <div class="table-responsive">
+        <table class="task-table" id="tasksTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">#</th>
+                    <th style="width: 130px;">Format &amp; Beat</th>
+                    <th style="width: 85px;">Media</th>
+                    <th style="min-width: 360px;">Story Headline &amp; News Narrative Script</th>
+                    <th style="width: 170px;">Reporter &amp; Location</th>
+                    <th style="width: 130px;">Assigned</th>
+                    <th style="width: 100px; text-align: center;">Status</th>
+                    <th style="width: 150px; text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr class="task-row-item" id="taskRow_{{ task.pk }}" data-search="{{ task.headline|lower }} {{ task.description|lower }} {{ task.district|lower }} {{ task.reporter.name|default:task.author.get_full_name|default:''|lower }}">
+                    <!-- Row Counter -->
+                    <td style="text-align: center; font-weight: 700; color: #94a3b8; font-size: 12px;">
+                        {{ forloop.counter }}
+                    </td>
+
+                    <!-- Format & Beat -->
+                    <td>
+                        {% if task.news_type == 'AVO' %}
+                            <span class="format-badge format-avo">AVO</span>
+                        {% elif task.news_type == 'Byte' %}
+                            <span class="format-badge format-byte">Byte</span>
+                        {% elif task.news_type == 'AVO Byte' %}
+                            <span class="format-badge format-avo">AVO Byte</span>
+                        {% elif task.news_type == 'PKG' %}
+                            <span class="format-badge format-pkg">PKG</span>
+                        {% else %}
+                            <span class="format-badge format-default">{{ task.news_type|default:"News" }}</span>
+                        {% endif %}
+
+                        <span class="category-text">{{ task.category|default:"General" }}</span>
+
+                        <div class="district-pill">
+                            <span>📍 {{ task.district|default:"Odisha" }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Media Preview Thumbnail -->
+                    <td>
+                        {% if task.edited_video %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ task.edited_video.url }}', '{{ task.headline|escapejs }} [Edited Video]')" title="Click to preview Final Video" style="border-color: #6366f1;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Final Video" class="media-thumb-img" style="object-fit: contain; padding: 4px;">
+                                <div class="media-play-icon" style="background: #4f46e5;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% elif task.media_file %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ task.media_file.url }}', '{{ task.headline|escapejs }} [Media File]')" title="Click to preview Media">
+                                <img src="{% static 'images/nandi.png' %}" alt="Media File" class="media-thumb-img" style="object-fit: contain; padding: 4px;">
+                                <div class="media-play-icon">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% elif task.byte_media %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ task.byte_media.url }}', '{{ task.headline|escapejs }} [Soundbyte]')" title="Click to preview Soundbyte">
+                                <img src="{% static 'images/nandi.png' %}" alt="Byte Media" class="media-thumb-img" style="object-fit: contain; padding: 4px;">
+                                <div class="media-play-icon" style="background: #0284c7;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="media-thumb-box" style="background-color: #f8fafc; cursor: default; border: 1px dashed #cbd5e1;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Story Headline & Narrative Script -->
+                    <td>
+                        <h3 class="story-title">
+                            <a href="javascript:void(0)" onclick="openScriptEditorModal({{ task.pk }}, '{{ task.headline|escapejs }}', '{{ task.description|escapejs }}', '{{ task.news_type|escapejs }}', '{{ task.category|escapejs }}', '{{ task.district|escapejs }}', '{{ task.reporter.name|default:task.author.get_full_name|default:'Desk Staff'|escapejs }}', '{{ task.assigned_visual_editor.pk|default:'' }}', '{{ task.desk_notes|default:''|escapejs }}')" id="headlineText_{{ task.pk }}" title="Click to Edit Script &amp; Send to Visual Editor">
+                                {{ task.headline }}
+                            </a>
+                        </h3>
+
+                        <div class="script-reading-box">
+                            <div class="script-box-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                                <span>Current News Narrative:</span>
+                            </div>
+                            <div id="scriptText_{{ task.pk }}">{{ task.description|default:"No narrative script text entered yet." }}</div>
+                        </div>
+
+                        <!-- Forwarded VE Badge -->
+                        <div id="veBadge_{{ task.pk }}">
+                            {% if task.assigned_visual_editor %}
+                            <span class="badge-ve-sent" title="Story forwarded to Visual Editor">
+                                🎬 Sent to VE: {{ task.assigned_visual_editor.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="quick-tools-row">
+                            <button type="button" class="btn-quick-copy" onclick="copyStoryContent(`{{ task.headline|escapejs }}`, `{{ task.description|escapejs }}`)" title="Copy Headline & Narrative Script to clipboard">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy Script</span>
+                            </button>
+
+                            {% if task.desk_notes %}
+                            <div class="chip-desk-notes" title="Instructions given by Editorial Desk">
+                                <strong>Desk Instructions:</strong> {{ task.desk_notes }}
+                            </div>
+                            {% endif %}
+
+                            {% if task.byte_interview %}
+                            <div class="chip-soundbyte" title="Soundbyte Cue">
+                                <strong>Soundbyte:</strong> {{ task.byte_interview }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <!-- Reporter & Location -->
+                    <td>
+                        <div class="reporter-name">
+                            {{ task.reporter.name|default:task.author.get_full_name|default:'Desk Staff' }}
+                        </div>
+
+                        {% if task.location and task.location != task.district %}
+                        <div class="location-text">
+                            📍 {{ task.location }}
+                        </div>
+                        {% endif %}
+
+                        {% if task.reporter.phone_number %}
+                        <div class="reporter-phone">
+                            <a href="tel:{{ task.reporter.phone_number }}" title="Call Reporter">
+                                📞 {{ task.reporter.phone_number }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Assigned Time -->
+                    <td>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 12.5px;">
+                            {{ task.assigned_at|date:"M d, Y"|default:task.created_at|date:"M d, Y" }}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 3px;">
+                            {{ task.assigned_at|date:"h:i A"|default:task.created_at|date:"h:i A" }}
+                        </div>
+                    </td>
+
+                    <!-- Status -->
+                    <td style="text-align: center;">
+                        {% if task.status == 'Approved' %}
+                            <span class="status-badge status-approved">Approved</span>
+                        {% elif task.status == 'Submitted' %}
+                            <span class="status-badge status-submitted">Submitted</span>
+                        {% elif task.status == 'In Review' %}
+                            <span class="status-badge status-review">In Review</span>
+                        {% else %}
+                            <span class="status-badge status-draft">{{ task.status|default:"Pending" }}</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Action Column -->
+                    <td>
+                        <div class="action-group">
+                            <button type="button" class="btn-edit-script" onclick="openScriptEditorModal({{ task.pk }}, '{{ task.headline|escapejs }}', '{{ task.description|escapejs }}', '{{ task.news_type|escapejs }}', '{{ task.category|escapejs }}', '{{ task.district|escapejs }}', '{{ task.reporter.name|default:task.author.get_full_name|default:'Desk Staff'|escapejs }}', '{{ task.assigned_visual_editor.pk|default:'' }}', '{{ task.desk_notes|default:''|escapejs }}')" title="Edit script narrative &amp; forward to Visual Editor">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                                <span>Edit Script</span>
+                            </button>
+
+                            <a href="{% url 'news_view' task.pk %}" class="btn-view-story" title="View complete story details">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>View</span>
+                            </a>
+
+                            <!-- Team Production Files Button -->
+                            <button type="button" class="btn-action-files" onclick="openTeamFilesModal('teamFilesModal-{{ task.pk }}')" title="View Team Files: Graphics, Voice Over & Footage">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Files</span>
+                                {% if task.byte_media or task.additional_media.all %}
+                                <span class="files-badge-dot" title="Assets uploaded"></span>
+                                {% endif %}
+                            </button>
+                        </div>
+
+                        <!-- Team Files Modal for Copy Editor My Task -->
+                        {% include "common/_team_files_modal.html" with story=task %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div style="padding: 56px 20px; text-align: center; color: var(--text-muted);">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #d97706;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">All Assigned Tasks Completed!</h3>
+        <p style="font-size: 13px; max-width: 460px; margin: 0 auto; color: #64748b;">
+            All pending stories have been edited and forwarded to the Visual Editor team. You can view all forwarded stories anytime in <a href="{% url 'copy_editor_my_task_list' %}" style="color: #d97706; font-weight: 700;">My Task List</a>.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ========================================== -->
+<!-- Script Editor & VE Dispatch Modal           -->
+<!-- ========================================== -->
+<div class="script-modal-overlay" id="scriptEditorModal" onclick="closeModalOnBg(event)">
+    <div class="script-modal-card">
+        <div class="script-modal-header">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span>Edit Narrative Script &amp; Send to Visual Editor</span>
+            </h3>
+            <button type="button" class="script-modal-close" onclick="closeScriptModal()">&times;</button>
+        </div>
+
+        <div class="script-modal-body">
+            <!-- Story Context Pill Strip -->
+            <div class="modal-story-meta">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="format-badge format-avo" id="modalFormatBadge">AVO Byte</span>
+                    <span id="modalCategoryText" style="font-size: 12px; font-weight: 600; color: #475569;">Category</span>
+                    <span style="color: #cbd5e1;">&bull;</span>
+                    <span id="modalDistrictText" style="font-size: 12px; font-weight: 700; color: #334155;">📍 District</span>
+                </div>
+                <div style="font-size: 12px; color: #64748b;">
+                    <strong>Reporter:</strong> <span id="modalReporterText">Reporter Name</span>
+                </div>
+            </div>
+
+            <!-- Headline Input -->
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                    Story Headline:
+                </label>
+                <input type="text" id="modalHeadlineInput" class="search-input" style="padding-left: 12px; font-weight: 700;" placeholder="News Headline">
+            </div>
+
+            <!-- News Narrative Script Textarea & AI Polish Tools -->
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                    <label style="font-size: 12.5px; font-weight: 700; color: #78350f; display: flex; align-items: center; gap: 5px;">
+                        <span>✍️ News Narrative Script (Odia / English):</span>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="modalCounter" style="font-size: 11.5px; color: #64748b;">0 words &bull; 0 chars</span>
+                        <!-- AI Polish Button -->
+                        <button type="button" id="btnAiPolish" onclick="triggerAiPolish()" class="btn-ai-polish" title="Polish grammar, spelling & TV phrasing using Google Gemini AI">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                            </svg>
+                            <span>✨ Polish with AI</span>
+                        </button>
+                        <button type="button" id="btnAiUndo" onclick="undoAiPolish()" style="display: none; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                            ↩️ Undo AI
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Tone Strip -->
+                <div id="aiToneBar" style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 11.5px; flex-wrap: wrap;">
+                    <span style="font-weight: 600; color: #64748b;">AI Style:</span>
+                    <button type="button" class="ai-tone-pill active" onclick="setAiTone('standard', this)">Broadcast TV (Grammar &amp; Flow)</button>
+                    <button type="button" class="ai-tone-pill" onclick="setAiTone('concise', this)">⚡ Crisp &amp; Punchy</button>
+                    <button type="button" class="ai-tone-pill" onclick="setAiTone('broadcast', this)">📺 TV Anchor Lead &amp; Details</button>
+                </div>
+
+                <!-- AI Loading Status -->
+                <div id="aiLoadingStatus" style="display: none; padding: 8px 12px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 6px; color: #7c3aed; font-size: 12px; font-weight: 600; margin-bottom: 8px; align-items: center; gap: 8px;">
+                    <div class="ai-spinner"></div>
+                    <span>Gemini AI is analyzing script, fixing Odia/English grammar, and enhancing news phrasing...</span>
+                </div>
+
+                <textarea id="modalScriptText" class="modal-script-textarea" placeholder="Edit, proofread, and polish the Odia/English news narrative script here..." oninput="updateModalCounter(this.value)"></textarea>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end; margin-bottom: 14px;">
+                <button type="button" onclick="copyModalScript()" style="background: none; border: none; color: #d97706; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Copy Script Text</span>
+                </button>
+            </div>
+
+            <!-- Forward to Visual Editor Box -->
+            <div class="modal-ve-card">
+                <div class="modal-ve-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                    <span>Forward to Visual Editor (Video Packaging &amp; Editing)</span>
+                </div>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
+                    Select the Visual Editor who will receive this story with your polished script:
+                </p>
+
+                <select id="modalVisualEditorSelect" class="modal-ve-select">
+                    <option value="">-- Select Visual Editor to Send Story --</option>
+                    {% for ve in visual_editors %}
+                    <option value="{{ ve.pk }}">{{ ve.name }} ({{ ve.phone_number }})</option>
+                    {% endfor %}
+                </select>
+
+                <label style="font-size: 11.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">
+                    Instructions / Notes for Visual Editor (Optional):
+                </label>
+                <input type="text" id="modalVeNotes" class="search-input" style="padding-left: 12px; font-size: 12.5px;" placeholder="e.g. Cut soundbyte from 0:15 to 0:40, add lower-third name badge...">
+            </div>
+        </div>
+
+        <div class="script-modal-footer">
+            <div>
+                <a id="modalFullEditorLink" href="#" target="_blank" style="font-size: 12px; color: #64748b; text-decoration: underline; font-weight: 600;">
+                    Open Full Page Editor &nearr;
+                </a>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-search-clear" onclick="closeScriptModal()">
+                    Cancel
+                </button>
+
+                <button type="button" id="btnModalSaveOnly" onclick="submitScriptModal('save')" style="padding: 9px 16px; font-size: 13px; background: #ffffff; color: #d97706; font-weight: 700; border-radius: 8px; border: 1.5px solid #d97706; cursor: pointer; transition: all 0.15s ease;">
+                    💾 Save Script Only
+                </button>
+
+                <button type="button" id="btnModalSendVe" onclick="submitScriptModal('send_ve')" style="padding: 9px 18px; font-size: 13px; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35); display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Save &amp; Send to Visual Editor</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Preview Modal -->
+<div class="video-modal-overlay" id="videoModal" onclick="closeModalOnBg(event)">
+    <div class="video-modal-container">
+        <div class="video-modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: #1e293b;">
+            <div id="videoModalTitle" style="font-weight: 700; font-size: 14px; color: #ffffff;">Video Preview</div>
+            <button type="button" onclick="closeVideoModal()" style="background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <div class="video-modal-body">
+            <video id="videoPlayer" controls playsinline style="width: 100%; max-height: 70vh; display: block; background: #000;">
+                <source id="videoSource" src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="copy-toast" id="copyToast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span id="toastMessage">Script updated and sent to Visual Editor!</span>
+</div>
+
+<script>
+    var currentEditingNewsId = null;
+    var currentAiTone = 'standard';
+    var backupScriptBeforeAi = '';
+
+    function setAiTone(tone, el) {
+        currentAiTone = tone;
+        document.querySelectorAll('.ai-tone-pill').forEach(function(pill) {
+            pill.classList.remove('active');
+        });
+        if (el) el.classList.add('active');
+    }
+
+    function triggerAiPolish() {
+        var textarea = document.getElementById('modalScriptText');
+        var headlineInput = document.getElementById('modalHeadlineInput');
+        var rawText = (textarea ? textarea.value : '').trim();
+        if (!rawText) {
+            alert('Please enter or select a script narrative to polish with AI.');
+            return;
+        }
+
+        var btn = document.getElementById('btnAiPolish');
+        var loadingStatus = document.getElementById('aiLoadingStatus');
+        var undoBtn = document.getElementById('btnAiUndo');
+
+        backupScriptBeforeAi = textarea.value;
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="ai-spinner"></span> <span>AI Polishing...</span>';
+        }
+        if (loadingStatus) loadingStatus.style.display = 'flex';
+
+        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/news/ai-check/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                text: rawText,
+                headline: headlineInput ? headlineInput.value : '',
+                news_type: document.getElementById('modalFormatBadge').textContent || 'AVO',
+                tone: currentAiTone
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success && data.improved_text) {
+                textarea.value = data.improved_text;
+                updateModalCounter(data.improved_text);
+                if (undoBtn) undoBtn.style.display = 'inline-block';
+                showToast('✨ ' + (data.summary || 'Script polished by AI!'));
+            } else {
+                alert(data.error || 'AI could not polish script.');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('Error connecting to AI service.');
+        })
+        .finally(function() {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> <span>✨ Polish with AI</span>';
+            }
+            if (loadingStatus) loadingStatus.style.display = 'none';
+        });
+    }
+
+    function undoAiPolish() {
+        var textarea = document.getElementById('modalScriptText');
+        var undoBtn = document.getElementById('btnAiUndo');
+        if (textarea && backupScriptBeforeAi) {
+            textarea.value = backupScriptBeforeAi;
+            updateModalCounter(backupScriptBeforeAi);
+            if (undoBtn) undoBtn.style.display = 'none';
+            showToast('↩️ Original script restored!');
+        }
+    }
+
+    // Open Script Editor Modal
+    function openScriptEditorModal(pk, headline, description, newsType, category, district, reporter, assignedVeId, deskNotes) {
+        currentEditingNewsId = pk;
+        document.getElementById('modalHeadlineInput').value = headline || '';
+        document.getElementById('modalScriptText').value = description || '';
+        document.getElementById('modalFormatBadge').textContent = newsType || 'News';
+        document.getElementById('modalCategoryText').textContent = category || 'General';
+        document.getElementById('modalDistrictText').textContent = '📍 ' + (district || 'Odisha');
+        document.getElementById('modalReporterText').textContent = reporter || 'Desk Staff';
+        
+        var veSelect = document.getElementById('modalVisualEditorSelect');
+        if (veSelect) {
+            veSelect.value = assignedVeId || '';
+        }
+        
+        document.getElementById('modalVeNotes').value = '';
+        var undoBtn = document.getElementById('btnAiUndo');
+        if (undoBtn) undoBtn.style.display = 'none';
+
+        document.getElementById('modalFullEditorLink').href = '/copy-editor/task/' + pk + '/edit-script/';
+
+        updateModalCounter(description);
+
+        var modal = document.getElementById('scriptEditorModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeScriptModal() {
+        var modal = document.getElementById('scriptEditorModal');
+        if (modal) modal.style.display = 'none';
+        currentEditingNewsId = null;
+    }
+
+    function updateModalCounter(text) {
+        text = (text || '').trim();
+        var words = text ? text.split(/\s+/).length : 0;
+        var chars = text ? text.length : 0;
+        var counter = document.getElementById('modalCounter');
+        if (counter) {
+            counter.textContent = words + ' words • ' + chars + ' chars';
+        }
+    }
+
+    function copyModalScript() {
+        var text = document.getElementById('modalScriptText').value;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(function() {
+            showToast("Script copied to clipboard!");
+        });
+    }
+
+    // Submit Script Modal (AJAX)
+    function submitScriptModal(actionType) {
+        var newsId = currentEditingNewsId;
+        if (!newsId) return;
+
+        var headline = document.getElementById('modalHeadlineInput').value.trim();
+        var script = document.getElementById('modalScriptText').value.trim();
+        var veId = document.getElementById('modalVisualEditorSelect').value;
+        var veNotes = document.getElementById('modalVeNotes').value.trim();
+
+        if (actionType === 'send_ve' && !veId) {
+            alert('Please select a Visual Editor from the dropdown to send this story.');
+            document.getElementById('modalVisualEditorSelect').focus();
+            return;
+        }
+
+        var btnSave = document.getElementById('btnModalSaveOnly');
+        var btnSend = document.getElementById('btnModalSendVe');
+        if (btnSave) btnSave.disabled = true;
+        if (btnSend) btnSend.disabled = true;
+
+        var formData = new FormData();
+        formData.append('headline', headline);
+        formData.append('description', script);
+        formData.append('visual_editor_id', veId);
+        formData.append('ve_notes', veNotes);
+        formData.append('action_type', actionType);
+        formData.append('is_ajax', '1');
+
+        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/copy-editor/task/' + newsId + '/edit-script/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(function(res) {
+            return res.json();
+        })
+        .then(function(data) {
+            if (data.status === 'success') {
+                if (actionType === 'send_ve') {
+                    // Animate row removal since it moved to "My Task List"
+                    var row = document.getElementById('taskRow_' + newsId);
+                    if (row) {
+                        row.style.transition = 'all 0.5s ease';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(50px)';
+                        setTimeout(function() {
+                            row.remove();
+                            // If table is now empty, refresh to show clean empty state
+                            var remainingRows = document.querySelectorAll('.task-row-item');
+                            if (remainingRows.length === 0) {
+                                window.location.reload();
+                            }
+                        }, 500);
+                    }
+
+                    // Update counts
+                    var bannerCnt = document.getElementById('bannerPendingCount');
+                    var tabPendingCnt = document.getElementById('tabPendingCount');
+                    var tabCompCnt = document.getElementById('tabCompletedCount');
+                    if (bannerCnt) {
+                        var curr = parseInt(bannerCnt.textContent) || 1;
+                        bannerCnt.textContent = Math.max(0, curr - 1);
+                    }
+                    if (tabPendingCnt) {
+                        var currP = parseInt(tabPendingCnt.textContent) || 1;
+                        tabPendingCnt.textContent = Math.max(0, currP - 1);
+                    }
+                    if (tabCompCnt) {
+                        var currC = parseInt(tabCompCnt.textContent) || 0;
+                        tabCompCnt.textContent = currC + 1;
+                    }
+
+                    closeScriptModal();
+                    showToast('🚀 ' + (data.message || 'Story forwarded to Visual Editor! Moved to My Task List.'));
+                } else {
+                    // Saved script only, update in place
+                    var scriptEl = document.getElementById('scriptText_' + newsId);
+                    if (scriptEl) scriptEl.textContent = data.description;
+
+                    var headEl = document.getElementById('headlineText_' + newsId);
+                    if (headEl) headEl.textContent = data.headline;
+
+                    closeScriptModal();
+                    showToast(data.message || 'Script saved!');
+                }
+            } else {
+                alert(data.message || 'Error occurred while saving script.');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('Network error while saving script.');
+        })
+        .finally(function() {
+            if (btnSave) btnSave.disabled = false;
+            if (btnSend) btnSend.disabled = false;
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Video Preview Modal
+    function previewMedia(url, headline) {
+        if (!url) return;
+        var modal = document.getElementById('videoModal');
+        var player = document.getElementById('videoPlayer');
+        var source = document.getElementById('videoSource');
+        var title = document.getElementById('videoModalTitle');
+
+        source.src = url;
+        title.textContent = headline || 'Video Preview';
+        player.load();
+        modal.style.display = 'flex';
+        player.play().catch(function() {});
+    }
+
+    function closeVideoModal() {
+        var modal = document.getElementById('videoModal');
+        var player = document.getElementById('videoPlayer');
+        if (modal) modal.style.display = 'none';
+        if (player) player.pause();
+    }
+
+    function closeModalOnBg(e) {
+        if (e.target.id === 'videoModal') {
+            closeVideoModal();
+        } else if (e.target.id === 'scriptEditorModal') {
+            closeScriptModal();
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeVideoModal();
+            closeScriptModal();
+        }
+    });
+
+    // Copy Content with Toast Notification
+    function copyStoryContent(headline, script) {
+        var textToCopy = (headline || '').trim();
+        if (script && script.trim()) {
+            textToCopy += "\n\n" + script.trim();
+        }
+        if (!textToCopy) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                showToast("Script copied to clipboard!");
+            }).catch(function() {
+                fallbackCopyText(textToCopy);
+            });
+        } else {
+            fallbackCopyText(textToCopy);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showToast("Script copied to clipboard!");
+        } catch (err) {
+            alert("Could not copy text.");
+        }
+        document.body.removeChild(textarea);
+    }
+
+    var toastTimeout = null;
+    function showToast(message) {
+        var toast = document.getElementById('copyToast');
+        var msgSpan = document.getElementById('toastMessage');
+        if (!toast) return;
+        if (message && msgSpan) msgSpan.textContent = message;
+        toast.style.display = 'flex';
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(function() {
+            toast.style.display = 'none';
+        }, 3200);
+    }
+
+    // Client-side quick filter
+    function filterTableRows(query) {
+        query = (query || '').toLowerCase().trim();
+        var rows = document.querySelectorAll('.task-row-item');
+        var visibleCount = 0;
+        rows.forEach(function(row) {
+            var searchData = row.getAttribute('data-search') || '';
+            if (!query || searchData.indexOf(query) !== -1) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        var badge = document.getElementById('taskCountBadge');
+        if (badge && query) {
+            badge.textContent = visibleCount + ' Matching Task' + (visibleCount === 1 ? '' : 's');
+        } else if (badge) {
+            badge.textContent = '{{ tasks_count }} Assigned Task{{ tasks_count|pluralize }}';
+        }
+    }
+</script>
+{% endblock %}

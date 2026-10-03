@@ -53,9 +53,9 @@
         .login-card {
             background-color: #ffffff;
             width: 100%;
-            max-width: 460px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
+            max-width: 680px;
+            border-radius: 18px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.12);
             overflow: hidden;
             animation: fadeIn 0.3s ease;
@@ -67,12 +67,12 @@
         }
 
         .channel-top-bar {
-            height: 5px;
-            background: linear-gradient(90deg, var(--news-red) 0%, #ef4444 40%, #0284c7 70%, var(--desk-emerald) 100%);
+            height: 6px;
+            background: linear-gradient(90deg, var(--news-red) 0%, #f97316 25%, var(--desk-emerald) 50%, #0284c7 75%, #7c3aed 100%);
         }
 
         .login-header {
-            padding: 28px 28px 18px;
+            padding: 34px 34px 18px;
             text-align: center;
         }
 
@@ -84,19 +84,19 @@
         }
 
         .brand-logo-img {
-            height: 64px;
+            height: 74px;
             width: auto;
             object-fit: contain;
-            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
             transition: transform 0.25s ease;
         }
 
         .brand-logo-img:hover {
-            transform: scale(1.04);
+            transform: scale(1.03);
         }
 
         .brand-name {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 800;
             color: var(--primary-navy);
             letter-spacing: 0.5px;
@@ -108,23 +108,24 @@
         }
 
         .login-tagline {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
+            margin-top: 2px;
         }
 
-        /* 3 Login Selector Tabs */
+        /* 9 Login Selector Tabs in 3x3 Grid */
         .login-switch-container {
-            padding: 0 24px 18px;
+            padding: 0 34px 20px;
         }
 
         .login-tabs-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             background-color: #f1f5f9;
-            padding: 5px;
-            border-radius: var(--radius-md);
+            padding: 8px;
+            border-radius: 12px;
             border: 1px solid var(--border-color);
         }
 
@@ -132,51 +133,101 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 9px 8px;
-            border-radius: var(--radius-sm);
-            border: none;
-            background: transparent;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
+            gap: 7px;
+            padding: 10px 10px;
+            border-radius: 8px;
+            border: 1.5px solid transparent;
+            background: #ffffff;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #475569;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
             font-family: inherit;
             white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
         .login-tab-btn svg {
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             flex-shrink: 0;
+            opacity: 0.85;
         }
 
         .login-tab-btn:hover {
             color: var(--primary-navy);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
         }
 
         .login-tab-btn.admin-tab.active {
-            background-color: #ffffff;
+            background-color: #fee2e2;
             color: var(--news-red);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border-color: #fca5a5;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.18);
         }
 
         .login-tab-btn.reporter-tab.active {
-            background-color: #ffffff;
+            background-color: #e0f2fe;
             color: #0284c7;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border-color: #bae6fd;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.18);
         }
 
         .login-tab-btn.desk-tab.active {
-            background-color: #ffffff;
+            background-color: #d1fae5;
             color: var(--desk-emerald);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border-color: #a7f3d0;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.18);
+        }
+
+        .login-tab-btn.social-tab.active {
+            background-color: #e0e7ff;
+            color: #4f46e5;
+            border-color: #c7d2fe;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.18);
+        }
+
+        .login-tab-btn.designer-tab.active {
+            background-color: #fdf2f8;
+            color: #db2777;
+            border-color: #fbcfe8;
+            box-shadow: 0 2px 6px rgba(219, 39, 119, 0.18);
+        }
+
+        .login-tab-btn.input-tab.active {
+            background-color: #ecfeff;
+            color: #0891b2;
+            border-color: #a5f3fc;
+            box-shadow: 0 2px 6px rgba(8, 145, 178, 0.18);
+        }
+
+        .login-tab-btn.voice-tab.active {
+            background-color: #f5f3ff;
+            color: #7c3aed;
+            border-color: #ddd6fe;
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.18);
+        }
+
+        .login-tab-btn.ce-tab.active {
+            background-color: #fffbeb;
+            color: #d97706;
+            border-color: #fde68a;
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.18);
+        }
+
+        .login-tab-btn.ve-tab.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
         }
 
         /* Forms Body */
         .login-body {
-            padding: 0 28px 32px;
+            padding: 0 34px 36px;
         }
 
         .error-banner {
@@ -211,12 +262,12 @@
         .role-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 18px;
-            font-size: 12px;
-            font-weight: 600;
+            gap: 10px;
+            padding: 11px 16px;
+            border-radius: 9px;
+            margin-bottom: 22px;
+            font-size: 13.5px;
+            font-weight: 700;
         }
 
         .role-admin {
@@ -237,16 +288,78 @@
             border: 1px solid #a7f3d0;
         }
 
+        .role-social {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        .role-designer {
+            background-color: #fdf2f8;
+            color: #db2777;
+            border: 1px solid #fbcfe8;
+        }
+
+        .role-input {
+            background-color: #ecfeff;
+            color: #0891b2;
+            border: 1px solid #cffafe;
+        }
+
+        .role-vo {
+            background-color: #f5f3ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+        }
+
+        .role-ce {
+            background-color: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .form-control.ce-control:focus {
+            border-color: #d97706;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.14);
+        }
+
+        .btn-login.btn-ce {
+            background-color: #d97706;
+        }
+
+        .btn-login.btn-ce:hover {
+            background-color: #b45309;
+        }
+
+        .role-ve {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .form-control.ve-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+        }
+
+        .btn-login.btn-ve {
+            background-color: #2563eb;
+        }
+
+        .btn-login.btn-ve:hover {
+            background-color: #1d4ed8;
+        }
+
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 13.5px;
+            font-weight: 700;
             color: var(--deep-navy);
-            margin-bottom: 6px;
+            margin-bottom: 7px;
         }
 
         .input-wrapper {
@@ -255,31 +368,52 @@
 
         .form-control {
             width: 100%;
-            height: 44px;
-            padding: 10px 14px;
-            font-size: 14px;
+            height: 48px;
+            padding: 12px 16px;
+            font-size: 15px;
             font-family: inherit;
             color: var(--text-dark);
-            background-color: #ffffff;
+            background-color: #f8fafc;
             border: 1.5px solid var(--border-color);
             border-radius: var(--radius-md);
             outline: none;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            transition: all 0.15s ease;
         }
 
         .form-control:focus {
+            background-color: #ffffff;
             border-color: var(--news-red);
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+            box-shadow: 0 0 0 3.5px rgba(220, 38, 38, 0.14);
         }
 
         .form-control.reporter-control:focus {
             border-color: #0284c7;
-            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+            box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.15);
         }
 
         .form-control.desk-control:focus {
             border-color: var(--desk-emerald);
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+            box-shadow: 0 0 0 3.5px rgba(5, 150, 105, 0.15);
+        }
+
+        .form-control.social-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.15);
+        }
+
+        .form-control.designer-control:focus {
+            border-color: #ec4899;
+            box-shadow: 0 0 0 3.5px rgba(236, 72, 153, 0.15);
+        }
+
+        .form-control.input-control:focus {
+            border-color: #0891b2;
+            box-shadow: 0 0 0 3.5px rgba(8, 145, 178, 0.15);
+        }
+
+        .form-control.vo-control:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3.5px rgba(124, 58, 237, 0.15);
         }
 
         .form-control::placeholder {
@@ -288,25 +422,28 @@
 
         .btn-login {
             width: 100%;
-            height: 46px;
+            height: 50px;
             background-color: var(--news-red);
             color: #ffffff;
             border: none;
             border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 800;
             font-family: inherit;
             cursor: pointer;
-            transition: background-color 0.15s ease, transform 0.1s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 22px;
+            margin-top: 24px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
         }
 
         .btn-login:hover {
             background-color: var(--news-red-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
         }
 
         .btn-login.btn-reporter {
@@ -325,6 +462,38 @@
             background-color: var(--desk-emerald-hover);
         }
 
+        .btn-login.btn-social {
+            background-color: #6366f1;
+        }
+
+        .btn-login.btn-social:hover {
+            background-color: #4f46e5;
+        }
+
+        .btn-login.btn-designer {
+            background-color: #ec4899;
+        }
+
+        .btn-login.btn-designer:hover {
+            background-color: #db2777;
+        }
+
+        .btn-login.btn-input {
+            background-color: #0891b2;
+        }
+
+        .btn-login.btn-input:hover {
+            background-color: #0e7490;
+        }
+
+        .btn-login.btn-vo {
+            background-color: #7c3aed;
+        }
+
+        .btn-login.btn-vo:hover {
+            background-color: #6d28d9;
+        }
+
         .btn-login:active {
             transform: scale(0.99);
         }
@@ -332,8 +501,28 @@
         .login-footer-text {
             text-align: center;
             margin-top: 22px;
-            font-size: 12px;
+            font-size: 12.5px;
             color: var(--text-muted);
+        }
+
+        @media (max-width: 680px) {
+            .login-card {
+                max-width: 100%;
+                margin: 10px;
+                border-radius: 14px;
+            }
+            .login-tabs-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .login-header {
+                padding: 24px 20px 16px;
+            }
+            .login-switch-container {
+                padding: 0 20px 16px;
+            }
+            .login-body {
+                padding: 0 20px 28px;
+            }
         }
     </style>
 </head>
@@ -348,8 +537,12 @@
             <p class="login-tagline">News Network Portal &amp; Management System</p>
         </div>
 
-        <!-- 3 Login Selector Tabs (Admin, Reporter, Desk) -->
+        <!-- 9 Login Selector Tabs in 3x3 Grid -->
         <div class="login-switch-container">
+            <div style="font-size: 11.5px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Select Department / Role:</span>
+                <span style="color: #94a3b8; font-weight: 600; text-transform: none;">9 Portals</span>
+            </div>
             <div class="login-tabs-grid">
                 <button 
                     type="button" 
@@ -388,6 +581,94 @@
                         <line x1="12" y1="17" x2="12" y2="21"></line>
                     </svg>
                     <span>Desk</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="socialTabBtn" 
+                    class="login-tab-btn social-tab {% if active_tab == 'social_media' %}active{% endif %}" 
+                    onclick="switchLoginTab('social_media')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>Social Media</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="designerTabBtn" 
+                    class="login-tab-btn designer-tab {% if active_tab == 'graphic_designer' %}active{% endif %}" 
+                    onclick="switchLoginTab('graphic_designer')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.5-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.3 0 6-2.7 6-6 0-5.5-4.5-10-10-10z"></path>
+                        <circle cx="7.5" cy="11.5" r="1.5"></circle>
+                        <circle cx="9.5" cy="7.5" r="1.5"></circle>
+                        <circle cx="14.5" cy="7.5" r="1.5"></circle>
+                        <circle cx="16.5" cy="11.5" r="1.5"></circle>
+                    </svg>
+                    <span>Graphic Designer</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="inputTabBtn" 
+                    class="login-tab-btn input-tab {% if active_tab == 'input' %}active{% endif %}" 
+                    onclick="switchLoginTab('input')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    <span>Input Desk</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="voiceTabBtn" 
+                    class="login-tab-btn voice-tab {% if active_tab == 'voice_over' %}active{% endif %}" 
+                    onclick="switchLoginTab('voice_over')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    <span>Voice Hover</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="copyEditorTabBtn" 
+                    class="login-tab-btn ce-tab {% if active_tab == 'copy_editor' %}active{% endif %}" 
+                    onclick="switchLoginTab('copy_editor')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span>Copy Editor</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    id="visualEditorTabBtn" 
+                    class="login-tab-btn ve-tab {% if active_tab == 'visual_editor' %}active{% endif %}" 
+                    onclick="switchLoginTab('visual_editor')"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                    <span>Visual Editor</span>
                 </button>
             </div>
         </div>
@@ -597,6 +878,413 @@
                 </form>
             </div>
 
+            <!-- ============================================== -->
+            <!-- 4. SOCIAL MEDIA LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="socialTabContent" class="tab-content {% if active_tab == 'social_media' %}active{% endif %}">
+                <div class="role-indicator role-social">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Social Media Desk (Use registered Phone &amp; Password)</span>
+                </div>
+
+                {% if social_media_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ social_media_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="social_media">
+                    
+                    <div class="form-group">
+                        <label for="social_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="social_phone" 
+                                name="phone" 
+                                class="form-control social-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="social_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="social_password" 
+                                name="password" 
+                                class="form-control social-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-social">
+                        <span>Sign In as Social Media</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 5. GRAPHIC DESIGNER LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="designerTabContent" class="tab-content {% if active_tab == 'graphic_designer' %}active{% endif %}">
+                <div class="role-indicator role-designer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Graphic Designer (Use registered Phone &amp; Password)</span>
+                </div>
+
+                {% if graphic_designer_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ graphic_designer_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="graphic_designer">
+                    
+                    <div class="form-group">
+                        <label for="designer_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="designer_phone" 
+                                name="phone" 
+                                class="form-control designer-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="designer_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="designer_password" 
+                                name="password" 
+                                class="form-control designer-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-designer">
+                        <span>Sign In as Graphic Designer</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 6. INPUT LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="inputTabContent" class="tab-content {% if active_tab == 'input' %}active{% endif %}">
+                <div class="role-indicator role-input">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Input Staff (Use registered Phone &amp; Password)</span>
+                </div>
+
+                {% if input_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ input_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="input">
+                    
+                    <div class="form-group">
+                        <label for="input_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="input_phone" 
+                                name="phone" 
+                                class="form-control input-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="input_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="input_password" 
+                                name="password" 
+                                class="form-control input-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-input">
+                        <span>Sign In as Input</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 7. VOICE OVER (VOICE HOVER) LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="voiceTabContent" class="tab-content {% if active_tab == 'voice_over' %}active{% endif %}">
+                <div class="role-indicator role-vo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    <span>Voice Hover (Voice Over) Staff Access</span>
+                </div>
+
+                {% if voice_over_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ voice_over_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="voice_over">
+                    
+                    <div class="form-group">
+                        <label for="voice_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="voice_phone" 
+                                name="phone" 
+                                class="form-control vo-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voice_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="voice_password" 
+                                name="password" 
+                                class="form-control vo-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-vo">
+                        <span>Sign In as Voice Hover</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 8. COPY EDITOR LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="copyEditorTabContent" class="tab-content {% if active_tab == 'copy_editor' %}active{% endif %}">
+                <div class="role-indicator role-ce">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span>Copy Editor Staff Access</span>
+                </div>
+
+                {% if copy_editor_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ copy_editor_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="copy_editor">
+                    
+                    <div class="form-group">
+                        <label for="ce_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="ce_phone" 
+                                name="phone" 
+                                class="form-control ce-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ce_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="ce_password" 
+                                name="password" 
+                                class="form-control ce-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-ce">
+                        <span>Sign In as Copy Editor</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 9. VISUAL EDITOR LOGIN FORM TAB -->
+            <!-- ============================================== -->
+            <div id="visualEditorTabContent" class="tab-content {% if active_tab == 'visual_editor' %}active{% endif %}">
+                <div class="role-indicator role-ve">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                    <span>Visual Editor Staff Access</span>
+                </div>
+
+                {% if visual_editor_error %}
+                <div class="error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ visual_editor_error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login_home' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="login_type" value="visual_editor">
+                    
+                    <div class="form-group">
+                        <label for="ve_phone" class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="tel" 
+                                id="ve_phone" 
+                                name="phone" 
+                                class="form-control ve-control" 
+                                placeholder="e.g. 9876543210" 
+                                required 
+                                autocomplete="tel"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ve_password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="ve_password" 
+                                name="password" 
+                                class="form-control ve-control" 
+                                placeholder="••••••••••••" 
+                                required 
+                                autocomplete="current-password"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login btn-ve">
+                        <span>Sign In as Visual Editor</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
             <div class="login-footer-text">
                 Nandilive News Network &bull; Authorized Personnel Only
             </div>
@@ -608,18 +1296,43 @@
             const adminBtn = document.getElementById('adminTabBtn');
             const reporterBtn = document.getElementById('reporterTabBtn');
             const deskBtn = document.getElementById('deskTabBtn');
+            const socialBtn = document.getElementById('socialTabBtn');
+            const designerBtn = document.getElementById('designerTabBtn');
+            const inputBtn = document.getElementById('inputTabBtn');
+            const voiceBtn = document.getElementById('voiceTabBtn');
+            const copyEditorBtn = document.getElementById('copyEditorTabBtn');
+            const visualEditorBtn = document.getElementById('visualEditorTabBtn');
             
             const adminContent = document.getElementById('adminTabContent');
             const reporterContent = document.getElementById('reporterTabContent');
             const deskContent = document.getElementById('deskTabContent');
+            const socialContent = document.getElementById('socialTabContent');
+            const designerContent = document.getElementById('designerTabContent');
+            const inputContent = document.getElementById('inputTabContent');
+            const voiceContent = document.getElementById('voiceTabContent');
+            const copyEditorContent = document.getElementById('copyEditorTabContent');
+            const visualEditorContent = document.getElementById('visualEditorTabContent');
 
             // Reset all
             adminBtn.classList.remove('active');
             reporterBtn.classList.remove('active');
             deskBtn.classList.remove('active');
+            if (socialBtn) socialBtn.classList.remove('active');
+            if (designerBtn) designerBtn.classList.remove('active');
+            if (inputBtn) inputBtn.classList.remove('active');
+            if (voiceBtn) voiceBtn.classList.remove('active');
+            if (copyEditorBtn) copyEditorBtn.classList.remove('active');
+            if (visualEditorBtn) visualEditorBtn.classList.remove('active');
+
             adminContent.classList.remove('active');
             reporterContent.classList.remove('active');
             deskContent.classList.remove('active');
+            if (socialContent) socialContent.classList.remove('active');
+            if (designerContent) designerContent.classList.remove('active');
+            if (inputContent) inputContent.classList.remove('active');
+            if (voiceContent) voiceContent.classList.remove('active');
+            if (copyEditorContent) copyEditorContent.classList.remove('active');
+            if (visualEditorContent) visualEditorContent.classList.remove('active');
 
             if (tab === 'reporter') {
                 reporterBtn.classList.add('active');
@@ -627,6 +1340,24 @@
             } else if (tab === 'desk') {
                 deskBtn.classList.add('active');
                 deskContent.classList.add('active');
+            } else if (tab === 'social_media') {
+                if (socialBtn) socialBtn.classList.add('active');
+                if (socialContent) socialContent.classList.add('active');
+            } else if (tab === 'graphic_designer') {
+                if (designerBtn) designerBtn.classList.add('active');
+                if (designerContent) designerContent.classList.add('active');
+            } else if (tab === 'input') {
+                if (inputBtn) inputBtn.classList.add('active');
+                if (inputContent) inputContent.classList.add('active');
+            } else if (tab === 'voice_over') {
+                if (voiceBtn) voiceBtn.classList.add('active');
+                if (voiceContent) voiceContent.classList.add('active');
+            } else if (tab === 'copy_editor') {
+                if (copyEditorBtn) copyEditorBtn.classList.add('active');
+                if (copyEditorContent) copyEditorContent.classList.add('active');
+            } else if (tab === 'visual_editor') {
+                if (visualEditorBtn) visualEditorBtn.classList.add('active');
+                if (visualEditorContent) visualEditorContent.classList.add('active');
             } else {
                 adminBtn.classList.add('active');
                 adminContent.classList.add('active');
@@ -635,3 +1366,4 @@
     </script>
 </body>
 </html>
+

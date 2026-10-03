@@ -1,0 +1,918 @@
+{% extends "desk/base_desk.html" %}
+
+{% block title %}Chat with Copy Editor - Nandilive Desk{% endblock %}
+{% block page_title %}Chat with Copy Editor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .chat-layout {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 0;
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        height: calc(100vh - 140px);
+        min-height: 580px;
+        overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+        .chat-layout {
+            grid-template-columns: 1fr;
+            height: auto;
+            min-height: 500px;
+        }
+        .chat-sidebar-panel {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border-color);
+            max-height: 280px;
+        }
+    }
+
+    /* Left Sidebar: Contact list */
+    .chat-sidebar-panel {
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        background: #fafbfe;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .chat-sidebar-header {
+        padding: 16px 18px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chat-sidebar-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .chat-search-box {
+        position: relative;
+    }
+
+    .chat-search-box input {
+        width: 100%;
+        padding: 9px 12px 9px 34px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        background: #f8fafc;
+        transition: all 0.2s;
+    }
+
+    .chat-search-box input:focus {
+        background: #ffffff;
+        border-color: var(--desk-emerald);
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    }
+
+    .chat-search-box svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
+
+    .chat-contacts-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+    }
+
+    .chat-contact-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.15s ease;
+        position: relative;
+        margin-bottom: 4px;
+    }
+
+    .chat-contact-item:hover {
+        background: #f1f5f9;
+    }
+
+    .chat-contact-item.active {
+        background: #ecfdf5;
+        border-left: 3px solid var(--desk-emerald);
+    }
+
+    .contact-avatar-wrapper {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .contact-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+
+    .chat-contact-item.active .contact-avatar {
+        background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+    }
+
+    .contact-badge-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        background: #10b981;
+    }
+
+    .contact-badge-dot.offline {
+        background: #94a3b8;
+    }
+
+    .contact-meta {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .contact-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 2px;
+    }
+
+    .contact-name {
+        font-weight: 700;
+        font-size: 13.5px;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .contact-time {
+        font-size: 11px;
+        color: var(--text-light);
+        flex-shrink: 0;
+    }
+
+    .contact-preview-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+    }
+
+    .contact-preview {
+        font-size: 12px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .contact-unread-badge {
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 9999px;
+        flex-shrink: 0;
+    }
+
+    /* Right Panel: Conversation */
+    .chat-main-panel {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .chat-main-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #ffffff;
+        flex-shrink: 0;
+    }
+
+    .chat-header-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-user-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .header-user-name {
+        font-weight: 800;
+        font-size: 15px;
+        color: var(--text-main);
+    }
+
+    .header-user-role {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .online-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        display: inline-block;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+        transition: all 0.3s ease;
+    }
+
+    .online-dot.offline {
+        background: #94a3b8;
+        box-shadow: none;
+    }
+
+    .last-seen-status {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .last-seen-status.is-online {
+        color: #059669;
+        font-weight: 700;
+    }
+
+    /* Messages container */
+    .chat-messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 24px;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .message-row {
+        display: flex;
+        width: 100%;
+    }
+
+    .message-row.outgoing {
+        justify-content: flex-end;
+    }
+
+    .message-row.incoming {
+        justify-content: flex-start;
+    }
+
+    .message-bubble {
+        max-width: 68%;
+        min-width: 120px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        position: relative;
+        font-size: 13.5px;
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
+    .message-row.outgoing .message-bubble {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        border-bottom-right-radius: 2px;
+        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+    }
+
+    .message-row.incoming .message-bubble {
+        background: #ffffff;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        border-bottom-left-radius: 2px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .message-sender-name {
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #d97706;
+    }
+
+    .message-row.outgoing .message-sender-name {
+        color: #a7f3d0;
+    }
+
+    .message-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-top: 4px;
+        font-size: 10.5px;
+        opacity: 0.85;
+    }
+
+    .message-row.incoming .message-footer {
+        color: var(--text-muted);
+    }
+
+    .attachment-card {
+        margin-top: 6px;
+        padding: 8px 10px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .message-row.incoming .attachment-card {
+        background: #f1f5f9;
+    }
+
+    .attachment-card a {
+        color: inherit;
+        text-decoration: underline;
+        font-weight: 600;
+        font-size: 12px;
+        word-break: break-all;
+    }
+
+    /* Input Box Area */
+    .chat-input-area {
+        padding: 14px 20px;
+        background: #ffffff;
+        border-top: 1px solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+    .attachment-preview-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .attachment-preview-chip button {
+        background: none;
+        border: none;
+        color: #047857;
+        font-size: 14px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .chat-input-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    .chat-textarea {
+        flex: 1;
+        min-height: 42px;
+        max-height: 120px;
+        padding: 10px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-family: inherit;
+        outline: none;
+        resize: none;
+        line-height: 1.4;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: #f8fafc;
+    }
+
+    .chat-textarea:focus {
+        background: #ffffff;
+        border-color: var(--desk-emerald);
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    }
+
+    .chat-btn-attach {
+        background: #f1f5f9;
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+
+    .chat-btn-attach:hover {
+        background: #e2e8f0;
+        color: var(--text-main);
+    }
+
+    .chat-btn-send {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        padding: 0 18px;
+        height: 42px;
+        font-weight: 700;
+        font-size: 13.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+    }
+
+    .chat-btn-send:hover {
+        background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+    }
+
+    .chat-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-muted);
+        text-align: center;
+        padding: 40px;
+    }
+
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        color: var(--desk-emerald);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+    <!-- Left Sidebar: Copy Editors List -->
+    <aside class="chat-sidebar-panel">
+        <div class="chat-sidebar-header">
+            <div class="chat-sidebar-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span>Copy Editors</span>
+                <span style="margin-left: auto; font-size: 11px; background: #e2e8f0; color: #475569; padding: 2px 7px; border-radius: 9999px;">{{ copy_editors|length }}</span>
+            </div>
+            <div class="chat-search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="contactSearchInput" placeholder="Search copy editor..." onkeyup="filterContacts()">
+            </div>
+        </div>
+
+        <div class="chat-contacts-list" id="contactsList">
+            {% for ce in copy_editors %}
+            <a href="{% url 'desk_chat_copy_editor_with_ce' ce.pk %}"
+               class="chat-contact-item {% if active_ce and active_ce.pk == ce.pk %}active{% endif %}"
+               data-name="{{ ce.name|lower }}"
+               data-phone="{{ ce.phone_number }}">
+                <div class="contact-avatar-wrapper">
+                    <div class="contact-avatar">
+                        {{ ce.name|slice:":1"|upper }}
+                    </div>
+                    <span class="contact-badge-dot {% if not ce.is_online %}offline{% endif %}" id="badge-dot-{{ ce.pk }}"></span>
+                </div>
+                <div class="contact-meta">
+                    <div class="contact-top-row">
+                        <span class="contact-name">{{ ce.name }}</span>
+                        {% if ce.latest_message %}
+                        <span class="contact-time">{{ ce.latest_message.created_at|date:"h:i A" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="contact-preview-row">
+                        <span class="contact-preview">
+                            {% if ce.latest_message %}
+                                {% if ce.latest_message.sender_type == 'desk' %}&#10003; {% endif %}{{ ce.latest_message.message|default:"[Attachment]"|truncatechars:28 }}
+                            {% else %}
+                                <span style="color: var(--text-light); font-style: italic;">Tap to start chat</span>
+                            {% endif %}
+                        </span>
+                        {% if ce.unread_count > 0 %}
+                        <span class="contact-unread-badge" id="badge-ce-{{ ce.pk }}">{{ ce.unread_count }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                No Copy Editors registered yet.
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Right Panel: Chat Area -->
+    <main class="chat-main-panel">
+        {% if active_ce %}
+        <!-- Header -->
+        <div class="chat-main-header">
+            <div class="chat-header-user">
+                <div class="header-user-avatar">
+                    {{ active_ce.name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="header-user-name">{{ active_ce.name }}</div>
+                    <div class="header-user-role">
+                        <span class="online-dot {% if not active_ce.is_online %}offline{% endif %}" id="headerOnlineDot"></span>
+                        <span id="headerLastSeenText" class="last-seen-status {% if active_ce.is_online %}is-online{% endif %}">{{ active_ce.last_seen_text }}</span>
+                        <span>&bull;</span>
+                        <span>Copy Editor &bull; {{ active_ce.phone_number }}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <a href="tel:{{ active_ce.phone_number }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; color: var(--text-main); border: 1px solid var(--border-color);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    Call
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages scroll container -->
+        <div class="chat-messages-container" id="chatMessagesBox">
+            {% for msg in chat_messages %}
+            <div class="message-row {% if msg.sender_type == 'desk' %}outgoing{% else %}incoming{% endif %}" id="msg-{{ msg.pk }}" data-id="{{ msg.pk }}">
+                <div class="message-bubble">
+                    <div class="message-sender-name">
+                        {% if msg.sender_type == 'desk' %}You (Desk){% else %}{{ active_ce.name }}{% endif %}
+                    </div>
+                    <div class="message-text">{{ msg.message }}</div>
+
+                    {% if msg.attachment %}
+                    <div class="attachment-card">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                        <a href="{{ msg.attachment.url }}" target="_blank" download>Attachment File</a>
+                    </div>
+                    {% endif %}
+
+                    <div class="message-footer">
+                        <span>{{ msg.created_at|date:"h:i A" }}</span>
+                        {% if msg.sender_type == 'desk' %}
+                        <span id="tick-{{ msg.pk }}" title="{% if msg.is_read %}Read{% else %}Delivered{% endif %}">
+                            {% if msg.is_read %}
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5-1.5-1.5"></path></svg>
+                            {% else %}
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d1fae5" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="chat-empty-state" id="emptyConversationMsg">
+                <div class="empty-state-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </div>
+                <h4 style="margin-bottom: 6px; font-weight: 700; color: var(--text-main);">Direct Chat with {{ active_ce.name }}</h4>
+                <p style="font-size: 13px; max-width: 320px; line-height: 1.5;">Type a message below to send script instructions, notes, or feedback to {{ active_ce.name }}.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div id="attachmentChipContainer" style="display: none;">
+                <span class="attachment-preview-chip">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span id="attachmentFileName">file.png</span>
+                    <button type="button" onclick="clearAttachment()">&times;</button>
+                </span>
+            </div>
+
+            <form id="chatForm" class="chat-input-form" onsubmit="handleSendMessage(event)">
+                {% csrf_token %}
+                <input type="file" id="attachmentInput" name="attachment" style="display: none;" onchange="handleFileSelected(this)">
+                <button type="button" class="chat-btn-attach" onclick="document.getElementById('attachmentInput').click()" title="Attach file or image">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                </button>
+
+                <textarea id="messageInput" name="message" class="chat-textarea" placeholder="Type your message to {{ active_ce.name }}... (Press Enter to send)" rows="1" onkeydown="handleKeyDown(event)"></textarea>
+
+                <button type="submit" class="chat-btn-send" id="sendBtn">
+                    <span>Send</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        {% else %}
+        <!-- Empty state when no Copy Editor is selected -->
+        <div class="chat-empty-state">
+            <div class="empty-state-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 8px;">Select a Copy Editor</h3>
+            <p style="font-size: 13px; max-width: 320px;">Choose a Copy Editor from the left list to begin chatting in real-time.</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    const activeCeId = {% if active_ce %}{{ active_ce.pk }}{% else %}null{% endif %};
+    let lastMsgId = 0;
+
+    // Determine initial lastMsgId
+    document.querySelectorAll('.message-row').forEach(row => {
+        const id = parseInt(row.getAttribute('data-id'), 10);
+        if (id && id > lastMsgId) lastMsgId = id;
+    });
+
+    function scrollChatToBottom() {
+        const box = document.getElementById('chatMessagesBox');
+        if (box) {
+            box.scrollTop = box.scrollHeight;
+        }
+    }
+
+    // Auto-scroll on initial load
+    window.addEventListener('DOMContentLoaded', () => {
+        scrollChatToBottom();
+    });
+
+    function handleKeyDown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            document.getElementById('chatForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+    }
+
+    function handleFileSelected(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('attachmentFileName').textContent = input.files[0].name;
+            document.getElementById('attachmentChipContainer').style.display = 'block';
+        }
+    }
+
+    function clearAttachment() {
+        const input = document.getElementById('attachmentInput');
+        input.value = '';
+        document.getElementById('attachmentChipContainer').style.display = 'none';
+    }
+
+    function filterContacts() {
+        const query = document.getElementById('contactSearchInput').value.toLowerCase().trim();
+        const items = document.querySelectorAll('.chat-contact-item');
+        items.forEach(item => {
+            const name = item.getAttribute('data-name') || '';
+            const phone = item.getAttribute('data-phone') || '';
+            if (name.includes(query) || phone.includes(query)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function appendMessageBubble(data, isOutgoing) {
+        const emptyMsg = document.getElementById('emptyConversationMsg');
+        if (emptyMsg) emptyMsg.remove();
+
+        const box = document.getElementById('chatMessagesBox');
+        const row = document.createElement('div');
+        row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
+        row.id = `msg-${data.id}`;
+        row.setAttribute('data-id', data.id);
+
+        let attachmentHtml = '';
+        if (data.attachment_url) {
+            attachmentHtml = `
+                <div class="attachment-card">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <a href="${data.attachment_url}" target="_blank" download>${data.attachment_name || 'Attachment File'}</a>
+                </div>
+            `;
+        }
+
+        const senderLabel = isOutgoing ? 'You (Desk)' : (data.sender_name || 'Copy Editor');
+        const checkIcon = isOutgoing ? `<span id="tick-${data.id}" title="${data.is_read ? 'Read' : 'Delivered'}">${data.is_read ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5-1.5-1.5"></path></svg>' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d1fae5" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'}</span>` : '';
+
+        row.innerHTML = `
+            <div class="message-bubble">
+                <div class="message-sender-name">${senderLabel}</div>
+                <div class="message-text">${data.message || ''}</div>
+                ${attachmentHtml}
+                <div class="message-footer">
+                    <span>${data.created_at_formatted || 'Now'}</span>
+                    ${checkIcon}
+                </div>
+            </div>
+        `;
+
+        box.appendChild(row);
+        scrollChatToBottom();
+    }
+
+    async function handleSendMessage(event) {
+        event.preventDefault();
+        if (!activeCeId) return;
+
+        const msgInput = document.getElementById('messageInput');
+        const fileInput = document.getElementById('attachmentInput');
+        const text = msgInput.value.trim();
+        const hasFile = fileInput.files && fileInput.files[0];
+
+        if (!text && !hasFile) return;
+
+        const formData = new FormData();
+        formData.append('message', text);
+        if (hasFile) {
+            formData.append('attachment', fileInput.files[0]);
+        }
+        formData.append('is_ajax', '1');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.disabled = true;
+
+        try {
+            const resp = await fetch(`/desk/chat-copy-editor/${activeCeId}/send/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+            const res = await resp.json();
+            if (res.success) {
+                appendMessageBubble({
+                    id: res.message_id,
+                    message: res.message,
+                    sender_name: res.sender_name,
+                    attachment_url: res.attachment_url,
+                    attachment_name: res.attachment_name,
+                    created_at_formatted: res.created_at_formatted,
+                    is_read: false
+                }, true);
+
+                if (res.message_id > lastMsgId) {
+                    lastMsgId = res.message_id;
+                }
+
+                msgInput.value = '';
+                clearAttachment();
+                msgInput.focus();
+            } else {
+                alert(res.error || 'Failed to send message.');
+            }
+        } catch (err) {
+            console.error('Error sending message:', err);
+        } finally {
+            sendBtn.disabled = false;
+        }
+    }
+
+    // Polling for incoming messages & real-time presence every 3 seconds
+    if (activeCeId) {
+        setInterval(async () => {
+            try {
+                const resp = await fetch(`/desk/chat-copy-editor/${activeCeId}/api/?last_id=${lastMsgId}`);
+                if (!resp.ok) return;
+                const data = await resp.json();
+
+                // 1. Update Real-time Online / Last Seen status
+                if (data.contact_status) {
+                    const dot = document.getElementById('headerOnlineDot');
+                    const txt = document.getElementById('headerLastSeenText');
+                    if (dot && txt) {
+                        if (data.contact_status.is_online) {
+                            dot.classList.remove('offline');
+                            txt.classList.add('is-online');
+                            txt.textContent = 'Online';
+                        } else {
+                            dot.classList.add('offline');
+                            txt.classList.remove('is-online');
+                            txt.textContent = data.contact_status.text || 'Offline';
+                        }
+                    }
+                    const badgeDot = document.getElementById(`badge-dot-${activeCeId}`);
+                    if (badgeDot) {
+                        if (data.contact_status.is_online) {
+                            badgeDot.classList.remove('offline');
+                        } else {
+                            badgeDot.classList.add('offline');
+                        }
+                    }
+                }
+
+                // 2. Update double-tick read receipts
+                if (data.read_message_ids && data.read_message_ids.length > 0) {
+                    data.read_message_ids.forEach(id => {
+                        const tick = document.getElementById(`tick-${id}`);
+                        if (tick) {
+                            tick.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5-1.5-1.5"></path></svg>`;
+                            tick.title = "Read";
+                        }
+                    });
+                }
+
+                // 3. Append new messages
+                if (data.success && data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        if (!document.getElementById(`msg-${msg.id}`)) {
+                            const isOutgoing = msg.sender_type === 'desk';
+                            appendMessageBubble(msg, isOutgoing);
+                            if (msg.id > lastMsgId) {
+                                lastMsgId = msg.id;
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                // Silently ignore polling errors
+            }
+        }, 3000);
+    }
+</script>
+{% endblock %}

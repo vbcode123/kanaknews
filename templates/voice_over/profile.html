@@ -1,0 +1,182 @@
+{% extends "voice_over/base_voice_over.html" %}
+
+{% block title %}My Profile - {{ voice_over_user.name }} - Nandilive Voice Hover{% endblock %}
+{% block page_title %}Voice Hover Staff Profile{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        max-width: 950px;
+    }
+
+    .profile-card {
+        background: linear-gradient(135deg, #3b0764 0%, #6d28d9 100%);
+        border-radius: var(--radius-lg);
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+    }
+
+    .profile-avatar-lg {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background-color: var(--vo-purple);
+        color: #ffffff;
+        font-size: 38px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .profile-name {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .profile-role {
+        font-size: 13px;
+        color: #ddd6fe;
+        margin-bottom: 18px;
+    }
+
+    .info-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .info-box {
+        background-color: #f8fafc;
+        border: 1px solid var(--border-color);
+        padding: 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .info-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--vo-navy);
+        word-break: break-all;
+    }
+
+    @media (max-width: 800px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-layout">
+    <!-- Left Card -->
+    <div class="profile-card">
+        <div class="profile-avatar-lg">
+            {{ voice_over_user.name|slice:":1"|upper }}
+        </div>
+        <h2 class="profile-name">{{ voice_over_user.name }}</h2>
+        <div class="profile-role">Voice Hover &bull; Nandilive News Network</div>
+
+        <div style="background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 14px; text-align: left; font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #94a3b8;">Login Phone:</span>
+                <strong style="color: #ffffff;">{{ voice_over_user.phone_number }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #94a3b8;">Status:</span>
+                <span style="color: #4ade80; font-weight: 700;">
+                    {% if voice_over_user.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #94a3b8;">Registered:</span>
+                <span style="color: #ffffff;">{{ voice_over_user.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Card: Details -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Staff Profile Information</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                    Personal details and official workspace assignments
+                </p>
+            </div>
+        </div>
+
+        <div class="info-list">
+            <div class="info-box">
+                <div class="info-label">Full Name</div>
+                <div class="info-value">{{ voice_over_user.name }}</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">Phone Number (Login ID)</div>
+                <div class="info-value">{{ voice_over_user.phone_number }}</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">Department</div>
+                <div class="info-value">Voice Hover / Voice Over Studio</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">Account Status</div>
+                <div class="info-value">
+                    {% if voice_over_user.is_active %}
+                        <span class="badge badge-published">Active Member</span>
+                    {% else %}
+                        <span class="badge badge-draft">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">Linked System Username</div>
+                <div class="info-value">{{ voice_over_user.user.username }}</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">Registration Date</div>
+                <div class="info-value" style="font-size: 14px;">
+                    {{ voice_over_user.created_at|date:"F d, Y - h:i A" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,465 @@
+{% extends "desk/base_desk.html" %}
+
+{% block title %}Teleprompter Dispatcher - Nandilive Desk{% endblock %}
+{% block page_title %}Teleprompter Dispatcher{% endblock %}
+
+{% block extra_head %}
+<style>
+    .prompter-dispatch-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+        .prompter-dispatch-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .dispatch-card {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        padding: 24px;
+    }
+
+    .dispatch-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .dispatch-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--desk-navy);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        border-radius: var(--radius-md);
+        border: 1.5px solid var(--border-color);
+        background: #ffffff;
+        color: #0f172a;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--desk-emerald);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    }
+
+    .prompter-textarea {
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 1.6;
+        min-height: 180px;
+        resize: vertical;
+    }
+
+    .textarea-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .btn-dispatch {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-dispatch:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+    }
+
+    /* History Table */
+    .history-card {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        padding: 24px;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .history-table th {
+        text-align: left;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border-bottom: 2px solid var(--border-color);
+        color: var(--text-muted);
+        font-size: 11.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .history-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+
+    .history-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    .status-pill-read {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-pill-sent {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .btn-delete-script {
+        background: none;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 4px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 11.5px;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .btn-delete-script:hover {
+        background: #dc2626;
+        color: #ffffff;
+    }
+
+    .quick-autofill-banner {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: var(--radius-md);
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12.5px;
+        color: #166534;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Top Banner -->
+    <div style="background: linear-gradient(135deg, #090e1a 0%, #134e4a 100%); border-radius: var(--radius-lg); padding: 24px; color: #ffffff; margin-bottom: 24px; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">📡 Live Broadcast Link</span>
+                <span style="font-size: 13px; color: #6ee7b7; font-weight: 600;">Desk to Field Reporter Teleprompter</span>
+            </div>
+            <h2 style="font-size: 22px; font-weight: 800; margin: 0 0 4px 0;">Teleprompter Dispatch Studio</h2>
+            <p style="margin: 0; font-size: 13.5px; color: #cbd5e1; max-width: 600px;">
+                Draft breaking news scripts or editorial cues and send them directly to any field reporter's personal teleprompter screen.
+            </p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 18px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 800; color: #6ee7b7;">{{ reporters.count }}</div>
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Active Reporters</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 18px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 800; color: #ffffff;">{{ sent_scripts.count }}</div>
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Dispatched</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Form on Left, History on Right -->
+    <div class="prompter-dispatch-grid">
+        <!-- Left: Dispatch Form -->
+        <div class="dispatch-card">
+            <div class="dispatch-header">
+                <div class="dispatch-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.3">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                        <line x1="6" y1="8" x2="18" y2="8"></line>
+                        <line x1="6" y1="12" x2="14" y2="12"></line>
+                    </svg>
+                    <span>Write &amp; Dispatch Teleprompter</span>
+                </div>
+                <span style="font-size: 12px; color: #059669; font-weight: 700; background: #ecfdf5; padding: 3px 8px; border-radius: 6px;">Live Push</span>
+            </div>
+
+            <!-- Optional: Quick Story Autofill -->
+            {% if approved_news %}
+            <div class="quick-autofill-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>⚡</span>
+                    <strong>Quick Autofill from Story:</strong>
+                </div>
+                <select id="quickStorySelect" class="form-select" style="max-width: 250px; padding: 5px 10px; font-size: 12px;" onchange="handleStoryAutofill(this)">
+                    <option value="">-- Choose Approved Story --</option>
+                    {% for n in approved_news %}
+                    <option value="{{ n.pk }}" data-headline="{{ n.headline|escape }}" data-description="{{ n.description|escape }}" data-reporter-id="{{ n.reporter.pk|default:'' }}">
+                        #{{ n.pk }} - {{ n.headline|truncatechars:45 }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'desk_teleprompter' %}" id="teleprompterForm">
+                {% csrf_token %}
+                <input type="hidden" name="news_id" id="formNewsId" value="{{ selected_news_id }}">
+
+                <!-- 1. Topic / Headline -->
+                <div class="form-group">
+                    <label class="form-label" for="prompterTitle">
+                        Script Topic / Headline <span style="font-weight: 400; color: var(--text-muted);">(Will appear at top of reporter's screen)</span>
+                    </label>
+                    <input type="text" name="title" id="prompterTitle" class="form-control" placeholder="e.g., Cuttack CM Blood Donation Camp - Live OB Script" required>
+                </div>
+
+                <!-- 2. Text Message / Teleprompter Script Space -->
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" for="prompterScriptText" style="margin-bottom: 0;">
+                            Teleprompter Script Text (Odia, English, or Hindi)
+                        </label>
+                        <button type="button" onclick="clearScriptText()" style="background: none; border: none; font-size: 12px; color: #dc2626; cursor: pointer; text-decoration: underline;">
+                            Clear
+                        </button>
+                    </div>
+                    <textarea name="script_text" id="prompterScriptText" class="form-control prompter-textarea" placeholder="Type or paste the complete news script narrative here for the reporter to read on camera..." required oninput="updateWordCount()"></textarea>
+                    <div class="textarea-footer">
+                        <div>
+                            Words: <strong id="wordCountDisplay" style="color: #0f172a;">0</strong> &bull; Estimated read time: <strong id="readTimeDisplay" style="color: #059669;">0 sec</strong>
+                        </div>
+                        <span style="font-size: 11.5px; color: #64748b;">Supports large font rendering in Reporter Studio</span>
+                    </div>
+                </div>
+
+                <!-- 3. Choose Reporter -->
+                <div class="form-group">
+                    <label class="form-label" for="reporterSelect" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>Choose Field Reporter to Send <span style="color: #dc2626;">*</span></span>
+                        <span style="font-size: 11.5px; color: #0284c7; font-weight: 600;">Only this reporter can view this prompter</span>
+                    </label>
+                    <select name="reporter_id" id="reporterSelect" class="form-select" required>
+                        <option value="">-- Select Field Reporter --</option>
+                        {% for rep in reporters %}
+                        <option value="{{ rep.pk }}" {% if selected_reporter_id|stringformat:"s" == rep.pk|stringformat:"s" %}selected{% endif %}>
+                            🎤 {{ rep.name }} &bull; {{ rep.district }} Bureau (📞 {{ rep.phone_number }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 4. Send Button -->
+                <button type="submit" class="btn-dispatch">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Send to Reporter's Teleprompter</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Right: Sent History -->
+        <div class="history-card">
+            <div class="dispatch-header">
+                <div class="dispatch-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Dispatched Teleprompters</span>
+                </div>
+                <span style="font-size: 12px; color: #64748b;">Recent {{ sent_scripts.count }}</span>
+            </div>
+
+            {% if sent_scripts %}
+            <div style="overflow-x: auto; max-height: 600px;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Reporter</th>
+                            <th>Topic &amp; Script</th>
+                            <th>Sent At</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sent_scripts %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700; color: #0f172a;">{{ item.reporter.name }}</div>
+                                <div style="font-size: 11px; color: #64748b;">📍 {{ item.reporter.district }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; color: #1e3a8a; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {{ item.title }}
+                                </div>
+                                <div style="font-size: 11.5px; color: #475569; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {{ item.script_text|truncatechars:60 }}
+                                </div>
+                            </td>
+                            <td style="white-space: nowrap;">
+                                <div style="font-size: 12px; font-weight: 600; color: #334155;">{{ item.created_at|date:"h:i A" }}</div>
+                                <div style="font-size: 11px; color: #94a3b8;">{{ item.created_at|date:"d M" }}</div>
+                            </td>
+                            <td>
+                                {% if item.is_read %}
+                                <span class="status-pill-read" title="Opened by reporter at {{ item.read_at|date:'h:i A, d M' }}">
+                                    ✓ Read
+                                </span>
+                                {% else %}
+                                <span class="status-pill-sent" title="Dispatched, awaiting reporter to open">
+                                    ⏳ Sent
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="{% url 'desk_teleprompter_delete' item.pk %}" onsubmit="return confirm('Delete this teleprompter script?');" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete-script" title="Delete">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="padding: 48px 20px; text-align: center; color: var(--text-muted);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #94a3b8;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </div>
+                <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: #1e293b;">No Teleprompter Scripts Dispatched Yet</h4>
+                <p style="font-size: 12.5px; margin: 0;">Use the form on the left to send a teleprompter cue to any reporter.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateWordCount() {
+        const text = document.getElementById('prompterScriptText').value.trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        document.getElementById('wordCountDisplay').textContent = words;
+        
+        // Average speaking rate: 130 words per minute (~2.15 words per second)
+        const seconds = Math.round(words / 2.15);
+        if (seconds < 60) {
+            document.getElementById('readTimeDisplay').textContent = seconds + ' sec';
+        } else {
+            const mins = Math.floor(seconds / 60);
+            const remSecs = seconds % 60;
+            document.getElementById('readTimeDisplay').textContent = mins + 'm ' + remSecs + 's';
+        }
+    }
+
+    function clearScriptText() {
+        document.getElementById('prompterTitle').value = '';
+        document.getElementById('prompterScriptText').value = '';
+        document.getElementById('formNewsId').value = '';
+        updateWordCount();
+    }
+
+    function handleStoryAutofill(selectEl) {
+        const opt = selectEl.options[selectEl.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        const headline = opt.getAttribute('data-headline') || '';
+        const description = opt.getAttribute('data-description') || '';
+        const repId = opt.getAttribute('data-reporter-id') || '';
+
+        document.getElementById('prompterTitle').value = headline;
+        document.getElementById('prompterScriptText').value = description;
+        document.getElementById('formNewsId').value = opt.value;
+
+        if (repId) {
+            const repSelect = document.getElementById('reporterSelect');
+            for (let i = 0; i < repSelect.options.length; i++) {
+                if (repSelect.options[i].value === repId) {
+                    repSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        updateWordCount();
+    }
+</script>
+{% endblock %}

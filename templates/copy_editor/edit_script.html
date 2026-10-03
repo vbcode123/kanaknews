@@ -1,0 +1,506 @@
+{% extends "copy_editor/base_copy_editor.html" %}
+{% load static %}
+
+{% block title %}Edit Script - {{ news.headline|truncatechars:35 }} - Nandilive{% endblock %}
+{% block page_title %}Edit Script &amp; Send to Visual Editor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .editor-layout {
+        max-width: 1050px;
+        margin: 0 auto;
+    }
+
+    .top-nav-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #475569;
+        font-weight: 600;
+        font-size: 13.5px;
+        text-decoration: none;
+        margin-bottom: 20px;
+        transition: color 0.15s ease;
+    }
+
+    .top-nav-back:hover {
+        color: #d97706;
+    }
+
+    /* Context Bar */
+    .story-context-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .context-tags {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .format-badge {
+        font-size: 11px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .format-avo {
+        background-color: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .format-byte {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+    }
+
+    .format-pkg {
+        background-color: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .main-editor-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+    }
+
+    .editor-field-group {
+        margin-bottom: 24px;
+    }
+
+    .editor-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .editor-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .editor-input:focus {
+        border-color: #d97706;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+    }
+
+    .script-textarea {
+        width: 100%;
+        min-height: 280px;
+        padding: 16px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border-color);
+        font-size: 15px;
+        line-height: 1.7;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        resize: vertical;
+        background-color: #fffdf5;
+        color: #1e293b;
+    }
+
+    .script-textarea:focus {
+        border-color: #d97706;
+        box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
+        background-color: #ffffff;
+    }
+
+    .textarea-counter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 6px;
+    }
+
+    /* Forward to Visual Editor Section */
+    .ve-dispatch-card {
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-left: 4px solid #4f46e5;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 24px;
+    }
+
+    .ve-dispatch-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e1b4b;
+        margin-bottom: 12px;
+    }
+
+    .ve-select {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1.5px solid #cbd5e1;
+        font-size: 13.5px;
+        outline: none;
+        background-color: #ffffff;
+        margin-bottom: 12px;
+    }
+
+    .ve-select:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+
+    .actions-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 22px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .btn-save-only {
+        background: #ffffff;
+        color: #d97706;
+        border: 1.5px solid #d97706;
+    }
+
+    .btn-save-only:hover {
+        background: #fffbeb;
+    }
+
+    .btn-send-ve {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+    }
+
+    .btn-send-ve:hover {
+        background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+        box-shadow: 0 4px 12px rgba(217, 119, 6, 0.45);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="editor-layout">
+    <!-- Back to tasks -->
+    <a href="{% url 'copy_editor_my_task' %}" class="top-nav-back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Back to My Assigned Tasks</span>
+    </a>
+
+    <!-- Story Context Header -->
+    <div class="story-context-card">
+        <div>
+            <div class="context-tags">
+                <span class="format-badge {% if news.news_type == 'AVO' %}format-avo{% elif news.news_type == 'Byte' %}format-byte{% elif news.news_type == 'PKG' %}format-pkg{% else %}format-avo{% endif %}">
+                    {{ news.news_type|default:"News" }}
+                </span>
+                <span style="font-size: 12px; font-weight: 600; color: #475569;">{{ news.category|default:"General" }}</span>
+                <span style="color: #cbd5e1;">&bull;</span>
+                <span style="font-size: 12px; font-weight: 700; color: #334155;">📍 {{ news.district|default:"Odisha" }}</span>
+            </div>
+            <div style="font-size: 12.5px; color: #64748b; margin-top: 6px;">
+                <strong>Reporter:</strong> {{ news.reporter.name|default:news.author.get_full_name|default:'Desk Staff' }}
+                {% if news.reporter.phone_number %} &bull; 📞 {{ news.reporter.phone_number }}{% endif %}
+            </div>
+        </div>
+
+        {% if news.assigned_visual_editor %}
+        <div style="text-align: right;">
+            <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Current Visual Editor</span>
+            <span class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 12px; font-weight: 700; padding: 4px 10px;">
+                🎬 {{ news.assigned_visual_editor.name }}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Main Edit Form -->
+    <div class="main-editor-card">
+        <form method="POST" action="{% url 'copy_editor_edit_script' news.pk %}" id="editScriptForm">
+            {% csrf_token %}
+
+            <!-- Story Headline -->
+            <div class="editor-field-group">
+                <label class="editor-label" for="id_headline">
+                    <span>Story Headline</span>
+                    <span style="font-size: 11.5px; font-weight: 500; color: #94a3b8;">Refine if necessary</span>
+                </label>
+                <input type="text" name="headline" id="id_headline" class="editor-input" value="{{ news.headline }}" required>
+            </div>
+
+            <!-- Narrative Script Textarea -->
+            <div class="editor-field-group">
+                <div class="editor-label">
+                    <span>✍️ News Narrative Script (Odia / English)</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" id="btnAiPolish" onclick="triggerAiPolish()" class="btn-ai-polish" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; font-size: 12px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                            </svg>
+                            <span>✨ Polish with AI</span>
+                        </button>
+                        <button type="button" id="btnAiUndo" onclick="undoAiPolish()" style="display: none; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                            ↩️ Undo AI
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Tone Strip -->
+                <div id="aiToneBar" style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 11.5px; flex-wrap: wrap;">
+                    <span style="font-weight: 600; color: #64748b;">AI Style:</span>
+                    <button type="button" class="ai-tone-pill active" onclick="setAiTone('standard', this)" style="background: #7c3aed; color: #fff; border: 1px solid #6d28d9; padding: 3px 8px; border-radius: 999px; font-size: 11px; cursor: pointer; font-weight: 600;">Broadcast TV (Grammar &amp; Flow)</button>
+                    <button type="button" class="ai-tone-pill" onclick="setAiTone('concise', this)" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 999px; font-size: 11px; cursor: pointer; font-weight: 600;">⚡ Crisp &amp; Punchy</button>
+                    <button type="button" class="ai-tone-pill" onclick="setAiTone('broadcast', this)" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 999px; font-size: 11px; cursor: pointer; font-weight: 600;">📺 TV Anchor Lead &amp; Details</button>
+                </div>
+
+                <!-- AI Loading Status -->
+                <div id="aiLoadingStatus" style="display: none; padding: 8px 12px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 6px; color: #7c3aed; font-size: 12px; font-weight: 600; margin-bottom: 8px; align-items: center; gap: 8px;">
+                    <span style="width: 14px; height: 14px; border: 2px solid rgba(124, 58, 237, 0.3); border-top-color: #7c3aed; border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite;"></span>
+                    <span>Gemini AI is analyzing script, fixing Odia/English grammar, and enhancing news phrasing...</span>
+                </div>
+
+                <textarea name="description" id="id_description" class="script-textarea" placeholder="Enter or polish the Odia/English news narrative script here..." oninput="updateWordCount(this.value)">{{ news.description }}</textarea>
+                <div class="textarea-counter">
+                    <span id="scriptCounters">0 words &bull; 0 characters</span>
+                    <button type="button" onclick="copyCurrentScript()" style="background: none; border: none; color: #d97706; font-size: 12px; font-weight: 700; cursor: pointer;">
+                        📋 Copy Script Text
+                    </button>
+                </div>
+            </div>
+
+            {% if news.desk_notes %}
+            <div style="background: #fef2f2; border-left: 3px solid #dc2626; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 20px; font-size: 12.5px; color: #991b1b;">
+                <strong>Desk Instructions:</strong> {{ news.desk_notes }}
+            </div>
+            {% endif %}
+
+            <!-- Forward to Visual Editor -->
+            <div class="ve-dispatch-card">
+                <div class="ve-dispatch-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                    <span>Forward Story to Visual Editor (Video Editing &amp; Packaging)</span>
+                </div>
+                <p style="font-size: 12.5px; color: #64748b; margin-bottom: 12px;">
+                    Select the Visual Editor who will receive this story with your polished script to edit video, add broadcast lower-thirds, and package footage.
+                </p>
+
+                <select name="visual_editor_id" id="id_visual_editor" class="ve-select">
+                    <option value="">-- Select Visual Editor --</option>
+                    {% for ve in visual_editors %}
+                    <option value="{{ ve.pk }}" {% if news.assigned_visual_editor_id == ve.pk %}selected{% endif %}>
+                        {{ ve.name }} ({{ ve.phone_number }})
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <label style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">
+                    Optional Note for Visual Editor:
+                </label>
+                <input type="text" name="ve_notes" class="editor-input" placeholder="e.g. Cut byte from 00:15 to 00:45, sync lower-third name tag...">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="actions-bar">
+                <a href="{% url 'copy_editor_my_task' %}" class="btn-action btn-cancel">Cancel</a>
+                
+                <button type="submit" name="action_type" value="save" class="btn-action btn-save-only">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span>Save Script Only</span>
+                </button>
+
+                <button type="submit" name="action_type" value="send_ve" class="btn-action btn-send-ve">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Save &amp; Send to Visual Editor</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updateWordCount(text) {
+        text = (text || '').trim();
+        var words = text ? text.split(/\s+/).length : 0;
+        var chars = text ? text.length : 0;
+        var counter = document.getElementById('scriptCounters');
+        if (counter) {
+            counter.textContent = words + ' words • ' + chars + ' characters';
+        }
+    }
+
+    function copyCurrentScript() {
+        var textarea = document.getElementById('id_description');
+        if (!textarea || !textarea.value) return;
+        navigator.clipboard.writeText(textarea.value).then(function() {
+            alert('Script copied to clipboard!');
+        });
+    }
+
+    var currentAiTone = 'standard';
+    var backupScriptBeforeAi = '';
+
+    function setAiTone(tone, el) {
+        currentAiTone = tone;
+        document.querySelectorAll('.ai-tone-pill').forEach(function(pill) {
+            pill.style.background = '#f1f5f9';
+            pill.style.color = '#475569';
+            pill.style.borderColor = '#cbd5e1';
+        });
+        if (el) {
+            el.style.background = '#7c3aed';
+            el.style.color = '#ffffff';
+            el.style.borderColor = '#6d28d9';
+        }
+    }
+
+    function triggerAiPolish() {
+        var textarea = document.getElementById('id_description');
+        var headlineInput = document.getElementById('id_headline');
+        var rawText = (textarea ? textarea.value : '').trim();
+        if (!rawText) {
+            alert('Please enter or check that script narrative text is present to polish with AI.');
+            return;
+        }
+
+        var btn = document.getElementById('btnAiPolish');
+        var loadingStatus = document.getElementById('aiLoadingStatus');
+        var undoBtn = document.getElementById('btnAiUndo');
+
+        backupScriptBeforeAi = textarea.value;
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>✨ AI Polishing...</span>';
+        }
+        if (loadingStatus) loadingStatus.style.display = 'flex';
+
+        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/news/ai-check/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                text: rawText,
+                headline: headlineInput ? headlineInput.value : '',
+                news_type: '{{ news.news_type|default:"AVO"|escapejs }}',
+                tone: currentAiTone
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success && data.improved_text) {
+                textarea.value = data.improved_text;
+                updateWordCount(data.improved_text);
+                if (undoBtn) undoBtn.style.display = 'inline-block';
+                alert('✨ ' + (data.summary || 'Script polished by AI!'));
+            } else {
+                alert(data.error || 'AI could not polish script.');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('Error connecting to AI service.');
+        })
+        .finally(function() {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> <span>✨ Polish with AI</span>';
+            }
+            if (loadingStatus) loadingStatus.style.display = 'none';
+        });
+    }
+
+    function undoAiPolish() {
+        var textarea = document.getElementById('id_description');
+        var undoBtn = document.getElementById('btnAiUndo');
+        if (textarea && backupScriptBeforeAi) {
+            textarea.value = backupScriptBeforeAi;
+            updateWordCount(backupScriptBeforeAi);
+            if (undoBtn) undoBtn.style.display = 'none';
+        }
+    }
+
+    // Initialize counter on load
+    document.addEventListener('DOMContentLoaded', function() {
+        var textarea = document.getElementById('id_description');
+        if (textarea) updateWordCount(textarea.value);
+    });
+</script>
+{% endblock %}

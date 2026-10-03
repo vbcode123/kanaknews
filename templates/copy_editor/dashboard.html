@@ -1,0 +1,286 @@
+{% extends "copy_editor/base_copy_editor.html" %}
+
+{% block title %}Copy Editor Dashboard - {{ copy_editor_user.name }} - Nandilive{% endblock %}
+{% block page_title %}Copy Editor Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    .ce-banner {
+        background: linear-gradient(135deg, #78350f 0%, #b45309 60%, #d97706 100%);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        color: #ffffff;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ce-banner::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(251, 191, 36, 0.35) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .ce-banner-info h2 {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+        margin-bottom: 6px;
+    }
+
+    .ce-banner-info p {
+        color: #fde68a;
+        font-size: 14px;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 26px;
+    }
+
+    .metric-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .metric-info .metric-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .metric-info .metric-value {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--ce-navy);
+        line-height: 1.2;
+    }
+
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .metric-icon.pending-icon {
+        background-color: #fffbeb;
+        color: #d97706;
+    }
+
+    .metric-icon.approved-icon {
+        background-color: #dcfce7;
+        color: #16a34a;
+    }
+
+    .metric-icon.total-icon {
+        background-color: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .metric-icon.active-icon {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+
+    .story-card-item {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        transition: background-color 0.15s ease;
+    }
+
+    .story-card-item:hover {
+        background-color: #f8fafc;
+    }
+
+    .story-card-item:last-child {
+        border-bottom: none;
+    }
+
+    .story-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .story-meta {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .type-pill {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background-color: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+    @media (max-width: 900px) {
+        .metrics-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="ce-banner">
+    <div class="ce-banner-info">
+        <h2>Welcome, {{ copy_editor_user.name }}!</h2>
+        <p>
+            Copy Editor Editorial &bull; Nandilive News Network &bull; Logged in via {{ copy_editor_user.phone_number }}
+        </p>
+    </div>
+</div>
+
+<!-- Metrics Overview -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Stories for Review</div>
+            <div class="metric-value" style="color: #d97706;">{{ pending_news }}</div>
+        </div>
+        <div class="metric-icon pending-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Approved Broadcast Stories</div>
+            <div class="metric-value" style="color: #16a34a;">{{ total_approved }}</div>
+        </div>
+        <div class="metric-icon approved-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Total News Stories</div>
+            <div class="metric-value" style="color: #0284c7;">{{ total_news }}</div>
+        </div>
+        <div class="metric-icon total-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="metric-label">Account Status</div>
+            <div class="metric-value" style="font-size: 18px; color: #16a34a;">
+                {% if copy_editor_user.is_active %}Active{% else %}Inactive{% endif %}
+            </div>
+        </div>
+        <div class="metric-icon active-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Stories to Review -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div class="card-header" style="padding: 18px 24px; margin-bottom: 0; border-bottom: 1px solid var(--border-light); background-color: #fafafa;">
+        <h3 class="card-title">Editorial News Queue (Latest Stories)</h3>
+        <span style="font-size: 12px; color: var(--text-muted);">{{ recent_news|length }} Stories Available</span>
+    </div>
+
+    <div>
+        {% for news in recent_news %}
+        <div class="story-card-item">
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span class="type-pill">{{ news.news_type }}</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">{{ news.category }}</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">&bull;</span>
+                    <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">{{ news.district }}</span>
+                </div>
+                <div class="story-title">{{ news.headline }}</div>
+                <div class="story-meta">
+                    <span><strong>Reporter:</strong> {{ news.reporter.name|default:news.author.username }}</span>
+                    <span>&bull;</span>
+                    <span>{{ news.created_at|date:"M d, Y - h:i A" }}</span>
+                </div>
+            </div>
+            <div>
+                {% if news.status == 'Approved' %}
+                    <span class="badge badge-published">Approved</span>
+                {% elif news.status == 'Rejected' %}
+                    <span class="badge badge-error" style="background-color: #fee2e2; color: #dc2626;">Rejected</span>
+                {% else %}
+                    <span class="badge badge-submitted">Under Review</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 40px; text-align: center; color: var(--text-muted);">
+            No stories in the editorial queue at the moment.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

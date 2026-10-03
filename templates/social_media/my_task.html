@@ -1,0 +1,786 @@
+{% extends "social_media/base_social_media.html" %}
+{% load static %}
+
+{% block title %}My Tasks - Social Media Desk - Nandilive{% endblock %}
+{% block page_title %}My Assigned Tasks — Social Media Distribution{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Top Banner */
+    .task-banner {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        color: #ffffff;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .task-banner::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .task-banner h2 {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .task-banner p {
+        color: #c7d2fe;
+        font-size: 13.5px;
+        margin: 0;
+    }
+
+    .task-count-badge {
+        background: rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(6px);
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-weight: 800;
+        font-size: 13.5px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        white-space: nowrap;
+    }
+
+    /* Filter & Search Bar */
+    .filter-bar-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-bar-form {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .search-input-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .search-input:focus {
+        border-color: #4f46e5;
+    }
+
+    /* Main Table Card */
+    .task-table-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .task-table thead {
+        background: #f8fafc;
+        border-bottom: 1.5px solid var(--border-color);
+    }
+
+    .task-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .task-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+    }
+
+    .task-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .task-table td {
+        padding: 14px 16px;
+        vertical-align: middle;
+    }
+
+    /* Media Thumbnail */
+    .media-thumb-box {
+        width: 72px;
+        height: 50px;
+        border-radius: 8px;
+        background-color: #0b0f19;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+        border: 1px solid #cbd5e1;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .media-thumb-box:hover {
+        transform: scale(1.04);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .media-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .media-play-icon {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: rgba(220, 38, 38, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .media-status-tag {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: 7.5px;
+        font-weight: 800;
+        color: #ffffff;
+        text-align: center;
+        padding: 1px 0;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        line-height: 1.2;
+    }
+
+    /* Format Badge */
+    .format-badge {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+    }
+
+    .format-byte {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+    }
+
+    .format-avo {
+        background-color: #f3e8ff;
+        color: #7e22ce;
+        border: 1px solid #e9d5ff;
+    }
+
+    .format-pkg {
+        background-color: #d1fae5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .format-default {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Story Headline & Script */
+    .story-headline-title {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.4;
+        margin-bottom: 4px;
+    }
+
+    .story-headline-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .story-headline-title a:hover {
+        color: #4f46e5;
+    }
+
+    .badge-video-ready {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-weight: 800;
+        vertical-align: middle;
+        margin-left: 6px;
+    }
+
+    .story-script-snippet {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+
+    .story-notes-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fffbeb;
+        border-left: 3px solid #f59e0b;
+        padding: 3px 8px;
+        border-radius: 0 4px 4px 0;
+        font-size: 11px;
+        color: #92400e;
+        font-weight: 600;
+    }
+
+    .btn-copy-script {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        padding: 3px 8px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .btn-copy-script:hover {
+        background: #e0e7ff;
+        color: #4338ca;
+        border-color: #c7d2fe;
+    }
+
+    /* Action Buttons */
+    .action-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
+    }
+
+    .btn-download-broadcast {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 14px;
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 7px;
+        text-decoration: none;
+        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .btn-download-broadcast:hover {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-view-story {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 6px 12px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: #0284c7;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 7px;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .btn-view-story:hover {
+        background: #e0f2fe;
+        border-color: #0284c7;
+    }
+
+    /* Video Modal */
+    .video-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .video-modal-container {
+        background: #0f172a;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 100%;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .video-modal-header {
+        padding: 14px 20px;
+        background: #1e293b;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .video-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0 6px;
+        line-height: 1;
+    }
+
+    .video-modal-close:hover {
+        color: #ffffff;
+    }
+
+    .video-modal-body {
+        padding: 0;
+        background: #000000;
+        display: flex;
+        justify-content: center;
+    }
+
+    .video-modal-body video {
+        width: 100%;
+        max-height: 70vh;
+        outline: none;
+    }
+
+    /* Toast Notification */
+    .copy-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 2000;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+    }
+
+    .copy-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+        .task-banner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 18px 20px;
+        }
+
+        .action-controls {
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Header Banner -->
+<div class="task-banner">
+    <div>
+        <h2>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span>Social Media Broadcast Queue</span>
+        </h2>
+        <p>News packages dispatched by Editorial Desk ready for YouTube, Facebook, Instagram, and Twitter publishing.</p>
+    </div>
+    <div class="task-count-badge">
+        {{ tasks_count }} Story Package{{ tasks_count|pluralize }}
+    </div>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="filter-bar-card">
+    <form method="GET" action="{% url 'social_media_my_task' %}" class="filter-bar-form">
+        <div class="search-input-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="q" value="{{ query|default:'' }}" class="search-input" placeholder="Search by headline, district, reporter, or script...">
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; background: #4f46e5;">
+                Search
+            </button>
+            {% if query %}
+            <a href="{% url 'social_media_my_task' %}" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px;">
+                Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Main Table List -->
+<div class="task-table-card">
+    {% if tasks %}
+    <div style="overflow-x: auto;">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th style="width: 85px;">Media</th>
+                    <th style="width: 100px;">Format</th>
+                    <th>Story Headline &amp; Script</th>
+                    <th style="width: 160px;">Reporter</th>
+                    <th style="width: 130px;">District</th>
+                    <th style="width: 130px;">Dispatched</th>
+                    <th style="width: 180px; text-align: right;">Publishing Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <!-- Media Preview Thumbnail -->
+                    <td>
+                        {% if task.edited_video %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ task.edited_video.url }}', '{{ task.headline|escapejs }} [Final Broadcast Video]')" title="Click to preview Final Broadcast Video" style="border-color: #6366f1;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Final Video" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon" style="background: #4f46e5;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                                <span class="media-status-tag" style="background: #4f46e5;">FINAL VIDEO</span>
+                            </div>
+                        {% elif task.media_file %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ task.media_file.url }}', '{{ task.headline|escapejs }} [Raw Footage]')" title="Click to preview video">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                                <span class="media-status-tag" style="background: #dc2626;">RAW FOOTAGE</span>
+                            </div>
+                        {% else %}
+                            <div class="media-thumb-box" style="background-color: #06181b; cursor: default;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Nandi" class="media-thumb-img" style="object-fit: contain; padding: 6px;">
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Format & Category -->
+                    <td>
+                        <span class="format-badge {% if task.news_type == 'Byte' %}format-byte{% elif task.news_type == 'AVO' or task.news_type == 'AVO Byte' %}format-avo{% elif task.news_type == 'PKG' %}format-pkg{% else %}format-default{% endif %}">
+                            {{ task.news_type|default:"News" }}
+                        </span>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600;">
+                            {{ task.category|default:"Breaking" }}
+                        </div>
+                    </td>
+
+                    <!-- Headline & Script -->
+                    <td>
+                        <div class="story-headline-title">
+                            <a href="{% url 'news_view' task.pk %}">
+                                {{ task.headline }}
+                            </a>
+                            {% if task.has_edited_video or task.is_video_edited_by_desk %}
+                                <span class="badge-video-ready" title="Broadcast video finalized by Desk">
+                                    🎬 Video Ready
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="story-script-snippet">
+                            {{ task.description|default:"No script text provided." }}
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                            <button type="button" class="btn-copy-script" onclick="copyStoryContent('{{ task.headline|escapejs }}', '{{ task.description|escapejs }}')" title="Copy Headline & Script for Social Media post">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy Script</span>
+                            </button>
+
+                            {% if task.desk_notes %}
+                            <div class="story-notes-chip" title="Instructions from Desk">
+                                <strong>Desk:</strong> {{ task.desk_notes }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <!-- Reporter -->
+                    <td>
+                        <div style="font-weight: 700; color: #0f172a;">
+                            {{ task.reporter.name|default:task.author.get_full_name|default:"Desk Staff" }}
+                        </div>
+                        <div style="font-size: 11px; color: #64748b;">
+                            {% if task.reporter.reporter_id %}ID: {{ task.reporter.reporter_id }}{% endif %}
+                        </div>
+                        {% if task.reporter.phone_number %}
+                        <div style="font-size: 11px; margin-top: 2px;">
+                            <a href="tel:{{ task.reporter.phone_number }}" style="color: #4f46e5; text-decoration: none; font-weight: 600;">
+                                {{ task.reporter.phone_number }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- District -->
+                    <td>
+                        <div style="font-weight: 700; color: #334155;">{{ task.district }}</div>
+                        {% if task.location and task.location != task.district %}
+                        <div style="font-size: 11px; color: #94a3b8;">{{ task.location }}</div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Dispatched Time -->
+                    <td>
+                        <div style="font-weight: 600; color: #334155;">
+                            {{ task.sent_to_social_media_at|date:"d M, Y"|default:task.created_at|date:"d M, Y" }}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8;">
+                            {{ task.sent_to_social_media_at|date:"h:i A"|default:task.created_at|date:"h:i A" }}
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="action-controls">
+                            {% if task.edited_video %}
+                            <a href="{{ task.edited_video.url }}" download="broadcast_news_{{ task.pk }}.webm" class="btn-download-broadcast" title="Download Final Broadcast Video (HD)">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Download Final Video</span>
+                            </a>
+                            {% elif task.media_file %}
+                            <a href="{{ task.media_file.url }}" download class="btn btn-sm btn-secondary" style="font-size: 11.5px; padding: 5px 10px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Raw Media</span>
+                            </a>
+                            {% endif %}
+
+                            <a href="{% url 'news_view' task.pk %}" class="btn-view-story">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>View Full Story</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="padding: 60px 20px; text-align: center; color: var(--text-muted);">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #eef2ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #4f46e5;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No Social Media Stories Found</h3>
+        <p style="font-size: 13px; max-width: 460px; margin: 0 auto; color: #64748b;">
+            {% if query %}
+            No stories match your search query "<strong>{{ query }}</strong>". Try searching with different keywords.
+            {% else %}
+            When the Editorial Desk completes news videos and clicks <strong>Send to Social Media</strong>, all broadcast-ready packages will appear here in this list.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Video Preview Modal -->
+<div class="video-modal-overlay" id="videoModal" onclick="closeModalOnBg(event)">
+    <div class="video-modal-container">
+        <div class="video-modal-header">
+            <div id="videoModalTitle" style="font-weight: 700; font-size: 14px; color: #ffffff;">Video Preview</div>
+            <button class="video-modal-close" onclick="closeVideoModal()">&times;</button>
+        </div>
+        <div class="video-modal-body">
+            <video id="videoPlayer" controls playsinline>
+                <source id="videoSource" src="" type="video/mp4">
+                Your browser does not support HTML video.
+            </video>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div class="copy-toast" id="copyToast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Headline &amp; Script copied to clipboard!</span>
+</div>
+
+<script>
+    // Video Preview Modal
+    function previewMedia(url, headline) {
+        if (!url) return;
+        var modal = document.getElementById('videoModal');
+        var player = document.getElementById('videoPlayer');
+        var source = document.getElementById('videoSource');
+        var title = document.getElementById('videoModalTitle');
+
+        source.src = url;
+        title.textContent = headline || 'Video Preview';
+        player.load();
+        modal.style.display = 'flex';
+        player.play().catch(function() {});
+    }
+
+    function closeVideoModal() {
+        var modal = document.getElementById('videoModal');
+        var player = document.getElementById('videoPlayer');
+        modal.style.display = 'none';
+        player.pause();
+    }
+
+    function closeModalOnBg(e) {
+        if (e.target.id === 'videoModal') {
+            closeVideoModal();
+        }
+    }
+
+    // Copy Headline & Script to Clipboard
+    function copyStoryContent(headline, script) {
+        var textToCopy = (headline || '').trim();
+        if (script && script.trim()) {
+            textToCopy += "\n\n" + script.trim();
+        }
+        navigator.clipboard.writeText(textToCopy).then(function() {
+            showToast();
+        }).catch(function() {
+            // Fallback for older browsers
+            var textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast();
+        });
+    }
+
+    function showToast() {
+        var toast = document.getElementById('copyToast');
+        toast.classList.add('show');
+        setTimeout(function() {
+            toast.classList.remove('show');
+        }, 2500);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}View Social Media Staff - {{ social_media.name }} - Nandilive Admin{% endblock %}
+{% block page_title %}Social Media Staff Details{% endblock %}
+
+{% block extra_head %}
+<style>
+    .view-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        max-width: 1000px;
+    }
+
+    .id-card-wrap {
+        background: linear-gradient(135deg, var(--sidebar-navy) 0%, #1e293b 100%);
+        border-radius: var(--radius-lg);
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .id-card-wrap::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+    }
+
+    .id-card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(99, 102, 241, 0.25);
+        color: #c7d2fe;
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .sm-avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #6366f1;
+        color: #ffffff;
+        font-size: 38px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .id-name {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .id-role {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 20px;
+    }
+
+    .id-details-list {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    .id-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .id-row-label {
+        color: #94a3b8;
+    }
+
+    .id-row-val {
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .info-item {
+        background-color: #f8fafc;
+        border: 1px solid var(--border-color);
+        padding: 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .info-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .info-val {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--primary-navy);
+        word-break: break-all;
+    }
+
+    @media (max-width: 860px) {
+        .view-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="view-layout">
+    <!-- Left Column: Official ID Card -->
+    <div>
+        <div class="id-card-wrap">
+            <div class="id-card-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <span>Social Media Desk</span>
+            </div>
+
+            <div class="sm-avatar-lg">
+                {{ social_media.name|slice:":1"|upper }}
+            </div>
+
+            <h3 class="id-name">{{ social_media.name }}</h3>
+            <p class="id-role">Nandilive News Network</p>
+
+            <div class="id-details-list">
+                <div class="id-row">
+                    <span class="id-row-label">Login ID:</span>
+                    <span class="id-row-val">{{ social_media.phone_number }}</span>
+                </div>
+                <div class="id-row">
+                    <span class="id-row-label">Status:</span>
+                    <span class="id-row-val">
+                        {% if social_media.is_active %}
+                            <span style="color: #4ade80;">Active</span>
+                        {% else %}
+                            <span style="color: #f87171;">Inactive</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="id-row">
+                    <span class="id-row-label">Joined:</span>
+                    <span class="id-row-val">{{ social_media.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Profile Information & Controls -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Social Media Staff Record</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                        Complete information and account credentials
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="{% url 'social_media_edit' social_media.pk %}" class="btn btn-secondary btn-sm" style="color: #6366f1; border-color: #c7d2fe;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Edit Member
+                    </a>
+                    <a href="{% url 'social_media_list' %}" class="btn btn-secondary btn-sm">
+                        Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <div class="info-item">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-val">{{ social_media.name }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Phone Number (Login Username)</div>
+                    <div class="info-val">{{ social_media.phone_number }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Account Status</div>
+                    <div class="info-val">
+                        {% if social_media.is_active %}
+                            <span class="badge badge-published">Active (Enabled)</span>
+                        {% else %}
+                            <span class="badge badge-draft">Inactive (Disabled)</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Linked Auth User</div>
+                    <div class="info-val" style="font-size: 14px; font-weight: 600;">
+                        {{ social_media.user.username }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Date Created</div>
+                    <div class="info-val" style="font-size: 14px;">
+                        {{ social_media.created_at|date:"F d, Y - h:i A" }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Last Updated</div>
+                    <div class="info-val" style="font-size: 14px;">
+                        {{ social_media.updated_at|date:"F d, Y - h:i A" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

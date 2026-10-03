@@ -1,0 +1,1672 @@
+{% extends "desk/base_desk.html" %}
+{% load static %}
+
+{% block title %}My Work - Input Selected News - Desk{% endblock %}
+{% block page_title %}My Work — Input Selected News{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* My Work Desk Theme */
+    :root {
+        --word-emerald: #059669;
+        --word-emerald-dark: #047857;
+        --word-emerald-light: #d1fae5;
+        --word-navy: #0f172a;
+    }
+
+    /* Top Control Bar */
+    .word-topbar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 22px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .topbar-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .topbar-title-group h2 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .topbar-title-group p {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* Top Download ZIP Button */
+    .btn-download-zip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 22px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+        transition: all 0.2s ease;
+    }
+
+    .btn-download-zip:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(5, 150, 105, 0.45);
+        color: #ffffff;
+    }
+
+    .btn-download-zip svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.2;
+    }
+
+    .zip-count-badge {
+        background: rgba(255, 255, 255, 0.25);
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    /* Filter Controls */
+    .filter-controls-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .date-filter-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8fafc;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #e2e8f0;
+    }
+
+    .date-filter-box label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .date-input {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f172a;
+        background: #ffffff;
+        outline: none;
+    }
+
+    .date-quick-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .date-quick-btn:hover, .date-quick-btn.active {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669;
+    }
+
+    /* Filter Inputs Group */
+    .filter-inputs-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 230px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 8px 12px 8px 34px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        background: #ffffff;
+    }
+
+    .search-box svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 15px;
+        height: 15px;
+        color: #94a3b8;
+    }
+
+    .filter-select {
+        padding: 8px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+        background-color: #ffffff;
+        color: #334155;
+        outline: none;
+        cursor: pointer;
+    }
+
+    /* Metrics Summary Strip */
+    .metrics-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .metric-pill-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .metric-pill-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .metric-pill-value {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    /* Table Container */
+    .word-table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .word-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .word-table thead tr {
+        background-color: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .word-table th {
+        padding: 14px 16px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        white-space: nowrap;
+    }
+
+    .word-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+    }
+
+    .word-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .word-table td {
+        padding: 14px 16px;
+        vertical-align: middle;
+    }
+
+    /* Media Thumbnail */
+    .media-thumb-box {
+        width: 64px;
+        height: 48px;
+        border-radius: 6px;
+        background-color: #0f172a;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .media-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .media-play-icon {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        background: rgba(0, 0, 0, 0.65);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+    }
+
+    /* Format Badge */
+    .format-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .format-byte {
+        background-color: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .format-avo {
+        background-color: #f3e8ff;
+        color: #7e22ce;
+    }
+
+    .format-pkg {
+        background-color: #d1fae5;
+        color: #047857;
+    }
+
+    .format-default {
+        background-color: #f1f5f9;
+        color: #475569;
+    }
+
+    /* Headline & Script in Odia / English */
+    .story-headline-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.4;
+        margin-bottom: 4px;
+    }
+
+    .story-headline-title a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .story-headline-title a:hover {
+        color: #059669;
+    }
+
+    .story-script-snippet {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Status Pill */
+    .badge-selected-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    /* Action Buttons */
+    .action-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .btn-action-view {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-view:hover {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669;
+    }
+
+    .btn-action-download {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #0284c7;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-download:hover {
+        background: #0284c7;
+        color: #ffffff;
+        border-color: #0284c7;
+    }
+
+    .btn-action-send {
+        height: 34px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid #059669;
+        background: #ecfdf5;
+        color: #059669;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-send:hover {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    .btn-action-send.has-edited-video {
+        border-color: #2563eb;
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .btn-action-send.has-edited-video:hover {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    .badge-edited-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    .badge-social-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #eef2ff;
+        color: #4f46e5;
+        border: 1px solid #c7d2fe;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    /* Send Modal Overlay & Card */
+    .send-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        overflow-y: auto;
+    }
+
+    .send-modal-card {
+        background: #ffffff;
+        border-radius: 16px;
+        max-width: 660px;
+        width: 100%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        margin: auto;
+    }
+
+    #sendForm,
+    .send-modal-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .send-modal-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    .send-modal-title {
+        font-size: 16px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .send-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.15s ease;
+    }
+
+    .send-modal-close:hover {
+        color: #ffffff;
+    }
+
+    .send-modal-body {
+        padding: 20px 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .send-modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .send-modal-body::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    .send-modal-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .send-modal-body::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .send-story-banner {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+    }
+
+    .send-story-info h4 {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+
+    .send-story-meta {
+        font-size: 11.5px;
+        color: #64748b;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-open-studio {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        text-decoration: none;
+        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+        white-space: nowrap;
+        transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .btn-open-studio:hover {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        transform: translateY(-1px);
+    }
+
+    .alert-video-edited {
+        display: none;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #1e40af;
+        font-size: 13px;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .alert-video-edited.active {
+        display: flex;
+    }
+
+    .dept-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .dept-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        background: #ffffff;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .dept-card.selected {
+        border-color: #059669;
+        background: #f0fdf4;
+    }
+
+    .dept-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .dept-card-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .dept-dropdown {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        font-size: 12.5px;
+        background: #ffffff;
+        color: #1e293b;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .dept-dropdown:focus {
+        border-color: #059669;
+    }
+
+    .send-modal-footer {
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .btn-send-team {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #059669;
+        color: #ffffff;
+        font-size: 13.5px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-send-team:hover:not(:disabled) {
+        background: #047857;
+    }
+
+    .btn-send-team:disabled {
+        background: #cbd5e1 !important;
+        color: #64748b !important;
+        cursor: not-allowed !important;
+        opacity: 0.6;
+    }
+
+    .btn-send-social {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        color: #ffffff;
+        font-size: 13.5px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+        transition: all 0.15s ease;
+    }
+
+    .btn-send-social:hover {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        transform: translateY(-1px);
+    }
+
+    #modalDeskNotes {
+        width: 100%;
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 13px;
+        font-family: inherit;
+        background: #ffffff;
+        color: #1e293b;
+        outline: none;
+        resize: vertical;
+        min-height: 60px;
+        max-height: 140px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        box-sizing: border-box;
+    }
+
+    #modalDeskNotes:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    @media (max-width: 640px) {
+        .send-modal-overlay {
+            padding: 10px;
+        }
+
+        .send-modal-card {
+            max-height: 96vh;
+            border-radius: 12px;
+        }
+
+        .send-modal-body {
+            padding: 14px 16px;
+            gap: 12px;
+        }
+
+        .dept-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dept-card#cardSocialMedia {
+            grid-column: span 1 !important;
+        }
+
+        .send-modal-footer {
+            padding: 12px 16px;
+            flex-direction: column-reverse;
+            gap: 10px;
+        }
+
+        .send-modal-footer > div {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-send-team,
+        .btn-send-social,
+        .send-modal-footer .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Video Modal */
+    .video-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .video-modal-container {
+        background: #0f172a;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 100%;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+    }
+
+    .video-modal-header {
+        padding: 14px 20px;
+        background: #1e293b;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .video-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0 6px;
+    }
+
+    .video-modal-close:hover {
+        color: #ffffff;
+    }
+
+    .video-modal-body {
+        padding: 0;
+        background: #000000;
+        display: flex;
+        justify-content: center;
+    }
+
+    .video-modal-body video {
+        max-width: 100%;
+        max-height: 70vh;
+        outline: none;
+    }
+
+    @media (max-width: 900px) {
+        .filter-inputs-group {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .search-box {
+            min-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Control Bar -->
+<div class="word-topbar">
+    <div class="topbar-header-row">
+        <div class="topbar-title-group">
+            <h2>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #059669;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>My Work — Input Selected News</span>
+            </h2>
+            <p>
+                Incoming reporter stories and video packages verified and selected by the Input Verification Desk for editorial telecast.
+            </p>
+        </div>
+
+        <div>
+            <a href="{% url 'desk_download_approved_zip' %}{% if selected_date and selected_date != 'all' %}?date={{ selected_date }}{% endif %}" class="btn-download-zip" title="Download all selected stories and videos as a ZIP package">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Download Approved (ZIP)</span>
+                <span class="zip-count-badge">{{ current_list_count }} Approved</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs between Pending and Dispatched -->
+    <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
+        <a href="{% url 'desk_my_word' %}?dispatch=pending" class="btn" style="padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; {% if dispatch_tab == 'pending' or not dispatch_tab %}background: #059669; color: #fff; box-shadow: 0 2px 6px rgba(5,150,105,0.3);{% else %}background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0;{% endif %}">
+            <span>⏳ Pending Dispatch</span>
+            <span style="background: rgba(255,255,255,0.25); padding: 1px 7px; border-radius: 9999px; font-size: 11px;">{{ pending_word_count }}</span>
+        </a>
+        <a href="{% url 'desk_my_work_list' %}" class="btn" style="padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; color: #2563eb; border: 1px solid #bfdbfe;">
+            <span>📋 My Work List (Dispatched)</span>
+            <span style="background: #dbeafe; color: #1e40af; padding: 1px 7px; border-radius: 9999px; font-size: 11px;">{{ sent_work_count }}</span>
+        </a>
+        <a href="{% url 'desk_my_word' %}?dispatch=all" class="btn" style="padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-left: auto; {% if dispatch_tab == 'all' %}background: #0f172a; color: #fff;{% else %}background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;{% endif %}">
+            <span>All Input Stories ({{ total_approved_all }})</span>
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{% url 'desk_my_word' %}" id="filterForm">
+        <div class="filter-controls-row">
+            <!-- Date Filter -->
+            <div class="date-filter-box">
+                <label for="dateInput">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Select Date:</span>
+                </label>
+                <input 
+                    type="date" 
+                    id="dateInput" 
+                    name="date" 
+                    value="{% if selected_date != 'all' %}{{ selected_date }}{% endif %}" 
+                    class="date-input"
+                    onchange="document.getElementById('filterForm').submit();"
+                >
+                <a href="{% url 'desk_my_word' %}?date={{ today_str }}{% if query %}&q={{ query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if district_filter %}&district={{ district_filter }}{% endif %}" class="date-quick-btn {% if selected_date == today_str %}active{% endif %}">
+                    Today
+                </a>
+                <a href="{% url 'desk_my_word' %}?date=all{% if query %}&q={{ query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if district_filter %}&district={{ district_filter }}{% endif %}" class="date-quick-btn {% if selected_date == 'all' or not selected_date %}active{% endif %}">
+                    All Dates
+                </a>
+            </div>
+
+            <!-- Search & Dropdown Filters -->
+            <div class="filter-inputs-group">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ query }}" 
+                        placeholder="Search headline, reporter, district..." 
+                    >
+                </div>
+
+                <select name="type" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">All Types (AVO/Byte/PKG)</option>
+                    {% for t in news_types %}
+                    <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="district" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">All Districts</option>
+                    {% for d in all_districts %}
+                    <option value="{{ d }}" {% if district_filter == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;">
+                    Filter
+                </button>
+
+                {% if query or type_filter or district_filter or selected_date != 'all' %}
+                <a href="{% url 'desk_my_word' %}" class="btn btn-secondary" style="padding: 8px 12px; font-size: 13px;" title="Clear Filters">
+                    Clear
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Metrics Summary Strip -->
+<div class="metrics-summary-strip">
+    <div class="metric-pill-card" style="border-left: 4px solid #059669;">
+        <div>
+            <div class="metric-pill-label">Total in My Work</div>
+            <div class="metric-pill-value" style="color: #059669;">{{ total_approved_all }}</div>
+        </div>
+        <div style="width: 40px; height: 40px; border-radius: 8px; background: #d1fae5; color: #059669; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #0284c7;">
+        <div>
+            <div class="metric-pill-label">Selected Today</div>
+            <div class="metric-pill-value" style="color: #0284c7;">{{ today_approved_count }}</div>
+        </div>
+        <div style="width: 40px; height: 40px; border-radius: 8px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <div class="metric-pill-card" style="border-left: 4px solid #6366f1;">
+        <div>
+            <div class="metric-pill-label">Filtered Stories</div>
+            <div class="metric-pill-value" style="color: #4f46e5;">{{ current_list_count }}</div>
+        </div>
+        <div style="width: 40px; height: 40px; border-radius: 8px; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Main Table -->
+<div class="word-table-card">
+    {% if news_list %}
+    <div style="overflow-x: auto;">
+        <table class="word-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Media</th>
+                    <th style="width: 90px;">Format</th>
+                    <th>Story Headline &amp; Script</th>
+                    <th style="width: 170px;">Field Reporter</th>
+                    <th style="width: 130px;">Location / Beat</th>
+                    <th style="width: 120px; text-align: center;">Input Status</th>
+                    <th style="width: 110px;">Time</th>
+                    <th style="width: 175px; text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in news_list %}
+                <tr>
+                    <!-- Media Preview -->
+                    <td>
+                        {% if item.has_edited_video %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ item.edited_video.url }}', '{{ item.headline|escapejs }} [Final Broadcast Video]')" title="Click to preview Final Broadcast Video" style="border: 2px solid #6366f1; position: relative; cursor: pointer;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon" style="background: #4f46e5;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                                <span style="position: absolute; bottom: 1px; left: 1px; right: 1px; background: #4f46e5; color: #fff; font-size: 7.5px; font-weight: 800; border-radius: 2px; text-align: center; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.2;">EDIT READY</span>
+                            </div>
+                        {% elif item.media_file %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ item.media_file.url }}', '{{ item.headline|escapejs }}')" title="Click to preview video">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% elif item.byte_media %}
+                            <div class="media-thumb-box" onclick="previewMedia('{{ item.byte_media.url }}', '{{ item.headline|escapejs }}')" title="Click to preview byte video">
+                                <img src="{% static 'images/nandi.png' %}" alt="Thumb" class="media-thumb-img" style="object-fit: contain; padding: 4px; background: #06181b;">
+                                <div class="media-play-icon">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="media-thumb-box" style="background-color: #06181b;">
+                                <img src="{% static 'images/nandi.png' %}" alt="Nandi" class="media-thumb-img" style="object-fit: contain; padding: 6px;">
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Format -->
+                    <td>
+                        <span class="format-badge {% if item.news_type == 'Byte' %}format-byte{% elif item.news_type == 'AVO' %}format-avo{% elif item.news_type == 'PKG' %}format-pkg{% else %}format-default{% endif %}">
+                            {{ item.news_type|default:"News" }}
+                        </span>
+                        <div style="font-size: 10px; color: #94a3b8; margin-top: 3px;">
+                            {{ item.category|default:"Breaking" }}
+                        </div>
+                    </td>
+
+                    <!-- Headline & Script -->
+                    <td>
+                        <div class="story-headline-title">
+                            <a href="{% url 'news_view' item.pk %}">
+                                {{ item.headline }}
+                            </a>
+                            {% if item.has_edited_video or item.is_video_edited_by_desk %}
+                                <span class="badge-edited-pill" title="Broadcast video finalized by Desk">🎬 Video Ready</span>
+                            {% endif %}
+                            {% if item.sent_to_social_media %}
+                                <span class="badge-social-pill" title="Story forwarded to Social Media">🌐 Social Media</span>
+                            {% endif %}
+                        </div>
+                        <div class="story-script-snippet">
+                            {{ item.description|truncatewords:28 }}
+                        </div>
+                    </td>
+
+                    <!-- Field Reporter -->
+                    <td>
+                        <div style="font-weight: 700; color: #0f172a;">
+                            {{ item.reporter.name|default:item.author.get_full_name|default:"Desk Staff" }}
+                        </div>
+                        <div style="font-size: 11px; color: #64748b;">
+                            {% if item.reporter.reporter_id %}ID: {{ item.reporter.reporter_id }}{% endif %}
+                        </div>
+                        {% if item.reporter.phone_number %}
+                        <div style="font-size: 11px; margin-top: 2px;">
+                            <a href="tel:{{ item.reporter.phone_number }}" style="color: #0284c7; text-decoration: none; font-weight: 600;">
+                                {{ item.reporter.phone_number }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Location / Beat -->
+                    <td>
+                        <div style="font-weight: 700; color: #334155;">{{ item.location|default:item.district }}</div>
+                        <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">{{ item.district }}</div>
+                    </td>
+
+                    <!-- Input Status -->
+                    <td style="text-align: center;">
+                        <span class="badge-selected-pill">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>SELECTED</span>
+                        </span>
+                    </td>
+
+                    <!-- Date & Time -->
+                    <td>
+                        <div style="font-size: 12px; font-weight: 700; color: #334155;">{{ item.created_at|date:"h:i A" }}</div>
+                        <div style="font-size: 11px; color: #94a3b8;">{{ item.created_at|date:"d M, Y" }}</div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td style="text-align: right;">
+                        <div class="action-controls">
+                            <button type="button" 
+                                    class="btn-action-send {% if item.has_edited_video or item.is_video_edited_by_desk %}has-edited-video{% endif %}"
+                                    onclick="openSendModal({{ item.pk }}, '{{ item.headline|escapejs }}', '{{ item.reporter.name|default:item.author.get_full_name|escapejs }}', '{{ item.district|escapejs }}', '{{ item.news_type|escapejs }}', {% if item.has_edited_video or item.is_video_edited_by_desk %}true{% else %}false{% endif %}, {% if item.media_file or item.byte_media or item.has_edited_video or item.additional_media.exists %}true{% else %}false{% endif %}, '{{ item.desk_notes|default:''|escapejs }}', {% if item.sent_to_social_media %}true{% else %}false{% endif %}, '{{ item.sent_to_social_media_at|date:"d M, Y - h:i A"|default:""|escapejs }}', '{{ item.assigned_social_media.pk|default:"" }}')"
+                                    title="Send story to Team or Social Media">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                <span>{% if item.has_edited_video or item.is_video_edited_by_desk %}{% if item.sent_to_social_media %}Sent Social{% else %}Send Social{% endif %}{% else %}Send{% endif %}</span>
+                            </button>
+
+                            {% if item.has_edited_video %}
+                            <a href="{{ item.edited_video.url }}" download class="btn-action-download" title="Download Final Broadcast Video" style="color: #4f46e5; border-color: #c7d2fe; background: #eef2ff;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            {% elif item.media_file %}
+                            <a href="{{ item.media_file.url }}" download class="btn-action-download" title="Download Story Video/Media">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'news_view' item.pk %}" class="btn-action-view" title="View Full Story Details">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+
+                            <!-- Team Production Files Button -->
+                            <button type="button" class="btn-action-files" onclick="openTeamFilesModal('teamFilesModal-{{ item.pk }}')" title="View Team Files: Copy Editor, Graphics, Voice Over & Footage">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Files</span>
+                                {% if item.byte_media or item.additional_media.all %}
+                                <span class="files-badge-dot" title="Assets uploaded"></span>
+                                {% endif %}
+                            </button>
+                        </div>
+
+                        <!-- Team Files Modal for Desk My Word -->
+                        {% include "common/_team_files_modal.html" with story=item %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="padding: 56px 20px; text-align: center; color: var(--text-muted);">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #94a3b8;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No stories found in "My Work"</h3>
+        <p style="font-size: 13px; max-width: 480px; margin: 0 auto; color: #64748b;">
+            {% if query or selected_date != 'all' or type_filter or district_filter %}
+                No stories match your current filter criteria. Try clearing search filters or changing the selected date.
+                <div style="margin-top: 14px;">
+                    <a href="{% url 'desk_my_word' %}" class="btn btn-secondary" style="font-size: 12px;">Clear All Filters</a>
+                </div>
+            {% else %}
+                When the Input Desk verifies incoming stories and clicks <strong>SELECTED</strong>, all approved news packages will automatically appear here for your editorial broadcast queue.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Video Preview Modal -->
+<div class="video-modal-overlay" id="videoModal" onclick="closeModalOnBg(event)">
+    <div class="video-modal-container">
+        <div class="video-modal-header">
+            <div id="videoModalTitle" style="font-weight: 700; font-size: 14px;">Video Preview</div>
+            <button class="video-modal-close" onclick="closeVideoModal()">&times;</button>
+        </div>
+        <div class="video-modal-body">
+            <video id="videoPlayer" controls>
+                <source id="videoSource" src="" type="video/mp4">
+                Your browser does not support HTML video.
+            </video>
+        </div>
+    </div>
+</div>
+
+<!-- Send & Editorial Assignment Modal -->
+<div class="send-modal-overlay" id="sendModal" onclick="closeSendModalOnBg(event)">
+    <div class="send-modal-card">
+        <div class="send-modal-header">
+            <div class="send-modal-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Send Story to Team / Social Media</span>
+            </div>
+            <button class="send-modal-close" onclick="closeSendModal()">&times;</button>
+        </div>
+
+        <form id="sendForm" class="send-modal-form" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="sendActionInput" value="send_team">
+            <input type="hidden" name="next" value="{% url 'desk_my_work_list' %}">
+
+            <div class="send-modal-body">
+                <!-- Story Summary Banner -->
+                <div class="send-story-banner">
+                    <div class="send-story-info" style="flex: 1;">
+                        <h4 id="modalStoryHeadline">Story Headline</h4>
+                        <div class="send-story-meta">
+                            <span id="modalStoryReporter"><strong>Reporter:</strong> -</span>
+                            <span>&bull;</span>
+                            <span id="modalStoryDistrict">-</span>
+                            <span>&bull;</span>
+                            <span id="modalStoryFormat" style="font-weight: 700; color: #0284c7;">-</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="#" id="modalStudioBtn" class="btn-open-studio" title="Open in-browser Video Editor Studio">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <span>🎬 Edit Video in Studio</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alert banner when Desk has already edited video -->
+                <div class="alert-video-edited" id="modalVideoEditedAlert">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="color: #2563eb; flex-shrink: 0; margin-top: 1px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div>
+                        <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;" id="modalVideoAlertTitle">Broadcast Video Finalized by Desk</strong>
+                        <span id="modalVideoAlertDesc">This news video package has been edited and completed by Desk. It is broadcast-ready and ready for Social Media distribution.</span>
+                    </div>
+                </div>
+
+                <!-- Department Selection Cards -->
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px;">
+                        Select Department &amp; Staff Members:
+                    </label>
+
+                    <div class="dept-grid">
+                        <!-- 1. Social Media Desk -->
+                        <div class="dept-card" id="cardSocialMedia" style="grid-column: span 2; border: 1.5px solid #c7d2fe; background: #faf5ff;">
+                            <div class="dept-card-header">
+                                <label class="dept-card-label" for="chkSocialMedia">
+                                    <input type="checkbox" id="chkSocialMedia" onchange="toggleDept('social_media')">
+                                    <span style="font-weight: 800; color: #4338ca;">🌐 Social Media Desk (Broadcast Publishing)</span>
+                                </label>
+                                <span class="badge" id="badgeSocialStatus" style="background: #e0e7ff; color: #4338ca; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">Primary Broadcast</span>
+                            </div>
+                            <select name="social_media_id" id="selSocialMedia" class="dept-dropdown" disabled>
+                                <option value="">-- All Social Media Staff (or Select Staff) --</option>
+                                {% for sm in social_medias %}
+                                <option value="{{ sm.pk }}">{{ sm.name }} ({{ sm.phone_number }})</option>
+                                {% empty %}
+                                <option value="" disabled>No active Social Media staff registered</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 2. Graphic Designer -->
+                        <div class="dept-card" id="cardGraphicDesigner">
+                            <div class="dept-card-header">
+                                <label class="dept-card-label" for="chkGraphicDesigner">
+                                    <input type="checkbox" id="chkGraphicDesigner" onchange="toggleDept('graphic_designer')">
+                                    <span>🎨 Graphic Designer</span>
+                                </label>
+                            </div>
+                            <select name="graphic_designer_id" id="selGraphicDesigner" class="dept-dropdown" disabled>
+                                <option value="">-- Select Graphic Designer --</option>
+                                {% for gd in graphic_designers %}
+                                <option value="{{ gd.pk }}">{{ gd.name }} ({{ gd.phone_number }})</option>
+                                {% empty %}
+                                <option value="" disabled>No active Graphic Designers registered</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 3. Voice Hover (Voice Over) -->
+                        <div class="dept-card" id="cardVoiceOver">
+                            <div class="dept-card-header">
+                                <label class="dept-card-label" for="chkVoiceOver">
+                                    <input type="checkbox" id="chkVoiceOver" onchange="toggleDept('voice_over')">
+                                    <span>🎙️ Voice Hover</span>
+                                </label>
+                            </div>
+                            <select name="voice_over_id" id="selVoiceOver" class="dept-dropdown" disabled>
+                                <option value="">-- Select Voice Over Artist --</option>
+                                {% for vo in voice_overs %}
+                                <option value="{{ vo.pk }}">{{ vo.name }} ({{ vo.phone_number }})</option>
+                                {% empty %}
+                                <option value="" disabled>No active Voice Over artists registered</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 4. Visual Editor -->
+                        <div class="dept-card" id="cardVisualEditor">
+                            <div class="dept-card-header">
+                                <label class="dept-card-label" for="chkVisualEditor">
+                                    <input type="checkbox" id="chkVisualEditor" onchange="toggleDept('visual_editor')">
+                                    <span>🎬 Visual Editor</span>
+                                </label>
+                            </div>
+                            <select name="visual_editor_id" id="selVisualEditor" class="dept-dropdown" disabled>
+                                <option value="">-- Select Visual Editor --</option>
+                                {% for ve in visual_editors %}
+                                <option value="{{ ve.pk }}">{{ ve.name }} ({{ ve.phone_number }})</option>
+                                {% empty %}
+                                <option value="" disabled>No active Visual Editors registered</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 5. Copy Editor -->
+                        <div class="dept-card" id="cardCopyEditor">
+                            <div class="dept-card-header">
+                                <label class="dept-card-label" for="chkCopyEditor">
+                                    <input type="checkbox" id="chkCopyEditor" onchange="toggleDept('copy_editor')">
+                                    <span>✍️ Copy Editor</span>
+                                </label>
+                            </div>
+                            <select name="copy_editor_id" id="selCopyEditor" class="dept-dropdown" disabled>
+                                <option value="">-- Select Copy Editor --</option>
+                                {% for ce in copy_editors %}
+                                <option value="{{ ce.pk }}">{{ ce.name }} ({{ ce.phone_number }})</option>
+                                {% empty %}
+                                <option value="" disabled>No active Copy Editors registered</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editorial Notes -->
+                <div id="notesContainer">
+                    <label style="font-size: 12px; font-weight: 700; color: #334155; display: block; margin-bottom: 5px;">
+                        Desk Editorial Instructions (Optional):
+                    </label>
+                    <textarea name="desk_notes" id="modalDeskNotes" placeholder="Add instructions or notes for the team..."></textarea>
+                </div>
+            </div>
+
+            <!-- Footer Action Buttons -->
+            <div class="send-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeSendModal()" style="font-size: 13px;">Cancel</button>
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <!-- Button 1: Send to Team (Shown for unedited footage) -->
+                    <button type="button" class="btn-send-team" id="btnSendTeam" onclick="submitSendModal('send_team')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span>Send to Selected Team</span>
+                    </button>
+
+                    <!-- Button 2: Send to Social Media (Primary action when video is edited) -->
+                    <button type="button" class="btn-send-social" id="btnSendSocial" onclick="submitSendModal('send_social_media')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span id="btnSendSocialText">🚀 Send to Social Media</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Video Preview Modal
+    function previewMedia(url, headline) {
+        if (!url) return;
+        var modal = document.getElementById('videoModal');
+        var player = document.getElementById('videoPlayer');
+        var source = document.getElementById('videoSource');
+        var title = document.getElementById('videoModalTitle');
+
+        source.src = url;
+        title.textContent = headline || 'Video Preview';
+        player.load();
+        modal.style.display = 'flex';
+        player.play().catch(function() {});
+    }
+
+    function closeVideoModal() {
+        var modal = document.getElementById('videoModal');
+        var player = document.getElementById('videoPlayer');
+        modal.style.display = 'none';
+        player.pause();
+    }
+
+    function closeModalOnBg(e) {
+        if (e.target.id === 'videoModal') {
+            closeVideoModal();
+        }
+    }
+
+    // ==========================================
+    // Send & Assignment Modal Logic
+    // ==========================================
+    var currentStoryIsEdited = false;
+
+    function openSendModal(pk, headline, reporter, district, newsType, isEdited, hasMedia, deskNotes, isSentToSocial, sentSocialTime, assignedSocialId) {
+        var modal = document.getElementById('sendModal');
+        var form = document.getElementById('sendForm');
+        var alertBox = document.getElementById('modalVideoEditedAlert');
+        var alertTitle = document.getElementById('modalVideoAlertTitle');
+        var alertDesc = document.getElementById('modalVideoAlertDesc');
+        var btnTeam = document.getElementById('btnSendTeam');
+        var btnSocial = document.getElementById('btnSendSocial');
+        var btnSocialText = document.getElementById('btnSendSocialText');
+        var studioBtn = document.getElementById('modalStudioBtn');
+
+        currentStoryIsEdited = !!isEdited;
+        form.action = '/desk/news/' + pk + '/assign/';
+
+        document.getElementById('modalStoryHeadline').textContent = headline || 'Story Details';
+        document.getElementById('modalStoryReporter').innerHTML = '<strong>Reporter:</strong> ' + (reporter || 'Desk Staff');
+        document.getElementById('modalStoryDistrict').textContent = district || '';
+        document.getElementById('modalStoryFormat').textContent = newsType || 'News';
+        document.getElementById('modalDeskNotes').value = deskNotes || '';
+
+        // Studio Button link
+        if (hasMedia) {
+            studioBtn.style.display = 'inline-flex';
+            studioBtn.href = '/desk/studio/' + pk + '/';
+        } else {
+            studioBtn.style.display = 'none';
+        }
+
+        // Reset check boxes and dropdowns
+        ['SocialMedia', 'GraphicDesigner', 'VoiceOver', 'VisualEditor', 'CopyEditor'].forEach(function(dept) {
+            var chk = document.getElementById('chk' + dept);
+            var sel = document.getElementById('sel' + dept);
+            var card = document.getElementById('card' + dept);
+            if (chk) {
+                chk.checked = false;
+                chk.disabled = false;
+            }
+            if (sel) {
+                sel.value = '';
+                sel.disabled = true;
+            }
+            if (card) card.classList.remove('selected');
+        });
+
+        // Set state based on video editing & social media dispatch
+        if (currentStoryIsEdited) {
+            alertBox.classList.add('active');
+            
+            // Auto check and activate Social Media
+            var chkSm = document.getElementById('chkSocialMedia');
+            var selSm = document.getElementById('selSocialMedia');
+            var cardSm = document.getElementById('cardSocialMedia');
+            if (chkSm) chkSm.checked = true;
+            if (selSm) {
+                selSm.disabled = false;
+                if (assignedSocialId) selSm.value = assignedSocialId;
+            }
+            if (cardSm) cardSm.classList.add('selected');
+
+            // Internal editing is finished, lock the other 4 departments
+            ['GraphicDesigner', 'VoiceOver', 'VisualEditor', 'CopyEditor'].forEach(function(dept) {
+                var chk = document.getElementById('chk' + dept);
+                if (chk) chk.disabled = true;
+            });
+
+            // Primary action is sending to Social Media
+            btnTeam.style.display = 'none'; // Hide team button to avoid confusion
+            btnSocial.style.display = 'inline-flex';
+
+            if (isSentToSocial) {
+                alertTitle.textContent = "Broadcast Video Ready & Dispatched to Social Media";
+                alertDesc.textContent = "This story's video package was already forwarded to Social Media (" + (sentSocialTime || 'Recently') + "). You can re-send or update the assignment below.";
+                btnSocialText.textContent = "🔄 Re-Send Updated Video to Social Media";
+            } else {
+                alertTitle.textContent = "Broadcast Video Finalized by Desk";
+                alertDesc.textContent = "This news video package has been edited and completed by Desk. It is broadcast-ready and ready for Social Media distribution!";
+                btnSocialText.textContent = "🚀 Send Broadcast Video to Social Media";
+            }
+        } else {
+            alertBox.classList.remove('active');
+            btnTeam.style.display = 'inline-flex';
+            btnTeam.disabled = false;
+            btnSocial.style.display = 'inline-flex';
+            btnSocialText.textContent = "🚀 Send to Social Media";
+
+            if (isSentToSocial) {
+                var chkSm = document.getElementById('chkSocialMedia');
+                var selSm = document.getElementById('selSocialMedia');
+                var cardSm = document.getElementById('cardSocialMedia');
+                if (chkSm) chkSm.checked = true;
+                if (selSm) {
+                    selSm.disabled = false;
+                    if (assignedSocialId) selSm.value = assignedSocialId;
+                }
+                if (cardSm) cardSm.classList.add('selected');
+            }
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeSendModal() {
+        var modal = document.getElementById('sendModal');
+        modal.style.display = 'none';
+    }
+
+    function closeSendModalOnBg(e) {
+        if (e.target.id === 'sendModal') {
+            closeSendModal();
+        }
+    }
+
+    function toggleDept(deptKey) {
+        var map = {
+            'social_media': 'SocialMedia',
+            'graphic_designer': 'GraphicDesigner',
+            'voice_over': 'VoiceOver',
+            'visual_editor': 'VisualEditor',
+            'copy_editor': 'CopyEditor'
+        };
+        var deptName = map[deptKey] || deptKey;
+        var chk = document.getElementById('chk' + deptName);
+        var sel = document.getElementById('sel' + deptName);
+        var card = document.getElementById('card' + deptName);
+
+        if (chk && sel) {
+            sel.disabled = !chk.checked;
+            if (chk.checked) {
+                card.classList.add('selected');
+                sel.focus();
+            } else {
+                card.classList.remove('selected');
+                sel.value = '';
+            }
+        }
+    }
+
+    function submitSendModal(actionType) {
+        var form = document.getElementById('sendForm');
+        var actionInput = document.getElementById('sendActionInput');
+        actionInput.value = actionType;
+
+        if (actionType === 'send_team') {
+            if (currentStoryIsEdited) {
+                // Seamlessly route to social media
+                actionInput.value = 'send_social_media';
+            } else {
+                // Check if at least one department is selected
+                var anySelected = false;
+                ['SocialMedia', 'GraphicDesigner', 'VoiceOver', 'VisualEditor', 'CopyEditor'].forEach(function(dept) {
+                    var chk = document.getElementById('chk' + dept);
+                    if (chk && chk.checked) anySelected = true;
+                });
+
+                if (!anySelected) {
+                    if (!confirm('No specific department checked. Do you want to forward anyway, or would you like to select a team member?')) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        form.submit();
+    }
+</script>
+{% endblock %}

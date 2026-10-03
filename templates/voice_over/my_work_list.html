@@ -1,0 +1,1438 @@
+{% extends "voice_over/base_voice_over.html" %}
+{% load static %}
+
+{% block title %}My Work List - Voice Hover - Nandilive{% endblock %}
+{% block page_title %}My Work List — Dispatched &amp; Completed Voiceovers{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Top Banner */
+    .task-banner {
+        background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #059669 100%);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        color: #ffffff;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .task-banner::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(52, 211, 153, 0.35) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .task-banner h2 {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .task-banner p {
+        color: #d1fae5;
+        font-size: 13.5px;
+        margin: 0;
+    }
+
+    .task-count-badge {
+        background: rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(6px);
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-weight: 800;
+        font-size: 13.5px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        white-space: nowrap;
+    }
+
+    /* Tabs Bar (Pending Recording vs My Work List) */
+    .vo-tabs-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 12px;
+    }
+
+    .vo-tab-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.15s ease;
+    }
+
+    .vo-tab-link:hover {
+        color: #064e3b;
+        background: #f1f5f9;
+    }
+
+    .vo-tab-link.active {
+        background: #059669;
+        color: #ffffff;
+        border-color: #047857;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+    }
+
+    .vo-tab-link .tab-count {
+        background: rgba(0, 0, 0, 0.08);
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+    }
+
+    .vo-tab-link.active .tab-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    /* Filter & Search Bar */
+    .filter-bar-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-bar-form {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .search-input-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .search-input:focus {
+        border-color: #059669;
+    }
+
+    /* Table Container */
+    .task-table-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .task-table thead {
+        background: #f8fafc;
+        border-bottom: 1.5px solid var(--border-color);
+    }
+
+    .task-table th {
+        padding: 14px 16px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .task-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+    }
+
+    .task-table tbody tr:hover {
+        background-color: #f0fdf4;
+    }
+
+    .task-table td {
+        padding: 16px;
+        vertical-align: top;
+    }
+
+    /* Format Badges */
+    .format-badge {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+    }
+
+    .format-avo {
+        background-color: #f5f3ff;
+        color: #7c3aed;
+        border: 1px solid #ddd6fe;
+    }
+
+    .format-byte {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+    }
+
+    .format-pkg {
+        background-color: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .district-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #334155;
+        background: #f1f5f9;
+        padding: 2px 7px;
+        border-radius: 4px;
+        margin-top: 4px;
+    }
+
+    .story-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.45;
+        margin-bottom: 8px;
+    }
+
+    .story-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .story-title a:hover {
+        color: #059669;
+    }
+
+    /* Embedded Audio Track Player */
+    .dispatched-audio-box {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .dispatched-audio-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #166534;
+    }
+
+    /* Action Controls */
+    .action-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 140px;
+    }
+
+    .btn-rerecord {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 12px;
+        background: #f5f3ff;
+        color: #7c3aed;
+        border: 1px solid #ddd6fe;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-rerecord:hover {
+        background: #7c3aed;
+        color: #ffffff;
+    }
+
+    .btn-view-story {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 12px;
+        background: #ffffff;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-view-story:hover {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
+    /* Teleprompter Modal Styles */
+    .voice-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .voice-modal-container {
+        background: #ffffff;
+        border-radius: 14px;
+        max-width: 850px;
+        width: 100%;
+        max-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .voice-modal-header {
+        padding: 16px 22px;
+        background: #064e3b;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .voice-modal-body {
+        padding: 22px;
+        overflow-y: auto;
+        flex: 1;
+        background: #fcfcfc;
+    }
+
+    .teleprompter-script {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 20px;
+        font-size: 18px;
+        line-height: 1.8;
+        color: #0f172a;
+        white-space: pre-wrap;
+        min-height: 180px;
+        max-height: 280px;
+        overflow-y: auto;
+        font-weight: 500;
+    }
+
+    .recording-toolbar {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .rec-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #94a3b8;
+        margin-right: 6px;
+    }
+
+    .rec-indicator.active {
+        background: #dc2626;
+        box-shadow: 0 0 10px #dc2626;
+        animation: pulseRec 1.2s infinite;
+    }
+
+    @keyframes pulseRec {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.25); opacity: 0.6; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Audio Trimmer Styles */
+    .audio-trimmer-card {
+        background: #0f172a;
+        border-radius: 12px;
+        padding: 16px 20px;
+        color: #ffffff;
+        margin-top: 14px;
+        margin-bottom: 14px;
+        display: none;
+    }
+
+    .trimmer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .trimmer-track-container {
+        background: #1e293b;
+        height: 38px;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 12px;
+        border: 1px solid #334155;
+        display: flex;
+        align-items: center;
+    }
+
+    .trim-selection-bar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.7) 0%, rgba(52, 211, 153, 0.7) 100%);
+        border-left: 3px solid #6ee7b7;
+        border-right: 3px solid #6ee7b7;
+        pointer-events: none;
+        transition: left 0.05s ease, width 0.05s ease;
+    }
+
+    .trim-playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #ef4444;
+        box-shadow: 0 0 8px #ef4444;
+        pointer-events: none;
+        transition: left 0.05s linear;
+        z-index: 5;
+    }
+
+    .trim-controls-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 12px;
+    }
+
+    .trim-point-control label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    .trim-input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .trim-input-group input[type="range"] {
+        flex: 1;
+        accent-color: #34d399;
+        cursor: pointer;
+    }
+
+    .trim-val-badge {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 800;
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid #334155;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .trim-info-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 12px;
+        border-top: 1px solid #334155;
+        font-size: 12px;
+        color: #cbd5e1;
+    }
+
+    .btn-trim-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        background: #334155;
+        color: #ffffff;
+        transition: all 0.15s ease;
+    }
+
+    .btn-trim-action:hover {
+        background: #475569;
+    }
+
+    .btn-apply-trim {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    .btn-apply-trim:hover {
+        background: #047857;
+    }
+
+    .btn-send-ve {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+        transition: all 0.15s ease;
+    }
+
+    .btn-send-ve:hover {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        transform: translateY(-1px);
+    }
+
+    .copy-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 2000;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .copy-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Header Banner -->
+<div class="task-banner">
+    <div>
+        <h2>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>My Work List — Completed Voiceovers</span>
+        </h2>
+        <p>Stories where voice recordings have been trimmed and dispatched directly to the Visual Editor.</p>
+    </div>
+    <div class="task-count-badge">
+        {{ completed_count|default:tasks_count }} Dispatched Task{{ completed_count|default:tasks_count|pluralize }}
+    </div>
+</div>
+
+<!-- Tabs Bar -->
+<div class="vo-tabs-bar">
+    <a href="{% url 'voice_over_my_task' %}" class="vo-tab-link">
+        <span>🎙️ Pending Recording</span>
+        <span class="tab-count">{{ pending_count }}</span>
+    </a>
+    <a href="{% url 'voice_over_my_work_list' %}" class="vo-tab-link active">
+        <span>✅ My Work List (Sent)</span>
+        <span class="tab-count">{{ completed_count }}</span>
+    </a>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="filter-bar-card">
+    <form method="GET" action="{% url 'voice_over_my_work_list' %}" class="filter-bar-form">
+        <div class="search-input-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="q" value="{{ query|default:'' }}" class="search-input" placeholder="Search dispatched voiceovers by headline, district, or script...">
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn" style="padding: 8px 16px; font-size: 13px; background: #059669; color: #ffffff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer;">
+                Search
+            </button>
+            {% if query %}
+            <a href="{% url 'voice_over_my_work_list' %}" class="btn" style="padding: 8px 14px; font-size: 13px; background: #f1f5f9; color: #475569; font-weight: 600; border-radius: 8px; text-decoration: none; border: 1px solid #cbd5e1;">
+                Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Main Table List -->
+<div class="task-table-card">
+    {% if tasks %}
+    <div style="overflow-x: auto;">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th style="width: 110px;">Format</th>
+                    <th style="min-width: 340px;">Story Headline &amp; Dispatched Audio Track</th>
+                    <th style="width: 200px;">Visual Editor Received</th>
+                    <th style="width: 170px;">Reporter &amp; Location</th>
+                    <th style="width: 140px; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <!-- Format Column -->
+                    <td>
+                        {% if task.news_type == 'AVO' %}
+                            <span class="format-badge format-avo">AVO</span>
+                        {% elif task.news_type == 'Byte' %}
+                            <span class="format-badge format-byte">Byte</span>
+                        {% elif task.news_type == 'AVO Byte' %}
+                            <span class="format-badge format-avo">AVO Byte</span>
+                        {% else %}
+                            <span class="format-badge format-pkg">{{ task.news_type }}</span>
+                        {% endif %}
+
+                        <div class="district-pill">
+                            <span>📍 {{ task.district }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Story Headline & Recorded Audio Track -->
+                    <td>
+                        <h3 class="story-title">
+                            <a href="{% url 'news_view' task.pk %}">{{ task.headline }}</a>
+                        </h3>
+
+                        <!-- Audio Player Track Box -->
+                        {% if task.byte_media %}
+                        <div class="dispatched-audio-box">
+                            <div class="dispatched-audio-header">
+                                <span style="display: flex; align-items: center; gap: 5px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    </svg>
+                                    <span>Recorded Voiceover Track:</span>
+                                </span>
+                                <a href="{{ task.byte_media.url }}" download class="badge badge-published" style="text-decoration: none; font-size: 11px;">
+                                    ⬇️ Download Audio
+                                </a>
+                            </div>
+                            <audio controls style="width: 100%; height: 34px; outline: none;" src="{{ task.byte_media.url }}"></audio>
+                        </div>
+                        {% endif %}
+
+                        {% if task.byte_interview %}
+                        <div style="font-size: 11.5px; color: #166534; margin-top: 6px;">
+                            <strong>Soundbyte Cue:</strong> {{ task.byte_interview }}
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Visual Editor Dispatched Column -->
+                    <td>
+                        <div style="font-weight: 700; color: #064e3b; display: flex; align-items: center; gap: 6px;">
+                            <span>🎬</span>
+                            <span>{{ task.assigned_visual_editor.name|default:"Visual Editor Desk" }}</span>
+                        </div>
+                        {% if task.assigned_visual_editor.phone_number %}
+                        <div style="font-size: 11px; margin-top: 2px;">
+                            <a href="tel:{{ task.assigned_visual_editor.phone_number }}" style="color: #059669; text-decoration: none;">
+                                📞 {{ task.assigned_visual_editor.phone_number }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div style="margin-top: 6px;">
+                            <span class="badge badge-published" style="font-size: 10.5px;">
+                                ✅ Sent to Studio
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Reporter & Location Column -->
+                    <td>
+                        <div style="font-weight: 700; color: #0f172a;">
+                            {{ task.reporter.name|default:task.author.get_full_name|default:"Desk Staff" }}
+                        </div>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                            📍 {{ task.location|default:task.district }}
+                        </div>
+                    </td>
+
+                    <!-- Actions Column -->
+                    <td>
+                        <div class="action-controls">
+                            <!-- Re-record / Trim Button -->
+                            <button type="button" class="btn-rerecord" onclick="openVoiceRecorder('{{ task.pk }}', '{{ task.headline|escapejs }}', '{{ task.description|escapejs }}', '{{ task.assigned_visual_editor.name|default:'Visual Editor'|escapejs }}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="1 4 1 10 7 10"></polyline>
+                                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                </svg>
+                                <span>Re-record / Trim</span>
+                            </button>
+
+                            <!-- View Story Button -->
+                            <a href="{% url 'news_view' task.pk %}" class="btn-view-story">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>View Story</span>
+                            </a>
+
+                            <!-- Team Production Files Button -->
+                            <button type="button" class="btn-action-files" onclick="openTeamFilesModal('teamFilesModal-{{ task.pk }}')" title="View Team Files: Copy Editor Script, Graphics & Footage">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Files</span>
+                                {% if task.byte_media or task.additional_media.all %}
+                                <span class="files-badge-dot" title="Assets uploaded"></span>
+                                {% endif %}
+                            </button>
+                        </div>
+
+                        <!-- Team Files Modal for Voice Over My Work List -->
+                        {% include "common/_team_files_modal.html" with story=task %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div style="padding: 56px 20px; text-align: center; color: var(--text-muted);">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #ecfdf5; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #059669;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No Dispatched Voiceovers Yet</h3>
+        <p style="font-size: 13px; max-width: 460px; margin: 0 auto; color: #64748b;">
+            When you record and send a voiceover from <a href="{% url 'voice_over_my_task' %}" style="color: #059669; font-weight: 700;">Pending Tasks</a>, it will appear here for you to review and play anytime.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Built-in Voice Recording & Audio Trimmer Modal for Re-recording -->
+<div id="voiceRecorderModal" class="voice-modal-overlay">
+    <div class="voice-modal-container">
+        <!-- Modal Header -->
+        <div class="voice-modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                </svg>
+                <span id="modalStoryHeadline" style="font-weight: 700; font-size: 15px; max-width: 580px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Voice Over Script &amp; Teleprompter
+                </span>
+            </div>
+            <button type="button" onclick="closeVoiceRecorder()" style="background: none; border: none; color: #cbd5e1; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="voice-modal-body">
+            <!-- Target Visual Editor Info Strip -->
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 8px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #065f46;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-weight: 800;">🎯 Forward Target:</span>
+                    <span>Visual Editor (<strong id="targetVeName">Visual Editor Desk</strong>)</span>
+                </div>
+                <span style="font-size: 11px; background: #d1fae5; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">
+                    Auto-sends to Studio
+                </span>
+            </div>
+
+            <!-- Font Size Controls -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Teleprompter Script (Odia):</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" onclick="adjustTeleprompterFont(-2)" class="btn-trim-action" style="padding: 2px 8px; font-size: 12px;">A-</button>
+                    <button type="button" onclick="adjustTeleprompterFont(2)" class="btn-trim-action" style="padding: 2px 8px; font-size: 12px;">A+</button>
+                </div>
+            </div>
+
+            <!-- Teleprompter Script Area -->
+            <div id="modalTeleprompterText" class="teleprompter-script"></div>
+
+            <!-- Recording Controls -->
+            <div class="recording-toolbar">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="recStatusDot" class="rec-indicator"></span>
+                    <span id="recStatusText" style="font-size: 13px; font-weight: 700; color: #475569;">Ready to record</span>
+                    <span id="recTimer" style="font-size: 14px; font-weight: 800; color: #0f172a; font-family: monospace; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">00:00</span>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" id="btnStartRec" onclick="startMicRecording()" class="btn-trim-action" style="background: #dc2626; color: #ffffff; padding: 8px 14px; font-weight: 700;">
+                        🔴 Start Recording
+                    </button>
+                    <button type="button" id="btnStopRec" onclick="stopMicRecording()" class="btn-trim-action" style="display: none; background: #0f172a; color: #ffffff; padding: 8px 14px; font-weight: 700;">
+                        ⏹️ Stop Recording
+                    </button>
+                </div>
+            </div>
+
+            <!-- Audio Trimmer Card -->
+            <div id="audioTrimmerCard" class="audio-trimmer-card">
+                <div class="trimmer-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5">
+                            <circle cx="6" cy="6" r="3"></circle>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                            <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                            <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+                        </svg>
+                        <span style="font-weight: 800; font-size: 13.5px;">Audio Trim &amp; Cut Facility</span>
+                    </div>
+                    <span id="trimStatusBadge" class="badge" style="background: #1e293b; color: #94a3b8; font-size: 11px;">
+                        Original Take
+                    </span>
+                </div>
+
+                <div class="trimmer-track-container" id="trimmerTrack">
+                    <div id="trimSelectionBar" class="trim-selection-bar" style="left: 0%; width: 100%;"></div>
+                    <div id="trimPlayhead" class="trim-playhead" style="left: 0%;"></div>
+                </div>
+
+                <div class="trim-controls-grid">
+                    <div class="trim-point-control">
+                        <label>✂️ START CUT (In-Point):</label>
+                        <div class="trim-input-group">
+                            <input type="range" id="trimStartSlider" min="0" max="100" step="0.05" value="0" oninput="onTrimSliderInput('start')">
+                            <span id="trimStartVal" class="trim-val-badge">00:00.0</span>
+                        </div>
+                    </div>
+
+                    <div class="trim-point-control">
+                        <label>✂️ END CUT (Out-Point):</label>
+                        <div class="trim-input-group">
+                            <input type="range" id="trimEndSlider" min="0" max="100" step="0.05" value="100" oninput="onTrimSliderInput('end')">
+                            <span id="trimEndVal" class="trim-val-badge">00:00.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trim-info-strip">
+                    <div>
+                        Selected Duration: <strong id="trimDurationText" style="color: #34d399;">00:00.0</strong>
+                        <span style="color: #64748b; font-size: 11px;">(Total: <span id="totalAudioDurationText">00:00</span>)</span>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-trim-action" onclick="toggleTrimPreview()" id="btnPreviewTrim">
+                            <span id="btnPreviewIcon">▶</span>
+                            <span id="btnPreviewText">Play Trimmed Selection</span>
+                        </button>
+                        <button type="button" class="btn-trim-action btn-apply-trim" onclick="applyAudioTrim()">
+                            ✂️ Apply Trim
+                        </button>
+                        <button type="button" class="btn-trim-action" onclick="resetToOriginalAudio()">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Playback Preview & Final Submission Bar -->
+            <div id="audioPlaybackWrap" style="display: none; margin-top: 14px;">
+                <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">
+                    Active Voiceover Audio Preview:
+                </label>
+                <audio id="recordedAudioPlayer" controls style="width: 100%; outline: none; margin-bottom: 14px;"></audio>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px;">
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" onclick="startMicRecording()" class="btn-trim-action">
+                            🔄 Re-record Take
+                        </button>
+                        <a id="btnDownloadRec" href="#" download="voiceover.wav" class="btn-trim-action" style="text-decoration: none;">
+                            💾 Download Audio
+                        </a>
+                    </div>
+
+                    <button type="button" id="btnSendToVE" onclick="submitVoiceToVisualEditor()" class="btn-send-ve">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span id="btnSendText">🚀 Update Visual Editor Audio</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast -->
+<div id="copyToast" class="copy-toast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span id="toastMsg">Copied!</span>
+</div>
+
+<script>
+// Toast Notification
+function showToast(message, isError) {
+    const toast = document.getElementById('copyToast');
+    const toastMsg = document.getElementById('toastMsg');
+    if (toast && toastMsg) {
+        toastMsg.innerText = message;
+        toast.style.background = isError ? '#dc2626' : '#0f172a';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+}
+
+// Global Recording & Audio State
+let currentStoryId = null;
+let currentVisualEditorName = 'Visual Editor Desk';
+let currentFontSize = 18;
+let mediaRecorder = null;
+let audioChunks = [];
+let recTimerInterval = null;
+let recSeconds = 0;
+
+let audioCtx = null;
+let rawAudioBlob = null;
+let activeAudioBlob = null;
+let decodedAudioBuffer = null;
+let audioDuration = 0;
+let trimStartSec = 0;
+let trimEndSec = 0;
+let isPreviewPlaying = false;
+let previewInterval = null;
+
+function openVoiceRecorder(storyId, headline, script, veName) {
+    currentStoryId = storyId;
+    currentVisualEditorName = veName || 'Visual Editor Desk';
+
+    document.getElementById('modalStoryHeadline').innerText = headline || 'Voice Over Recording';
+    document.getElementById('modalTeleprompterText').innerText = script || 'No script text provided.';
+    document.getElementById('targetVeName').innerText = currentVisualEditorName;
+
+    document.getElementById('voiceRecorderModal').style.display = 'flex';
+    resetRecorderUI();
+}
+
+function closeVoiceRecorder() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+    clearInterval(recTimerInterval);
+    stopTrimPreview();
+    document.getElementById('voiceRecorderModal').style.display = 'none';
+}
+
+function adjustTeleprompterFont(delta) {
+    currentFontSize = Math.max(14, Math.min(34, currentFontSize + delta));
+    document.getElementById('modalTeleprompterText').style.fontSize = currentFontSize + 'px';
+}
+
+function resetRecorderUI() {
+    clearInterval(recTimerInterval);
+    stopTrimPreview();
+    recSeconds = 0;
+    document.getElementById('recTimer').innerText = '00:00';
+    document.getElementById('recStatusDot').classList.remove('active');
+    document.getElementById('recStatusText').innerText = 'Ready to record';
+    document.getElementById('btnStartRec').style.display = 'inline-flex';
+    document.getElementById('btnStartRec').innerText = '🔴 Start Recording';
+    document.getElementById('btnStopRec').style.display = 'none';
+    document.getElementById('audioTrimmerCard').style.display = 'none';
+    document.getElementById('audioPlaybackWrap').style.display = 'none';
+
+    rawAudioBlob = null;
+    activeAudioBlob = null;
+    decodedAudioBuffer = null;
+    audioChunks = [];
+}
+
+async function startMicRecording() {
+    try {
+        stopTrimPreview();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+            if (event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = async () => {
+            rawAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            activeAudioBlob = rawAudioBlob;
+
+            stream.getTracks().forEach(track => track.stop());
+
+            document.getElementById('recStatusDot').classList.remove('active');
+            document.getElementById('recStatusText').innerText = 'Recording completed!';
+            document.getElementById('btnStartRec').innerText = '🔄 Re-record Take';
+            document.getElementById('btnStartRec').style.display = 'inline-flex';
+            document.getElementById('btnStopRec').style.display = 'none';
+
+            await setupAudioTrimmer(rawAudioBlob);
+        };
+
+        mediaRecorder.start();
+
+        document.getElementById('recStatusDot').classList.add('active');
+        document.getElementById('recStatusText').innerText = 'Recording live...';
+        document.getElementById('btnStartRec').style.display = 'none';
+        document.getElementById('btnStopRec').style.display = 'inline-flex';
+        document.getElementById('audioTrimmerCard').style.display = 'none';
+        document.getElementById('audioPlaybackWrap').style.display = 'none';
+
+        recSeconds = 0;
+        recTimerInterval = setInterval(() => {
+            recSeconds++;
+            const mins = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+            const secs = String(recSeconds % 60).padStart(2, '0');
+            document.getElementById('recTimer').innerText = `${mins}:${secs}`;
+        }, 1000);
+
+    } catch (err) {
+        alert('Microphone Access Error: ' + err.message);
+    }
+}
+
+function stopMicRecording() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        clearInterval(recTimerInterval);
+    }
+}
+
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+function formatSecs(sec) {
+    if (isNaN(sec) || sec < 0) sec = 0;
+    const mins = String(Math.floor(sec / 60)).padStart(2, '0');
+    const rem = sec % 60;
+    const whole = String(Math.floor(rem)).padStart(2, '0');
+    const frac = String(Math.floor((rem - Math.floor(rem)) * 10));
+    return `${mins}:${whole}.${frac}`;
+}
+
+async function setupAudioTrimmer(blob) {
+    try {
+        const ctx = getAudioContext();
+        const arrayBuffer = await blob.arrayBuffer();
+        decodedAudioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+        audioDuration = decodedAudioBuffer.duration;
+
+        trimStartSec = 0;
+        trimEndSec = audioDuration;
+
+        const startSlider = document.getElementById('trimStartSlider');
+        const endSlider = document.getElementById('trimEndSlider');
+
+        startSlider.min = 0;
+        startSlider.max = audioDuration;
+        startSlider.step = 0.05;
+        startSlider.value = 0;
+
+        endSlider.min = 0;
+        endSlider.max = audioDuration;
+        endSlider.step = 0.05;
+        endSlider.value = audioDuration;
+
+        document.getElementById('totalAudioDurationText').innerText = formatSecs(audioDuration);
+        document.getElementById('trimStatusBadge').innerText = 'Original Take';
+
+        updateTrimmerUI();
+
+        const audioUrl = URL.createObjectURL(blob);
+        const player = document.getElementById('recordedAudioPlayer');
+        player.src = audioUrl;
+
+        const downloadBtn = document.getElementById('btnDownloadRec');
+        downloadBtn.href = audioUrl;
+        downloadBtn.download = `voiceover_${currentStoryId || Date.now()}.wav`;
+
+        document.getElementById('audioTrimmerCard').style.display = 'block';
+        document.getElementById('audioPlaybackWrap').style.display = 'block';
+
+        player.ontimeupdate = () => {
+            if (audioDuration > 0) {
+                const pct = (player.currentTime / audioDuration) * 100;
+                document.getElementById('trimPlayhead').style.left = `${Math.min(100, Math.max(0, pct))}%`;
+            }
+        };
+
+    } catch (e) {
+        console.error("Audio decoding error:", e);
+        const audioUrl = URL.createObjectURL(blob);
+        const player = document.getElementById('recordedAudioPlayer');
+        player.src = audioUrl;
+        document.getElementById('audioPlaybackWrap').style.display = 'block';
+    }
+}
+
+function onTrimSliderInput(type) {
+    const startSlider = document.getElementById('trimStartSlider');
+    const endSlider = document.getElementById('trimEndSlider');
+
+    let sVal = parseFloat(startSlider.value);
+    let eVal = parseFloat(endSlider.value);
+
+    if (type === 'start') {
+        if (sVal >= eVal) {
+            sVal = Math.max(0, eVal - 0.2);
+            startSlider.value = sVal;
+        }
+        trimStartSec = sVal;
+    } else {
+        if (eVal <= sVal) {
+            eVal = Math.min(audioDuration, sVal + 0.2);
+            endSlider.value = eVal;
+        }
+        trimEndSec = eVal;
+    }
+
+    updateTrimmerUI();
+}
+
+function updateTrimmerUI() {
+    document.getElementById('trimStartVal').innerText = formatSecs(trimStartSec);
+    document.getElementById('trimEndVal').innerText = formatSecs(trimEndSec);
+
+    const dur = Math.max(0, trimEndSec - trimStartSec);
+    document.getElementById('trimDurationText').innerText = formatSecs(dur);
+
+    if (audioDuration > 0) {
+        const leftPct = (trimStartSec / audioDuration) * 100;
+        const widthPct = (dur / audioDuration) * 100;
+        const bar = document.getElementById('trimSelectionBar');
+        bar.style.left = `${leftPct}%`;
+        bar.style.width = `${widthPct}%`;
+    }
+}
+
+function toggleTrimPreview() {
+    if (isPreviewPlaying) {
+        stopTrimPreview();
+    } else {
+        startTrimPreview();
+    }
+}
+
+function startTrimPreview() {
+    const player = document.getElementById('recordedAudioPlayer');
+    player.currentTime = trimStartSec;
+    player.play();
+    isPreviewPlaying = true;
+
+    document.getElementById('btnPreviewIcon').innerText = '⏸';
+    document.getElementById('btnPreviewText').innerText = 'Pause Preview';
+
+    clearInterval(previewInterval);
+    previewInterval = setInterval(() => {
+        if (player.currentTime >= trimEndSec || player.ended) {
+            stopTrimPreview();
+        }
+    }, 50);
+}
+
+function stopTrimPreview() {
+    const player = document.getElementById('recordedAudioPlayer');
+    if (player) {
+        player.pause();
+    }
+    clearInterval(previewInterval);
+    isPreviewPlaying = false;
+    const icon = document.getElementById('btnPreviewIcon');
+    const text = document.getElementById('btnPreviewText');
+    if (icon) icon.innerText = '▶';
+    if (text) text.innerText = 'Play Trimmed Selection';
+}
+
+async function applyAudioTrim() {
+    if (!decodedAudioBuffer) return;
+
+    stopTrimPreview();
+
+    const ctx = getAudioContext();
+    const sampleRate = decodedAudioBuffer.sampleRate;
+    const startSample = Math.floor(trimStartSec * sampleRate);
+    const endSample = Math.min(Math.floor(trimEndSec * sampleRate), decodedAudioBuffer.length);
+    const trimmedLength = endSample - startSample;
+
+    if (trimmedLength <= 0) return;
+
+    const trimmedBuffer = ctx.createBuffer(
+        decodedAudioBuffer.numberOfChannels,
+        trimmedLength,
+        sampleRate
+    );
+
+    for (let ch = 0; ch < decodedAudioBuffer.numberOfChannels; ch++) {
+        const srcData = decodedAudioBuffer.getChannelData(ch);
+        const dstData = trimmedBuffer.getChannelData(ch);
+        for (let i = 0; i < trimmedLength; i++) {
+            dstData[i] = srcData[startSample + i];
+        }
+    }
+
+    activeAudioBlob = audioBufferToWavBlob(trimmedBuffer);
+    const trimmedUrl = URL.createObjectURL(activeAudioBlob);
+
+    const player = document.getElementById('recordedAudioPlayer');
+    player.src = trimmedUrl;
+
+    const downloadBtn = document.getElementById('btnDownloadRec');
+    downloadBtn.href = trimmedUrl;
+    downloadBtn.download = `voiceover_${currentStoryId || Date.now()}_trimmed.wav`;
+
+    decodedAudioBuffer = trimmedBuffer;
+    audioDuration = trimmedBuffer.duration;
+    trimStartSec = 0;
+    trimEndSec = audioDuration;
+
+    const startSlider = document.getElementById('trimStartSlider');
+    const endSlider = document.getElementById('trimEndSlider');
+    startSlider.max = audioDuration;
+    startSlider.value = 0;
+    endSlider.max = audioDuration;
+    endSlider.value = audioDuration;
+
+    document.getElementById('totalAudioDurationText').innerText = formatSecs(audioDuration);
+    updateTrimmerUI();
+
+    const badge = document.getElementById('trimStatusBadge');
+    badge.innerText = `✅ Trimmed (${formatSecs(audioDuration)})`;
+    badge.style.background = '#065f46';
+    badge.style.color = '#34d399';
+
+    showToast('✓ Audio trimmed successfully!');
+}
+
+function resetToOriginalAudio() {
+    if (!rawAudioBlob) return;
+    stopTrimPreview();
+    setupAudioTrimmer(rawAudioBlob);
+    showToast('Reverted to original full audio.');
+}
+
+function audioBufferToWavBlob(buffer) {
+    const numOfChan = buffer.numberOfChannels;
+    const length = buffer.length * numOfChan * 2 + 44;
+    const out = new DataView(new ArrayBuffer(length));
+    let pos = 0;
+
+    function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+    function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+    setUint32(0x46464952); // "RIFF"
+    setUint32(length - 8);  // file length - 8
+    setUint32(0x45564157); // "WAVE"
+
+    setUint32(0x20746d66); // "fmt "
+    setUint32(16);         // 16 for PCM
+    setUint16(1);          // Linear PCM
+    setUint16(numOfChan);
+    setUint32(buffer.sampleRate);
+    setUint32(buffer.sampleRate * 2 * numOfChan);
+    setUint16(numOfChan * 2);
+    setUint16(16);
+
+    setUint32(0x61746164); // "data"
+    setUint32(length - pos - 4);
+
+    const channels = [];
+    for (let i = 0; i < numOfChan; i++) {
+        channels.push(buffer.getChannelData(i));
+    }
+
+    let offset = 0;
+    while (pos < length) {
+        for (let i = 0; i < numOfChan; i++) {
+            let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+            out.setInt16(pos, sample, true);
+            pos += 2;
+        }
+        offset++;
+    }
+
+    return new Blob([out], { type: 'audio/wav' });
+}
+
+async function submitVoiceToVisualEditor() {
+    if (!activeAudioBlob) {
+        alert('Please record audio first before sending!');
+        return;
+    }
+
+    if (!currentStoryId) {
+        alert('Story ID not found.');
+        return;
+    }
+
+    const btn = document.getElementById('btnSendToVE');
+    const btnText = document.getElementById('btnSendText');
+
+    btn.disabled = true;
+    btnText.innerText = 'Updating Audio in Studio...';
+
+    try {
+        const formData = new FormData();
+        const filename = `voiceover_${currentStoryId}_${Date.now()}.wav`;
+        formData.append('audio_file', activeAudioBlob, filename);
+
+        let csrfToken = '';
+        const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+        if (cookieMatch) {
+            csrfToken = cookieMatch[1];
+        }
+
+        const response = await fetch(`/voice-over/task/${currentStoryId}/submit-audio/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('✓ ' + (result.message || 'Updated in Visual Editor!'));
+            btnText.innerText = '✅ Updated Successfully!';
+            setTimeout(() => {
+                closeVoiceRecorder();
+                window.location.reload();
+            }, 1200);
+        } else {
+            alert('Upload Error: ' + (result.error || 'Could not send audio.'));
+            btn.disabled = false;
+            btnText.innerText = '🚀 Update Visual Editor Audio';
+        }
+
+    } catch (err) {
+        alert('Network/Server Error: ' + err.message);
+        btn.disabled = false;
+        btnText.innerText = '🚀 Update Visual Editor Audio';
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('voiceRecorderModal');
+    if (event.target === modal) {
+        closeVoiceRecorder();
+    }
+};
+</script>
+{% endblock %}
