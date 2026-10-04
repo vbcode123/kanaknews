@@ -1,6 +1,6 @@
 {% extends "voice_over/base_voice_over.html" %}
 
-{% block title %}Chat with Desk - Nandilive Voice Hover{% endblock %}
+{% block title %}Chat with Desk - Nandilive Voice Over{% endblock %}
 {% block page_title %}Chat with Desk{% endblock %}
 
 {% block content %}
@@ -629,7 +629,7 @@
             <div class="message-row {% if msg.sender_type == 'voice_over' %}outgoing{% else %}incoming{% endif %}" id="msg-{{ msg.pk }}" data-id="{{ msg.pk }}">
                 <div class="message-bubble">
                     <div class="message-sender-name">
-                        {% if msg.sender_type == 'voice_over' %}You (Voice Hover){% else %}{{ active_desk.name }}{% endif %}
+                        {% if msg.sender_type == 'voice_over' %}You (Voice Over){% else %}{{ active_desk.name }}{% endif %}
                     </div>
                     <div class="message-text">{{ msg.message }}</div>
 
@@ -801,7 +801,7 @@
             `;
         }
 
-        const senderLabel = isOutgoing ? 'You (Voice Hover)' : (data.sender_name || 'Desk Staff');
+        const senderLabel = isOutgoing ? 'You (Voice Over)' : (data.sender_name || 'Desk Staff');
         const checkIcon = isOutgoing ? `<span id="tick-${data.id}" title="${data.is_read ? 'Read' : 'Delivered'}">${data.is_read ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5-1.5-1.5"></path></svg>' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ede9fe" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'}</span>` : '';
 
         row.innerHTML = `

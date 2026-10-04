@@ -602,7 +602,7 @@
                 <span>My Work List — Dispatched &amp; Assigned Stories</span>
             </h2>
             <p>
-                Stories assigned and forwarded by Desk to Voice Hover, Copy Editor, Graphic Designer, Visual Editor, and Social Media.
+                Stories assigned and forwarded by Desk to Voice Over, Copy Editor, Graphic Designer, Visual Editor, and Social Media.
             </p>
         </div>
 
@@ -674,7 +674,7 @@
                 <!-- Role Filter -->
                 <select name="role" class="filter-select" onchange="document.getElementById('filterForm').submit();">
                     <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All Assigned Roles</option>
-                    <option value="voice_over" {% if role_filter == 'voice_over' %}selected{% endif %}>🎙️ Voice Hover ({{ vo_sent_count }})</option>
+                    <option value="voice_over" {% if role_filter == 'voice_over' %}selected{% endif %}>🎙️ Voice Over ({{ vo_sent_count }})</option>
                     <option value="copy_editor" {% if role_filter == 'copy_editor' %}selected{% endif %}>✍️ Copy Editor ({{ ce_sent_count }})</option>
                     <option value="graphic_designer" {% if role_filter == 'graphic_designer' %}selected{% endif %}>🎨 Graphic Designer ({{ gd_sent_count }})</option>
                     <option value="visual_editor" {% if role_filter == 'visual_editor' %}selected{% endif %}>🎬 Visual Editor ({{ ve_sent_count }})</option>
@@ -714,7 +714,7 @@
 
     <div class="metric-pill-card" style="border-left: 4px solid #7c3aed;">
         <div>
-            <div class="metric-pill-label">Voice Hover</div>
+            <div class="metric-pill-label">Voice Over</div>
             <div class="metric-pill-value" style="color: #7c3aed;">{{ vo_sent_count }}</div>
         </div>
     </div>
@@ -827,9 +827,9 @@
                     <!-- Dispatched Team Members (KISKO SEND KIYA) -->
                     <td>
                         <div class="team-dispatch-grid">
-                            <!-- Voice Hover -->
+                            <!-- Voice Over -->
                             <div class="team-dispatch-row">
-                                <span class="team-role-tag role-vo">🎙️ Voice Hover</span>
+                                <span class="team-role-tag role-vo">🎙️ Voice Over</span>
                                 {% if item.assigned_voice_over %}
                                     <span class="team-person-name" title="{{ item.assigned_voice_over.name }} ({{ item.assigned_voice_over.phone_number }})">
                                         {{ item.assigned_voice_over.name }}
@@ -986,7 +986,7 @@
         </div>
         <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">No Dispatched Stories in "My Work List"</h3>
         <p style="font-size: 13px; max-width: 480px; margin: 0 auto; color: #64748b;">
-            When you select a news story in <strong>My Work</strong> and click <strong>"Send"</strong> to assign Voice Hover, Copy Editor, Graphic Designer, or Visual Editor, it will appear here with complete details!
+            When you select a news story in <strong>My Work</strong> and click <strong>"Send"</strong> to assign Voice Over, Copy Editor, Graphic Designer, or Visual Editor, it will appear here with complete details!
         </p>
         <div style="margin-top: 18px;">
             <a href="{% url 'desk_my_word' %}" class="btn" style="background: #2563eb; color: #fff; font-weight: 700; padding: 8px 18px; border-radius: 8px; text-decoration: none;">
@@ -1033,12 +1033,12 @@
                         Select Team Members to Forward:
                     </label>
 
-                    <!-- 1. Voice Hover -->
+                    <!-- 1. Voice Over -->
                     <div class="dept-card" id="cardVoiceOver">
                         <div class="dept-card-header">
                             <label class="dept-card-label" for="chkVoiceOver">
                                 <input type="checkbox" id="chkVoiceOver" onchange="toggleDept('VoiceOver')">
-                                <span>🎙️ Voice Hover (Voice Over Artist)</span>
+                                <span>🎙️ Voice Over Artist</span>
                             </label>
                         </div>
                         <select name="voice_over_id" id="selVoiceOver" class="dept-dropdown" disabled>

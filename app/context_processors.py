@@ -4,7 +4,7 @@ from .models import DeskVisualChatMessage, DeskCopyChatMessage, DeskVoiceOverCha
 def chat_unread_counts(request):
     """
     Context processor to provide real-time unread chat badge counts
-    for Desk, Visual Editor, Copy Editor, Voice Hover, Social Media, and Reporter portals across all pages.
+    for Desk, Visual Editor, Copy Editor, Voice Over, Social Media, and Reporter portals across all pages.
     """
     context = {
         'desk_unread_chat_count': 0,

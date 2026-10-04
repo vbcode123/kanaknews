@@ -1,7 +1,7 @@
 {% extends "desk/base_desk.html" %}
 
-{% block title %}Chat with Voice Hover - Nandilive Desk{% endblock %}
-{% block page_title %}Chat with Voice Hover{% endblock %}
+{% block title %}Chat with Voice Over - Nandilive Desk{% endblock %}
+{% block page_title %}Chat with Voice Over{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -529,7 +529,7 @@
 
 {% block content %}
 <div class="chat-layout">
-    <!-- Left Sidebar: Voice Hover List -->
+    <!-- Left Sidebar: Voice Over List -->
     <aside class="chat-sidebar-panel">
         <div class="chat-sidebar-header">
             <div class="chat-sidebar-title">
@@ -539,7 +539,7 @@
                     <line x1="12" y1="19" x2="12" y2="23"></line>
                     <line x1="8" y1="23" x2="16" y2="23"></line>
                 </svg>
-                <span>Voice Hover Staff</span>
+                <span>Voice Over Staff</span>
                 <span style="margin-left: auto; font-size: 11px; background: #e2e8f0; color: #475569; padding: 2px 7px; border-radius: 9999px;">{{ voice_overs|length }}</span>
             </div>
             <div class="chat-search-box">
@@ -547,7 +547,7 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="contactSearchInput" placeholder="Search Voice Hover..." onkeyup="filterContacts()">
+                <input type="text" id="contactSearchInput" placeholder="Search Voice Over..." onkeyup="filterContacts()">
             </div>
         </div>
 
@@ -589,7 +589,7 @@
             </a>
             {% empty %}
             <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No Voice Hover staff registered yet.
+                No Voice Over staff registered yet.
             </div>
             {% endfor %}
         </div>
@@ -610,7 +610,7 @@
                         <span class="online-dot {% if not active_vo.is_online %}offline{% endif %}" id="headerOnlineDot"></span>
                         <span id="headerLastSeenText" class="last-seen-status {% if active_vo.is_online %}is-online{% endif %}">{{ active_vo.last_seen_text }}</span>
                         <span>&bull;</span>
-                        <span>Voice Hover &bull; {{ active_vo.phone_number }}</span>
+                        <span>Voice Over &bull; {{ active_vo.phone_number }}</span>
                     </div>
                 </div>
             </div>
@@ -707,7 +707,7 @@
         </div>
 
         {% else %}
-        <!-- Empty state when no Voice Hover is selected -->
+        <!-- Empty state when no Voice Over is selected -->
         <div class="chat-empty-state">
             <div class="empty-state-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -717,8 +717,8 @@
                     <line x1="8" y1="23" x2="16" y2="23"></line>
                 </svg>
             </div>
-            <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 8px;">Select a Voice Hover Artist</h3>
-            <p style="font-size: 13px; max-width: 320px;">Choose a Voice Hover staff member from the left list to begin chatting in real-time.</p>
+            <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 8px;">Select a Voice Over Artist</h3>
+            <p style="font-size: 13px; max-width: 320px;">Choose a Voice Over staff member from the left list to begin chatting in real-time.</p>
         </div>
         {% endif %}
     </main>
@@ -802,7 +802,7 @@
             `;
         }
 
-        const senderLabel = isOutgoing ? 'You (Desk)' : (data.sender_name || 'Voice Hover');
+        const senderLabel = isOutgoing ? 'You (Desk)' : (data.sender_name || 'Voice Over');
         const checkIcon = isOutgoing ? `<span id="tick-${data.id}" title="${data.is_read ? 'Read' : 'Delivered'}">${data.is_read ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5-1.5-1.5"></path></svg>' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d1fae5" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'}</span>` : '';
 
         row.innerHTML = `

@@ -562,7 +562,7 @@ class DeskVoiceOverChatMessage(models.Model):
     voice_over = models.ForeignKey(VoiceOverUser, on_delete=models.CASCADE, related_name='desk_chat_messages')
     sender_type = models.CharField(
         max_length=20,
-        choices=[('desk', 'Desk'), ('voice_over', 'Voice Hover')],
+        choices=[('desk', 'Desk'), ('voice_over', 'Voice Over')],
         help_text="Sender role: desk or voice_over"
     )
     sender_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_desk_vo_messages')
@@ -575,8 +575,8 @@ class DeskVoiceOverChatMessage(models.Model):
 
     class Meta:
         db_table = 'app_deskvoiceoverchatmessage'
-        verbose_name = "Desk-Voice Hover Chat Message"
-        verbose_name_plural = "Desk-Voice Hover Chat Messages"
+        verbose_name = "Desk-Voice Over Chat Message"
+        verbose_name_plural = "Desk-Voice Over Chat Messages"
         ordering = ['created_at']
 
     def __str__(self):

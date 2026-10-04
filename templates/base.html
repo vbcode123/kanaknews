@@ -850,7 +850,7 @@
                     </div>
                 </div>
 
-                <!-- Voice Over / Voice Hover Management Dropdown -->
+                <!-- Voice Over Management Dropdown -->
                 <div class="nav-dropdown {% if active_page == 'voice_over_list' or active_page == 'voice_over_add' or active_page == 'voice_over_view' or active_page == 'voice_over_edit' %}open{% endif %}" id="voiceOverDropdown">
                     <button type="button" class="nav-item nav-dropdown-btn {% if active_page == 'voice_over_list' or active_page == 'voice_over_add' or active_page == 'voice_over_view' or active_page == 'voice_over_edit' %}active{% endif %}" onclick="toggleVoiceOverDropdown()">
                         <div class="nav-icon-label">
@@ -860,7 +860,7 @@
                                 <line x1="12" y1="19" x2="12" y2="23"></line>
                                 <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg>
-                            <span>Voice Hover</span>
+                            <span>Voice Over</span>
                         </div>
                         <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"></polyline>
@@ -868,16 +868,16 @@
                     </button>
                     
                     <div class="nav-submenu">
-                        <!-- Sub-Button 1: Add Voice Hover -->
+                        <!-- Sub-Button 1: Add Voice Over -->
                         <a href="{% url 'voice_over_add' %}" class="sub-nav-item {% if active_page == 'voice_over_add' %}active{% endif %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            <span>Add Voice Hover</span>
+                            <span>Add Voice Over</span>
                         </a>
 
-                        <!-- Sub-Button 2: Voice Hover List -->
+                        <!-- Sub-Button 2: Voice Over List -->
                         <a href="{% url 'voice_over_list' %}" class="sub-nav-item {% if active_page == 'voice_over_list' or active_page == 'voice_over_view' or active_page == 'voice_over_edit' %}active{% endif %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -887,7 +887,7 @@
                                 <line x1="3" y1="12" x2="3.01" y2="12"></line>
                                 <line x1="3" y1="18" x2="3.01" y2="18"></line>
                             </svg>
-                            <span>Voice Hover List</span>
+                            <span>Voice Over List</span>
                         </a>
                     </div>
                 </div>

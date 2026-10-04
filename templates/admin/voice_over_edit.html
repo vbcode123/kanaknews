@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Voice Hover Staff - {{ vo_item.name }} - Nandilive Admin{% endblock %}
-{% block page_title %}Edit Voice Hover Staff{% endblock %}
+{% block title %}Edit Voice Over Staff - {{ vo_item.name }} - Nandilive Admin{% endblock %}
+{% block page_title %}Edit Voice Over Staff{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -121,7 +121,7 @@
     <div class="card">
         <div class="card-header">
             <div>
-                <h2 class="card-title" style="font-size: 18px;">Edit Voice Hover Staff Information</h2>
+                <h2 class="card-title" style="font-size: 18px;">Edit Voice Over Staff Information</h2>
                 <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
                     Update details for <strong>{{ vo_item.name }}</strong> (Login: {{ vo_item.phone_number }}).
                 </p>
@@ -131,7 +131,7 @@
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                Back to Voice Hover List
+                Back to Voice Over List
             </a>
         </div>
 
@@ -220,7 +220,7 @@
                         <polyline points="17 21 17 13 7 13 7 21"></polyline>
                         <polyline points="7 3 7 8 15 8"></polyline>
                     </svg>
-                    <span>Update Voice Hover Staff</span>
+                    <span>Update Voice Over Staff</span>
                 </button>
 
                 <a href="{% url 'voice_over_list' %}" class="btn btn-secondary">

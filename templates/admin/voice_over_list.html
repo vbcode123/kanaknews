@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Voice Hover List - Nandilive Admin{% endblock %}
-{% block page_title %}Voice Hover Management{% endblock %}
+{% block title %}Voice Over List - Nandilive Admin{% endblock %}
+{% block page_title %}Voice Over Management{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -286,24 +286,24 @@
         {% endif %}
     </form>
 
-    <!-- Add Voice Hover Button -->
+    <!-- Add Voice Over Button -->
     <a href="{% url 'voice_over_add' %}" class="btn-add-vo">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>Add Voice Hover</span>
+        <span>Add Voice Over</span>
     </a>
 </div>
 
-<!-- Voice Hover Table Card -->
+<!-- Voice Over Table Card -->
 <div class="card" style="padding: 0; overflow: hidden;">
     <div style="overflow-x: auto;">
         <table class="data-table" style="width: 100%; border-collapse: collapse; text-align: left;">
             <thead>
                 <tr style="border-bottom: 1px solid var(--border-color); background-color: #f8fafc;">
                     <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted); width: 60px;">#</th>
-                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Voice Hover Staff</th>
+                    <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Voice Over Staff</th>
                     <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Phone (Login ID)</th>
                     <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Status</th>
                     <th style="padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Registered On</th>
@@ -345,7 +345,7 @@
                     <td style="padding: 14px 18px;">
                         <div class="table-actions-group" style="justify-content: flex-end;">
                             <!-- 1. View Button -->
-                            <a href="{% url 'voice_over_view' vo.pk %}" class="action-btn view" title="View Voice Hover Staff Details">
+                            <a href="{% url 'voice_over_view' vo.pk %}" class="action-btn view" title="View Voice Over Staff Details">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
@@ -353,7 +353,7 @@
                             </a>
 
                             <!-- 2. Edit Button -->
-                            <a href="{% url 'voice_over_edit' vo.pk %}" class="action-btn edit" title="Edit Voice Hover Staff">
+                            <a href="{% url 'voice_over_edit' vo.pk %}" class="action-btn edit" title="Edit Voice Over Staff">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -364,7 +364,7 @@
                             <button 
                                 type="button" 
                                 class="action-btn delete" 
-                                title="Delete Voice Hover Staff" 
+                                title="Delete Voice Over Staff" 
                                 onclick="openDeleteModal('{{ vo.pk }}', '{{ vo.name|escapejs }}')"
                             >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -387,12 +387,12 @@
                                     <line x1="8" y1="23" x2="16" y2="23"></line>
                                 </svg>
                             </div>
-                            <h4 style="font-size: 15px; color: var(--primary-navy); margin: 0;">No Voice Hover staff found</h4>
+                            <h4 style="font-size: 15px; color: var(--primary-navy); margin: 0;">No Voice Over staff found</h4>
                             <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
                                 {% if query or status_filter %}
                                     No records match your search criteria. Try resetting filters.
                                 {% else %}
-                                    Get started by registering your first Voice Hover team member.
+                                    Get started by registering your first Voice Over team member.
                                 {% endif %}
                             </p>
                             <a href="{% url 'voice_over_add' %}" class="btn-add-vo" style="margin-top: 8px;">
@@ -400,7 +400,7 @@
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
                                     <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
-                                <span>Add First Voice Hover Staff</span>
+                                <span>Add First Voice Over Staff</span>
                             </a>
                         </div>
                     </td>
@@ -421,9 +421,9 @@
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
         </div>
-        <h3 class="modal-title">Delete Voice Hover Staff?</h3>
+        <h3 class="modal-title">Delete Voice Over Staff?</h3>
         <p class="modal-desc">
-            Are you sure you want to permanently delete <strong id="deleteTargetName">this Voice Hover staff member</strong>? 
+            Are you sure you want to permanently delete <strong id="deleteTargetName">this Voice Over staff member</strong>? 
             This action will remove their account and portal access immediately.
         </p>
         <div class="modal-actions">

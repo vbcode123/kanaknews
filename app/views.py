@@ -1863,7 +1863,7 @@ def voice_over_list_view(request):
 @admin_required
 def voice_over_add_view(request):
     """
-    Add New Voice Over (Voice Hover) staff form.
+    Add New Voice Over staff form.
     Fields: Name, Phone number, Password, Confirm Password, and Save button.
     """
     errors = {}
@@ -2852,7 +2852,7 @@ def desk_my_work_list_view(request):
     """
     Desk Staff 'My Work List' Portal:
     Displays all news stories dispatched/sent to team members:
-    Voice Hover, Copy Editor, Graphic Designer, Visual Editor, and Social Media.
+    Voice Over, Copy Editor, Graphic Designer, Visual Editor, and Social Media.
     Shows exactly who each story was sent to, desk notes, and dispatched timestamp.
     """
     desk = getattr(request.user, 'desk_profile', None)
@@ -3476,12 +3476,12 @@ def desk_get_copy_chat_messages_api(request, ce_id):
 
 
 # ==========================================
-# Desk <-> Voice Hover Chat Views
+# Desk <-> Voice Over Chat Views
 # ==========================================
 @desk_required
 def desk_chat_voice_over_view(request, vo_id=None):
     """
-    Chat portal for Desk staff to communicate directly with Voice Hover staff.
+    Chat portal for Desk staff to communicate directly with Voice Over staff.
     Lists all voice over staff, shows unread message counts, latest message preview,
     and opens the conversation thread.
     """
@@ -3553,7 +3553,7 @@ def desk_chat_voice_over_view(request, vo_id=None):
 @desk_required
 def desk_send_voice_over_chat_message_view(request, vo_id):
     """
-    POST/AJAX endpoint for Desk to send a message to Voice Hover staff.
+    POST/AJAX endpoint for Desk to send a message to Voice Over staff.
     """
     _ensure_voice_over_chat_table()
     if request.method != 'POST':
@@ -3601,9 +3601,9 @@ def desk_send_voice_over_chat_message_view(request, vo_id):
 @desk_required
 def desk_get_voice_over_chat_messages_api(request, vo_id):
     """
-    GET AJAX polling endpoint for Desk chatting with Voice Hover staff.
+    GET AJAX polling endpoint for Desk chatting with Voice Over staff.
     Returns new messages after `last_id`.
-    Automatically marks incoming messages from Voice Hover as read.
+    Automatically marks incoming messages from Voice Over as read.
     """
     _ensure_voice_over_chat_table()
     desk = getattr(request.user, 'desk_profile', None)
@@ -4063,7 +4063,7 @@ def desk_assign_story_view(request, pk):
     Handles assignment of a news story from Desk to:
     - Social Media Desk (with broadcast-ready edited video)
     - Graphic Designer
-    - Voice Hover (Voice Over)
+    - Voice Over
     - Visual Editor
     - Copy Editor
     """
@@ -4131,12 +4131,12 @@ def desk_assign_story_view(request, pk):
         else:
             news.assigned_graphic_designer = None
 
-        # Voice Hover / Voice Over
+        # Voice Over
         if voice_over_id:
             try:
                 vo = VoiceOverUser.objects.get(pk=voice_over_id, is_active=True)
                 news.assigned_voice_over = vo
-                assigned_list.append(f"Voice Hover ({vo.name})")
+                assigned_list.append(f"Voice Over ({vo.name})")
             except (VoiceOverUser.DoesNotExist, ValueError):
                 news.assigned_voice_over = None
         else:
@@ -5651,7 +5651,7 @@ def voice_over_chat_desk_view(request, desk_id=None):
     _ensure_voice_over_chat_table()
     vo = getattr(request.user, 'voice_over_profile', None)
     if not vo:
-        messages.error(request, "No Voice Hover profile found.")
+        messages.error(request, "No Voice Over profile found.")
         return redirect('voice_over_dashboard')
 
     desks = list(Desk.objects.filter(is_active=True).order_by('name'))
@@ -5724,7 +5724,7 @@ def voice_over_send_chat_message_view(request, desk_id):
 
     vo = getattr(request.user, 'voice_over_profile', None)
     if not vo:
-        return JsonResponse({'success': False, 'error': 'Voice Hover profile not found.'}, status=403)
+        return JsonResponse({'success': False, 'error': 'Voice Over profile not found.'}, status=403)
 
     active_desk = get_object_or_404(Desk, pk=desk_id, is_active=True)
     msg_text = request.POST.get('message', '').strip()

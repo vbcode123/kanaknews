@@ -498,6 +498,168 @@
         border-top: 1px solid #e2e8f0;
         background: #f8fafc;
     }
+
+    /* AI Component Responsive Mobile Styling */
+    @media (max-width: 768px) {
+        .ai-assistant-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            padding: 12px 10px;
+        }
+
+        .ai-toolbar-left {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .btn-check-ai {
+            width: 100%;
+            justify-content: center;
+            padding: 10px 16px;
+            font-size: 13.5px;
+            box-sizing: border-box;
+        }
+
+        .ai-tone-group {
+            display: flex;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 3px;
+            gap: 3px;
+            box-sizing: border-box;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+
+        .ai-tone-group::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ai-tone-btn {
+            flex: 1 1 auto;
+            min-width: fit-content;
+            text-align: center;
+            font-size: 11px;
+            padding: 6px 8px;
+            white-space: nowrap;
+        }
+
+        .ai-toolbar-right {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-left: 0;
+            padding-top: 8px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .ai-script-stats {
+            margin-left: 0;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .ai-suggestion-card {
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+
+        .ai-card-header {
+            padding: 10px 12px;
+        }
+
+        .ai-card-title {
+            font-size: 12px;
+            gap: 6px;
+        }
+
+        .ai-provider-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+        }
+
+        .ai-card-summary {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+
+        .ai-card-body {
+            padding: 10px 12px;
+        }
+
+        .ai-preview-textarea {
+            font-size: 13px;
+            padding: 10px;
+        }
+
+        .ai-card-actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            padding: 10px 12px;
+        }
+
+        .btn-ai-apply {
+            width: 100%;
+            justify-content: center;
+            padding: 10px 14px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .btn-ai-copy {
+            width: 100%;
+            justify-content: center;
+            padding: 9px 14px;
+            font-size: 12.5px;
+            box-sizing: border-box;
+        }
+
+        .btn-ai-dismiss {
+            width: 100%;
+            text-align: center;
+            margin-left: 0;
+            padding: 8px;
+        }
+
+        .ai-toast {
+            left: 12px;
+            right: 12px;
+            bottom: 16px;
+            font-size: 12px;
+            padding: 10px 14px;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .ai-modal-overlay {
+            padding: 12px;
+        }
+
+        .ai-modal-card {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        .ai-modal-header {
+            padding: 12px 16px;
+        }
+
+        .ai-modal-body {
+            padding: 14px 16px;
+        }
+
+        .ai-modal-footer {
+            padding: 10px 16px;
+        }
+    }
 </style>
 
 <!-- AI Script Assistant Toolbar -->
@@ -523,15 +685,15 @@
                 ⚡ Crisp &amp; Short
             </button>
         </div>
-
-        <span class="ai-script-stats" id="aiDescStats">0 words</span>
     </div>
 
     <div class="ai-toolbar-right">
+        <span class="ai-script-stats" id="aiDescStats">0 words</span>
+
         <!-- Undo / Revert Button -->
         <button type="button" class="btn-ai-revert" id="btnAIRevert" onclick="revertOriginalText()" style="display: none;" title="Restore your original handwritten text">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <polyline points="1 4 1 10 7 10"></polyline>
+                <polyline points="1" 4 1 10 7 10"></polyline>
                 <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
             <span>↩ Revert Original</span>

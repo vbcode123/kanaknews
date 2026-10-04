@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Nandilive Voice Hover Portal{% endblock %}</title>
+    <title>{% block title %}Nandilive Voice Over Portal{% endblock %}</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -489,7 +489,7 @@
         <aside class="sidebar" id="sidebar">
             <a href="{% url 'voice_over_dashboard' %}" class="sidebar-brand">
                 <img src="{% static 'images/nandi.png' %}" alt="Nandilive Logo" class="sidebar-logo-img">
-                <span class="vo-pill">Voice Hover</span>
+                <span class="vo-pill">Voice Over</span>
             </a>
 
             <!-- Voice Over Mini Profile -->
@@ -501,7 +501,7 @@
                     <div class="vo-meta-name" title="{{ request.user.voice_over_profile.name }}">
                         {{ request.user.voice_over_profile.name|default:request.user.first_name }}
                     </div>
-                    <div class="vo-meta-role">Voice Hover &bull; {{ request.user.voice_over_profile.phone_number }}</div>
+                    <div class="vo-meta-role">Voice Over &bull; {{ request.user.voice_over_profile.phone_number }}</div>
                 </div>
             </div>
 

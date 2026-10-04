@@ -55,12 +55,15 @@
             font-size: 14px;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
         .app-container {
             display: flex;
             width: 100%;
             min-height: 100vh;
+            min-width: 0;
+            overflow-x: hidden;
         }
 
         /* Sidebar */
@@ -74,7 +77,7 @@
             top: 0;
             left: 0;
             bottom: 0;
-            z-index: 50;
+            z-index: 1000;
             transition: transform 0.25s ease-in-out;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
         }
@@ -191,6 +194,9 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         .nav-item {
@@ -484,13 +490,34 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 45;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+        }
+
+        .sidebar-close-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-close-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         @media (max-width: 900px) {
             .sidebar {
                 transform: translateX(-100%);
+                width: min(280px, 82vw);
+                z-index: 1000;
             }
 
             .sidebar.open {
@@ -501,20 +528,82 @@
                 display: block;
             }
 
+            .sidebar-close-btn {
+                display: flex;
+            }
+
             .main-wrapper {
                 margin-left: 0;
+                width: 100%;
+                min-width: 0;
             }
 
             .mobile-toggle {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border-radius: 6px;
+                background: #f1f5f9;
+                color: var(--reporter-navy);
+            }
+
+            .mobile-toggle:hover {
+                background: #e2e8f0;
             }
 
             .page-content {
-                padding: 18px;
+                padding: 16px;
             }
 
             .top-header {
-                padding: 0 18px;
+                padding: 0 16px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            :root {
+                --header-height: 56px;
+            }
+
+            .top-header {
+                padding: 0 12px;
+                gap: 8px;
+            }
+
+            .header-left {
+                gap: 8px;
+                min-width: 0;
+                flex: 1;
+            }
+
+            .header-page-title {
+                font-size: 15px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .header-right {
+                flex-shrink: 0;
+            }
+
+            .reporter-header-tag {
+                padding: 3px 8px;
+                font-size: 11px;
+                gap: 4px;
+            }
+
+            .reporter-header-tag span {
+                max-width: 95px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .page-content {
+                padding: 12px 10px;
             }
         }
     </style>
@@ -525,10 +614,18 @@
     <div class="app-container">
         <!-- Reporter Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <a href="{% url 'reporter_dashboard' %}" class="sidebar-brand">
-                <img src="{% static 'images/nandi.png' %}" alt="Nandilive Logo" class="sidebar-logo-img">
-                <div class="press-pill">Reporter</div>
-            </a>
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-right: 12px;">
+                <a href="{% url 'reporter_dashboard' %}" class="sidebar-brand" style="border-bottom: none; flex: 1;">
+                    <img src="{% static 'images/nandi.png' %}" alt="Nandilive Logo" class="sidebar-logo-img">
+                    <div class="press-pill">Reporter</div>
+                </a>
+                <button type="button" class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close Sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
 
             <!-- Reporter Profile Snippet -->
             <div class="reporter-mini-profile">

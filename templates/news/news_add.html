@@ -8,6 +8,67 @@
     .form-container {
         max-width: 960px;
         margin: 0 auto;
+        width: 100%;
+    }
+
+    .form-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 22px;
+    }
+
+    .form-header-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .form-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 4px 0;
+        line-height: 1.3;
+    }
+
+    .form-subtitle {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .btn-back-list {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        padding: 7px 14px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+
+    .btn-back-list:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
     }
 
     .form-grid {
@@ -21,13 +82,16 @@
     }
 
     .form-group {
-        margin-bottom: 18px;
+        margin-bottom: 0;
+        min-width: 0;
     }
 
     .form-label {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 4px 8px;
         font-size: 13px;
         font-weight: 600;
         color: var(--primary-navy, #0f172a);
@@ -49,6 +113,7 @@
 
     .form-control {
         width: 100%;
+        box-sizing: border-box;
         padding: 10px 14px;
         font-size: 14px;
         font-family: inherit;
@@ -167,6 +232,9 @@
         border-radius: 8px;
         padding: 10px 14px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .preview-box.show {
@@ -184,6 +252,7 @@
 
     .preview-info {
         flex: 1;
+        min-width: 0;
         overflow: hidden;
     }
 
@@ -207,6 +276,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        display: block;
     }
 
     .preview-meta {
@@ -226,6 +296,7 @@
         align-items: center;
         justify-content: center;
         transition: all 0.15s ease;
+        flex-shrink: 0;
     }
 
     .btn-remove-main:hover {
@@ -299,6 +370,7 @@
         position: relative;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        min-width: 0;
     }
 
     .extra-media-card:hover {
@@ -380,6 +452,7 @@
         align-items: center;
         justify-content: center;
         transition: all 0.15s ease;
+        flex-shrink: 0;
     }
 
     .btn-remove-extra:hover {
@@ -396,15 +469,176 @@
         border-top: 1px solid #e2e8f0;
     }
 
+    .btn-submit-news {
+        padding: 11px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: none;
+        background: #dc2626;
+        color: #ffffff;
+        transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-submit-news:hover {
+        background: #b91c1c;
+    }
+
+    .btn-cancel-news {
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+
+    .btn-cancel-news:hover {
+        background: #f1f5f9;
+    }
+
     .type-help-badge {
         font-size: 11px;
         color: #0284c7;
         font-weight: 600;
     }
 
+    /* Responsive Mobile Styles */
     @media (max-width: 768px) {
+        .form-card {
+            padding: 18px 14px;
+            border-radius: 10px;
+        }
+
+        .form-header-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .form-title {
+            font-size: 18px;
+        }
+
+        .form-subtitle {
+            font-size: 12.5px;
+        }
+
+        .btn-back-list {
+            width: 100%;
+            justify-content: center;
+            padding: 9px 12px;
+            box-sizing: border-box;
+        }
+
         .form-grid {
             grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-control {
+            font-size: 15px;
+            padding: 10px 12px;
+        }
+
+        .add-more-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+
+        .btn-add-more-media {
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .media-counter-badge {
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .additional-media-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
+        }
+
+        .btn-submit-news {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 18px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .btn-cancel-news {
+            width: 100%;
+            justify-content: center;
+            padding: 11px 18px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 14px 10px;
+        }
+
+        .preview-box {
+            padding: 8px 10px;
+            gap: 8px;
+        }
+
+        .preview-thumb,
+        #mediaPreviewIcon {
+            width: 44px !important;
+            height: 44px !important;
+        }
+
+        .file-upload-box {
+            padding: 18px 10px;
+        }
+
+        .upload-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 6px;
+        }
+
+        .upload-text {
+            font-size: 12px;
+        }
+
+        .upload-hint {
+            font-size: 10.5px;
+        }
+
+        .extra-thumb,
+        .extra-video-icon {
+            width: 44px;
+            height: 44px;
         }
     }
 </style>
@@ -412,15 +646,15 @@
 
 {% block content %}
 <div class="form-container">
-    <div class="card" style="background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; margin-bottom: 22px;">
-            <div>
-                <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Create &amp; Submit News</h2>
-                <p style="font-size: 13px; color: #64748b; margin: 0;">
+    <div class="card form-card">
+        <div class="form-header-bar">
+            <div class="form-header-text">
+                <h2 class="form-title">Create &amp; Submit News</h2>
+                <p class="form-subtitle">
                     Fill in news story information, upload media (video/photo), and submit to newsroom desk.
                 </p>
             </div>
-            <a href="{% url 'news_list' %}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: 600; color: #334155;">
+            <a href="{% url 'news_list' %}" class="btn-back-list">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
@@ -669,14 +903,14 @@
 
             <!-- Form Submit Actions -->
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary" style="padding: 11px 28px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; cursor: pointer; border: none; background: #dc2626; color: #fff;">
+                <button type="submit" class="btn btn-submit-news">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
                     <span>Submit News</span>
                 </button>
-                <a href="{% url 'news_list' %}" class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px; border-radius: 8px; text-decoration: none; border: 1px solid #cbd5e1; background: #fff; color: #475569;">
+                <a href="{% url 'news_list' %}" class="btn btn-cancel-news">
                     Cancel
                 </a>
             </div>
