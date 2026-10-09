@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}Media Download Approvals - Nandilive Admin{% endblock %}
+{% block page_title %}Media Download Security Approvals{% endblock %}
+
+{% block extra_head %}
+<style>
+    .approval-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        color: #ffffff;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .approval-stats-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .approval-stat-box {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius-md);
+        padding: 10px 18px;
+        text-align: center;
+        min-width: 90px;
+    }
+
+    .stat-number {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    /* Filters Bar */
+    .filter-tabs-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: 6px;
+        background: #e2e8f0;
+        padding: 4px;
+        border-radius: 10px;
+    }
+
+    .tab-link {
+        padding: 7px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        text-decoration: none;
+        border-radius: 7px;
+        transition: all 0.15s ease;
+    }
+
+    .tab-link.active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Approvals Table Card */
+    .approvals-card {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .approvals-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+    }
+
+    .approvals-table th {
+        background: #f8fafc;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .approvals-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+
+    .approvals-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    .passcode-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: 800;
+        background: #f1f5f9;
+        color: #0f172a;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1.5px solid #cbd5e1;
+        letter-spacing: 1px;
+    }
+
+    .btn-copy-code {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #64748b;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        transition: color 0.15s;
+    }
+
+    .btn-copy-code:hover {
+        color: #0f172a;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #e0f2fe;
+        color: #0369a1;
+        margin-top: 3px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        font-size: 11.5px;
+        font-weight: 700;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .status-approved {
+        background: #dbeafe;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .status-used {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-expired {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-approve-action {
+        background: #059669;
+        color: #ffffff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-approve-action:hover {
+        background: #047857;
+        transform: translateY(-1px);
+    }
+
+    .btn-reject-action {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-reject-action:hover {
+        background: #dc2626;
+        color: #ffffff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Banner -->
+    <div class="approval-banner">
+        <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="background: rgba(220, 38, 38, 0.25); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 5px;">
+                    🛡️ Chief Editor Security Guard
+                </span>
+                <span style="font-size: 12.5px; color: #cbd5e1;">Media Download Protection</span>
+            </div>
+            <h2 style="font-size: 22px; font-weight: 800; margin: 0 0 4px 0;">Media Download Approval Requests</h2>
+            <p style="margin: 0; font-size: 13.5px; color: #94a3b8; max-width: 650px;">
+                Staff (Desk, Visual Editor, Copy Editor, etc.) require your authorization before downloading broadcast footage or files.
+                Input team downloads are exempt.
+            </p>
+        </div>
+        <div class="approval-stats-group">
+            <div class="approval-stat-box">
+                <div class="stat-number" style="color: {% if pending_count > 0 %}#f87171{% else %}#ffffff{% endif %};">
+                    {{ pending_count }}
+                </div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="approval-stat-box">
+                <div class="stat-number" style="color: #fb7185;">{{ rejected_count|default:0 }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="approval-stat-box">
+                <div class="stat-number" style="color: #6ee7b7;">{{ total_count }}</div>
+                <div class="stat-label">Total Logs</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Actions -->
+    <div class="filter-tabs-bar">
+        <div class="filter-tabs">
+            <a href="?status=all" class="tab-link {% if status_filter == 'all' %}active{% endif %}">All Requests</a>
+            <a href="?status=pending" class="tab-link {% if status_filter == 'pending' %}active{% endif %}">
+                Pending {% if pending_count > 0 %}<span style="background: #dc2626; color: #fff; padding: 1px 6px; border-radius: 9999px; font-size: 10.5px;">{{ pending_count }}</span>{% endif %}
+            </a>
+            <a href="?status=approved" class="tab-link {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
+            <a href="?status=used" class="tab-link {% if status_filter == 'used' %}active{% endif %}">Downloaded</a>
+            <a href="?status=expired" class="tab-link {% if status_filter == 'expired' %}active{% endif %}">Expired</a>
+            <a href="?status=rejected" class="tab-link {% if status_filter == 'rejected' %}active{% endif %}">Rejected</a>
+        </div>
+        <div>
+            <button type="button" onclick="location.reload()" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 7px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <span>🔄 Refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Approvals Table -->
+    <div class="approvals-card">
+        {% if requests %}
+        <div style="overflow-x: auto;">
+            <table class="approvals-table">
+                <thead>
+                    <tr>
+                        <th>Requester Staff</th>
+                        <th>File / Media</th>
+                        <th>Approval Passcode</th>
+                        <th>Requested Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr id="row_{{ req.pk }}">
+                        <td>
+                            <div style="font-weight: 700; color: #0f172a;">{{ req.requester_name }}</div>
+                            <span class="role-badge">{{ req.role_name }}</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: #1e3a8a; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ req.file_name }}">
+                                🎬 {{ req.file_name }}
+                            </div>
+                            <div style="font-size: 11px; color: #64748b; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                {{ req.file_url }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="passcode-pill">
+                                <span>{{ req.passcode }}</span>
+                                <button type="button" class="btn-copy-code" title="Copy code" onclick="copyPasscode('{{ req.passcode }}')">
+                                    📋
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size: 12.5px; font-weight: 600; color: #334155;">{{ req.created_at|date:"h:i A" }}</div>
+                            <div style="font-size: 11px; color: #94a3b8;">{{ req.created_at|date:"d M Y" }}</div>
+                        </td>
+                        <td>
+                            {% if req.is_used %}
+                            <span class="status-badge status-used">✓ Downloaded</span>
+                            {% elif req.is_rejected %}
+                            <span class="status-badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" title="Reason: {{ req.rejection_reason|default:'Rejected' }}">✕ Rejected</span>
+                            {% elif req.is_approved %}
+                            <span class="status-badge status-approved">✓ Approved</span>
+                            {% elif req.is_expired %}
+                            <span class="status-badge status-expired">Expired</span>
+                            {% else %}
+                            <span class="status-badge status-pending">⏳ Pending ({{ req.passcode }})</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not req.is_used and not req.is_expired and not req.is_rejected %}
+                                {% if not req.is_approved %}
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="btn-approve-action" onclick="handleAdminDecision('{{ req.pk }}', 'approve')">
+                                        ✓ Approve
+                                    </button>
+                                    <button type="button" class="btn-reject-action" onclick="handleAdminDecision('{{ req.pk }}', 'reject')">
+                                        ✕ Reject
+                                    </button>
+                                </div>
+                                {% else %}
+                                <span style="font-size: 11.5px; color: #059669; font-weight: 600;">Authorized</span>
+                                {% endif %}
+                            {% elif req.is_rejected %}
+                                <span style="font-size: 11px; color: #dc2626; font-weight: 600;" title="{{ req.rejection_reason }}">
+                                    Rejected{% if req.rejected_by %} by {{ req.rejected_by.first_name|default:req.rejected_by.username }}{% endif %}
+                                </span>
+                            {% else %}
+                            <span style="font-size: 11.5px; color: #94a3b8;">--</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="padding: 48px 20px; text-align: center; color: #64748b;">
+            <div style="font-size: 36px; margin-bottom: 8px;">🛡️</div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">No Download Requests in this Category</h4>
+            <p style="font-size: 13px; margin: 0;">Whenever staff (Desk, Visual Editor, etc.) clicks to download a media file, their authorization requests will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function copyPasscode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            alert(`Copied passcode: ${code}`);
+        });
+    }
+
+    function handleAdminDecision(requestId, action) {
+        let reason = '';
+        if (action === 'reject') {
+            const input = prompt('Reject this download request? Optional reason for staff:');
+            if (input === null) return; // user cancelled prompt
+            reason = input.trim();
+        }
+
+        fetch('/api/media-download/admin-requests/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                action: action,
+                request_id: requestId,
+                reason: reason
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'Action failed.');
+            }
+        })
+        .catch(() => alert('Network error.'));
+    }
+
+    // Auto-refresh page every 15 seconds if on pending tab to see incoming requests
+    {% if status_filter == 'pending' or status_filter == 'all' %}
+    setTimeout(() => {
+        location.reload();
+    }, 15000);
+    {% endif %}
+</script>
+{% endblock %}

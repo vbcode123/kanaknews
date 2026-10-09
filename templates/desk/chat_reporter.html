@@ -956,6 +956,14 @@
                             txt.textContent = data.contact_status.text || 'Offline';
                         }
                     }
+                    const sideDot = document.getElementById(`badge-dot-${activeReporterId}`);
+                    if (sideDot) {
+                        if (data.contact_status.is_online) {
+                            sideDot.classList.remove('offline');
+                        } else {
+                            sideDot.classList.add('offline');
+                        }
+                    }
                 }
 
                 // 2. Update double-tick read receipts

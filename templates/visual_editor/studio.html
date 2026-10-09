@@ -310,9 +310,10 @@
             border: 1px solid #1f2937;
             display: flex;
             align-items: center;
-            padding: 0 12px;
+            padding: 0;
             cursor: pointer;
             user-select: none;
+            overflow: visible;
         }
 
         .trim-range-highlight {
@@ -346,6 +347,137 @@
             height: 12px;
             background: #38bdf8;
             border-radius: 50%;
+        }
+
+        /* Scrubber Track Layering & Middle Trim Overlays */
+        .track-layers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .track-dim-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1;
+        }
+
+        .kept-segment-bar {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            background: rgba(37, 99, 235, 0.28);
+            border-top: 2px solid #38bdf8;
+            border-bottom: 2px solid #38bdf8;
+            border-left: 1px solid rgba(56, 189, 248, 0.5);
+            border-right: 1px solid rgba(56, 189, 248, 0.5);
+            border-radius: 4px;
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) inset;
+        }
+
+        .cut-zone-bar {
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(220, 38, 38, 0.55),
+                rgba(220, 38, 38, 0.55) 7px,
+                rgba(153, 27, 27, 0.8) 7px,
+                rgba(153, 27, 27, 0.8) 14px
+            );
+            border: 1.5px solid #ef4444;
+            border-radius: 5px;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.6);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+
+        .cut-zone-bar:hover {
+            filter: brightness(1.25);
+            transform: scaleY(1.05);
+            z-index: 6;
+        }
+
+        #cutsContainer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .cut-zone-tag {
+            font-size: 10px;
+            font-weight: 800;
+            color: #ffffff;
+            background: rgba(185, 28, 28, 0.95);
+            padding: 1px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pending-marker-flag {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            z-index: 9;
+            pointer-events: none;
+        }
+
+        .pending-marker-flag.flag-start {
+            background: #fbbf24;
+            box-shadow: 0 0 6px #fbbf24;
+        }
+
+        .pending-marker-flag.flag-start::after {
+            content: "START";
+            position: absolute;
+            top: -18px;
+            left: -18px;
+            background: #fbbf24;
+            color: #000;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .pending-marker-flag.flag-end {
+            background: #f59e0b;
+            box-shadow: 0 0 6px #f59e0b;
+        }
+
+        .pending-marker-flag.flag-end::after {
+            content: "END";
+            position: absolute;
+            top: -18px;
+            left: -12px;
+            background: #f59e0b;
+            color: #000;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 1px 4px;
+            border-radius: 3px;
         }
 
         .trim-inputs-row {
@@ -396,6 +528,382 @@
 
         .btn-trim-set:hover {
             background: #4b5563;
+        }
+
+        /* ========================================================
+           Easy Smart Trimmer & Story Clips System
+           ======================================================== */
+        .easy-trim-box {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .easy-trim-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #0b101b;
+            border: 1px solid #1e293b;
+            padding: 10px 12px;
+            border-radius: 10px;
+        }
+
+        .easy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .easy-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Main Middle Cut button */
+        .easy-btn-middle {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            border-color: #6366f1;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+        }
+
+        .easy-btn-middle:hover {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            filter: brightness(1.1);
+        }
+
+        /* When cut in progress (pulsing red) */
+        .easy-btn-middle.cutting-active {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            border-color: #f87171 !important;
+            color: #ffffff !important;
+            animation: pulse-red-border 1.2s infinite ease-in-out;
+            box-shadow: 0 0 14px rgba(220, 38, 38, 0.7);
+        }
+
+        @keyframes pulse-red-border {
+            0%, 100% { box-shadow: 0 0 8px rgba(220, 38, 38, 0.6); }
+            50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.95); transform: scale(1.02); }
+        }
+
+        /* Split button */
+        .easy-btn-split {
+            background: #1e1b4b;
+            border-color: #3730a3;
+            color: #c7d2fe;
+        }
+
+        .easy-btn-split:hover {
+            background: #312e81;
+            color: #ffffff;
+            border-color: #4f46e5;
+        }
+
+        /* Edge trim buttons */
+        .easy-btn-edge {
+            background: #111827;
+            border-color: #1f2937;
+            color: #94a3b8;
+        }
+
+        .easy-btn-edge:hover {
+            background: #1f2937;
+            color: #f1f5f9;
+            border-color: #374151;
+        }
+
+        /* Apply Trim & Preview Button */
+        .easy-btn-apply {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-color: #10b981;
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 2px 10px rgba(5, 150, 105, 0.45);
+        }
+
+        .easy-btn-apply:hover {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.55);
+            transform: translateY(-1px);
+        }
+
+        .easy-btn-apply.active-applied {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            border-color: #38bdf8;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.65);
+        }
+
+        /* Monitor Floating Banner for Applied Trim */
+        .trim-applied-banner {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(6, 78, 59, 0.95);
+            border: 1.5px solid #10b981;
+            color: #d1fae5;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 7px 16px;
+            border-radius: 24px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translate(-50%, -10px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .clip-chip-kept.clip-is-playing {
+            border-color: #38bdf8 !important;
+            background: #1e293b !important;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5) !important;
+        }
+
+        .strip-status-pill {
+            background: #064e3b;
+            color: #34d399;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #059669;
+        }
+
+        /* Reset button */
+        .easy-btn-reset {
+            background: #18181b;
+            border-color: #27272a;
+            color: #a1a1aa;
+            margin-left: auto;
+        }
+
+        .easy-btn-reset:hover {
+            background: #27272a;
+            color: #f43f5e;
+            border-color: #f43f5e;
+        }
+
+        /* Numbers toggle */
+        .easy-btn-gear {
+            background: transparent;
+            border-color: #334155;
+            color: #64748b;
+            font-size: 11.5px;
+            padding: 0 10px;
+            height: 32px;
+        }
+
+        .easy-btn-gear:hover {
+            color: #94a3b8;
+            border-color: #475569;
+        }
+
+        /* Story Clips Strip Card */
+        .clips-strip-card {
+            background: #090e17;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .clips-strip-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .strip-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .strip-hint {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .clips-strip-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 2px 6px;
+        }
+
+        .clips-strip-container::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .clips-strip-container::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        /* Kept Clip Card */
+        .clip-chip-kept {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f172a;
+            border: 1.5px solid #0284c7;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .clip-chip-kept:hover {
+            background: #1e293b;
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+        }
+
+        .clip-chip-kept .clip-badge {
+            background: #0369a1;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .clip-chip-kept .clip-time {
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .clip-chip-kept .clip-dur {
+            font-size: 11px;
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
+        .btn-clip-trash {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.12s ease;
+        }
+
+        .btn-clip-trash:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Cut / Excluded Clip Card */
+        .clip-chip-cut {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(220, 38, 38, 0.12);
+            border: 1.5px dashed #dc2626;
+            border-radius: 8px;
+            padding: 6px 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .clip-chip-cut .cut-badge {
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .clip-chip-cut .cut-time {
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fca5a5;
+            text-decoration: line-through;
+        }
+
+        .clip-chip-cut .cut-dur {
+            font-size: 11px;
+            color: #f87171;
+            font-weight: 700;
+        }
+
+        .btn-clip-restore {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 5px;
+            transition: all 0.12s ease;
+        }
+
+        .btn-clip-restore:hover {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #38bdf8;
+        }
+
+        /* Fine-Tune Panel */
+        .fine-tune-panel {
+            background: #0a0f18;
+            border: 1px dashed #334155;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 4px;
+        }
+
+        .fine-tune-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .fine-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            color: #94a3b8;
         }
 
         /* Right Sidebar Panel: Customizer */
@@ -562,14 +1070,14 @@
         /* Graphic Theme Radio Pills */
         .theme-selector-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
         }
 
         .theme-pill {
             border: 1px solid var(--studio-border);
             border-radius: 8px;
-            padding: 8px 6px;
+            padding: 8px 4px;
             text-align: center;
             cursor: pointer;
             transition: all 0.15s ease;
@@ -583,21 +1091,27 @@
         .theme-pill.active {
             border-color: #38bdf8;
             background: #1e293b;
+            box-shadow: 0 0 0 1px #38bdf8;
         }
 
         .theme-badge {
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
             display: inline-block;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .theme-name {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
-            color: #ffffff;
+            color: #cbd5e1;
             display: block;
+            line-height: 1.2;
+        }
+
+        .theme-pill.active .theme-name {
+            color: #ffffff;
         }
 
         /* Audio Sliders */
@@ -764,7 +1278,15 @@
 <main class="studio-container">
     <!-- Center Live Stage -->
     <section class="studio-stage">
-        <div class="monitor-frame-container">
+        <div class="monitor-frame-container" style="position: relative;">
+            <!-- Floating Trim Applied Banner -->
+            <div id="trimAppliedBanner" class="trim-applied-banner" style="display: none;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span id="trimAppliedBannerText">Trim Applied • Playing Final Broadcast Story</span>
+            </div>
+
             <div class="tv-screen-wrapper">
                 <canvas id="previewCanvas" width="1280" height="720"></canvas>
             </div>
@@ -823,25 +1345,105 @@
 
                 <div class="scrubber-track-container" id="scrubberTrack">
                     <div class="trim-range-highlight" id="trimHighlight"></div>
+                    <div id="cutsContainer"></div>
+                    <div class="pending-marker-flag flag-start" id="flagStart" style="display: none;"></div>
+                    <div class="pending-marker-flag flag-end" id="flagEnd" style="display: none;"></div>
                     <div class="scrubber-playhead" id="playhead"></div>
                 </div>
 
-                <div class="trim-inputs-row">
-                    <div class="trim-group">
-                        <label>Trim In (Start):</label>
-                        <input type="number" id="trimInInput" class="trim-input" step="0.1" min="0" value="0.0">
-                        <button class="btn-trim-set" id="btnSetIn">Set In [I]</button>
+                <!-- Single Unified Easy Smart Trimmer -->
+                <div class="easy-trim-box">
+                    <!-- 1-Click Action Buttons -->
+                    <div class="easy-trim-actions">
+                        <button type="button" class="easy-btn easy-btn-edge" id="btnTrimStartHere" title="Cut start of video up to current playhead [I]">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="11 17 6 12 11 7"></polyline>
+                                <polyline points="18 17 13 12 18 7"></polyline>
+                            </svg>
+                            <span>Cut Start to Here</span>
+                        </button>
+
+                        <button type="button" class="easy-btn easy-btn-middle" id="btnSmartCutMiddle" title="Click to start cut, play to end of unwanted section, click again to remove it!">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <circle cx="6" cy="6" r="3"></circle>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                                <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                                <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+                            </svg>
+                            <span id="smartCutBtnText">✂️ Cut Middle Part</span>
+                        </button>
+
+                        <button type="button" class="easy-btn easy-btn-split" id="btnSmartSplit" title="Split clip into two parts at current playhead [S]">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="12" y1="2" x2="12" y2="22"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                            <span>⚡ Split Clip [S]</span>
+                        </button>
+
+                        <button type="button" class="easy-btn easy-btn-edge" id="btnTrimEndHere" title="Cut end of video from current playhead to finish [O]">
+                            <span>Cut Here to End</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="13 17 18 12 13 7"></polyline>
+                                <polyline points="6 17 11 12 6 7"></polyline>
+                            </svg>
+                        </button>
+
+                        <button type="button" class="easy-btn easy-btn-apply" id="btnApplyPreviewTrim" title="Apply all cuts and preview the final trimmed broadcast story [A]">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span id="applyTrimBtnText">✅ Apply &amp; Preview Trim</span>
+                        </button>
+
+                        <button type="button" class="easy-btn easy-btn-reset" id="btnSmartReset" title="Restore full video &amp; undo all cuts">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                            <span>Reset All</span>
+                        </button>
+
+                        <button type="button" class="easy-btn easy-btn-gear" id="btnToggleFineTune" title="Show or hide manual seconds inputs">
+                            ⚙️ Numbers
+                        </button>
                     </div>
 
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn-trim-set" id="btnStepBack">-1s</button>
-                        <button class="btn-trim-set" id="btnStepFwd">+1s</button>
+                    <!-- Visual Clips Strip Card -->
+                    <div class="clips-strip-card">
+                        <div class="clips-strip-header">
+                            <span class="strip-title">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                Video Story Clips:
+                            </span>
+                            <span class="strip-hint">Click clip to jump • 🗑️ remove part • ↩ restore</span>
+                        </div>
+                        <div class="clips-strip-container" id="clipsStripContainer">
+                            <!-- Visual Clip Chips dynamically populated -->
+                        </div>
                     </div>
 
-                    <div class="trim-group">
-                        <label>Trim Out (End):</label>
-                        <input type="number" id="trimOutInput" class="trim-input" step="0.1" min="0" value="0.0">
-                        <button class="btn-trim-set" id="btnSetOut">Set Out [O]</button>
+                    <!-- Optional Collapsible Fine-Tune Panel -->
+                    <div class="fine-tune-panel" id="fineTunePanel" style="display: none;">
+                        <div class="fine-tune-row">
+                            <div class="fine-group">
+                                <label style="font-weight: 700;">Trim In (Start):</label>
+                                <input type="number" id="trimInInput" class="trim-input" step="0.1" min="0" value="0.0" style="width: 70px;">
+                                <span style="font-size: 11px; color: #64748b;">s</span>
+                            </div>
+                            <div class="fine-group">
+                                <label style="font-weight: 700;">Trim Out (End):</label>
+                                <input type="number" id="trimOutInput" class="trim-input" step="0.1" min="0" value="0.0" style="width: 70px;">
+                                <span style="font-size: 11px; color: #64748b;">s</span>
+                            </div>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button type="button" class="btn-trim-set" id="btnStepBack" style="padding: 4px 8px; font-size: 11px;">-1s</button>
+                                <button type="button" class="btn-trim-set" id="btnStepFwd" style="padding: 4px 8px; font-size: 11px;">+1s</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -926,18 +1528,25 @@
                     <span>Graphics Preset Theme</span>
                 </div>
                 <div class="theme-selector-grid">
-                    <div class="theme-pill active" data-theme="breaking">
+                    <div class="theme-pill active" data-theme="breaking" title="Red Breaking News Theme">
                         <span class="theme-badge" style="background: #dc2626;"></span>
-                        <span class="theme-name">Breaking News</span>
+                        <span class="theme-name">Breaking</span>
                     </div>
-                    <div class="theme-pill" data-theme="primetime">
+                    <div class="theme-pill" data-theme="primetime" title="Blue Special Report Theme">
                         <span class="theme-badge" style="background: #2563eb;"></span>
-                        <span class="theme-name">Special Report</span>
+                        <span class="theme-name">Special</span>
                     </div>
-                    <div class="theme-pill" data-theme="exclusive">
+                    <div class="theme-pill" data-theme="exclusive" title="Green Ground Zero Theme">
                         <span class="theme-badge" style="background: #059669;"></span>
                         <span class="theme-name">Ground Zero</span>
                     </div>
+                    <div class="theme-pill" data-theme="none" title="Clean & Simple video without channel overlays">
+                        <span class="theme-badge" style="background: #334155; border: 1.5px dashed #94a3b8;"></span>
+                        <span class="theme-name">None (Clean)</span>
+                    </div>
+                </div>
+                <div id="noneThemeNotice" style="display: none; font-size: 11px; color: #38bdf8; background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px dashed #0284c7; margin-top: 8px;">
+                    ✨ <b>Clean Mode (None):</b> Logo watermark retained. TV headline plates and ticker straps disabled.
                 </div>
             </div>
 
@@ -1124,8 +1733,6 @@
 
     const trimInInput = document.getElementById('trimInInput');
     const trimOutInput = document.getElementById('trimOutInput');
-    const btnSetIn = document.getElementById('btnSetIn');
-    const btnSetOut = document.getElementById('btnSetOut');
     const btnSeekStart = document.getElementById('btnSeekStart');
     const btnSeekEnd = document.getElementById('btnSeekEnd');
     const btnStepBack = document.getElementById('btnStepBack');
@@ -1150,6 +1757,24 @@
     const finishedVideoPreview = document.getElementById('finishedVideoPreview');
     const btnDownloadFinished = document.getElementById('btnDownloadFinished');
 
+    // Easy Smart Trimmer DOM Elements
+    const cutsContainer = document.getElementById('cutsContainer');
+    const flagStart = document.getElementById('flagStart');
+    const flagEnd = document.getElementById('flagEnd');
+    const btnTrimStartHere = document.getElementById('btnTrimStartHere');
+    const btnSmartCutMiddle = document.getElementById('btnSmartCutMiddle');
+    const smartCutBtnText = document.getElementById('smartCutBtnText');
+    const btnSmartSplit = document.getElementById('btnSmartSplit');
+    const btnTrimEndHere = document.getElementById('btnTrimEndHere');
+    const btnApplyPreviewTrim = document.getElementById('btnApplyPreviewTrim');
+    const applyTrimBtnText = document.getElementById('applyTrimBtnText');
+    const trimAppliedBanner = document.getElementById('trimAppliedBanner');
+    const trimAppliedBannerText = document.getElementById('trimAppliedBannerText');
+    const btnSmartReset = document.getElementById('btnSmartReset');
+    const btnToggleFineTune = document.getElementById('btnToggleFineTune');
+    const clipsStripContainer = document.getElementById('clipsStripContainer');
+    const fineTunePanel = document.getElementById('fineTunePanel');
+
     // State
     let duration = 0;
     let trimIn = 0;
@@ -1158,6 +1783,12 @@
     let currentTheme = 'breaking';
     let tickerOffset = 0;
     let lastTime = 0;
+
+    // Smart Trimmer & Cuts State
+    let middleCuts = []; // Array of { id, start, end }
+    let cutInProgressStart = null;
+    let cutCounter = 1;
+    let splitPoints = [];
 
     // Aspect Ratio & Resolution Presets
     const FORMAT_PRESETS = {
@@ -1267,29 +1898,60 @@
             tickerBg: '#051912',
             tickerText: '#a7f3d0',
             accent: '#34d399'
+        },
+        none: {
+            isNone: true,
+            strapPrimary: 'transparent',
+            strapDark: 'transparent',
+            badgeBg: 'transparent',
+            badgeText: 'transparent',
+            badgeLabel: '',
+            tickerBg: 'transparent',
+            tickerText: 'transparent',
+            accent: 'transparent'
         }
     };
 
     // Initialize Video
-    video.addEventListener('loadedmetadata', function() {
-        duration = video.duration || 10;
+    function initVideoMetadata() {
+        if (!video.duration || isNaN(video.duration)) return;
+        duration = video.duration;
         trimIn = 0;
         trimOut = duration;
-        trimInInput.max = duration;
-        trimOutInput.max = duration;
-        trimInInput.value = (0).toFixed(1);
-        trimOutInput.value = duration.toFixed(1);
+        if (trimInInput) {
+            trimInInput.max = duration;
+            trimInInput.value = (0).toFixed(1);
+        }
+        if (trimOutInput) {
+            trimOutInput.max = duration;
+            trimOutInput.value = duration.toFixed(1);
+        }
         updateTrimHighlight();
         updateTimeDisplay();
-        requestAnimationFrame(renderLoop);
+    }
+
+    if (video.readyState >= 1) {
+        initVideoMetadata();
+    } else {
+        video.addEventListener('loadedmetadata', initVideoMetadata);
+    }
+    video.addEventListener('canplay', function() {
+        if (!duration || duration <= 0) initVideoMetadata();
+    });
+    video.addEventListener('loadeddata', function() {
+        if (!duration || duration <= 0) initVideoMetadata();
     });
 
     // Theme Picker
+    const noneThemeNotice = document.getElementById('noneThemeNotice');
     document.querySelectorAll('.theme-pill').forEach(pill => {
         pill.addEventListener('click', function() {
             document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
             this.classList.add('active');
             currentTheme = this.dataset.theme;
+            if (noneThemeNotice) {
+                noneThemeNotice.style.display = (currentTheme === 'none') ? 'block' : 'none';
+            }
         });
     });
 
@@ -1315,10 +1977,190 @@
         }
     }
 
+    // ==========================================
+    // Middle Cut & Kept Segments Engine
+    // ==========================================
+    function getEffectiveCuts() {
+        if (!middleCuts || !middleCuts.length) return [];
+        const valid = [];
+        for (const c of middleCuts) {
+            const s = Math.max(trimIn, Math.min(trimOut, c.start));
+            const e = Math.max(trimIn, Math.min(trimOut, c.end));
+            if (e - s > 0.05) {
+                valid.push({ id: c.id, start: s, end: e });
+            }
+        }
+        valid.sort((a, b) => a.start - b.start);
+
+        const merged = [];
+        for (const c of valid) {
+            if (merged.length === 0) {
+                merged.push({ ...c });
+            } else {
+                const prev = merged[merged.length - 1];
+                if (c.start <= prev.end + 0.05) {
+                    prev.end = Math.max(prev.end, c.end);
+                } else {
+                    merged.push({ ...c });
+                }
+            }
+        }
+        return merged;
+    }
+
+    function getKeptSegments() {
+        const cuts = getEffectiveCuts();
+        const segments = [];
+        let cur = trimIn;
+
+        for (const cut of cuts) {
+            if (cut.start > cur + 0.05) {
+                segments.push({ start: cur, end: cut.start });
+            }
+            cur = Math.max(cur, cut.end);
+        }
+
+        if (cur < trimOut - 0.05) {
+            segments.push({ start: cur, end: trimOut });
+        }
+
+        if (segments.length === 0 && trimOut > trimIn) {
+            segments.push({ start: trimIn, end: trimOut });
+        }
+
+        return segments;
+    }
+
+    function getTotalKeptDuration() {
+        const segments = getKeptSegments();
+        return segments.reduce((sum, seg) => sum + (seg.end - seg.start), 0);
+    }
+
+    function renderClipsStrip() {
+        if (!clipsStripContainer) return;
+        clipsStripContainer.innerHTML = '';
+
+        // 1. If start is trimmed
+        if (trimIn > 0.05) {
+            const cutChip = document.createElement('div');
+            cutChip.className = 'clip-chip-cut';
+            cutChip.title = `Start Trimmed: 0.0s - ${trimIn.toFixed(1)}s (Click Restore to include again)`;
+            cutChip.innerHTML = `
+                <span class="cut-badge">✂️ Start Trim</span>
+                <span class="cut-time">0:00 - ${formatTime(trimIn)}</span>
+                <span class="cut-dur">-${trimIn.toFixed(1)}s</span>
+                <button type="button" class="btn-clip-restore" title="Restore start of video">↩ Restore</button>
+            `;
+            cutChip.querySelector('.btn-clip-restore').addEventListener('click', (e) => {
+                e.stopPropagation();
+                trimIn = 0;
+                if (trimInInput) trimInInput.value = (0).toFixed(1);
+                updateTrimHighlight();
+            });
+            clipsStripContainer.appendChild(cutChip);
+        }
+
+        // 2. Middle segments and cuts
+        const cuts = getEffectiveCuts();
+        const kept = getKeptSegments();
+
+        const allItems = [];
+        kept.forEach((k, i) => allItems.push({ type: 'kept', start: k.start, end: k.end, idx: i + 1 }));
+        cuts.forEach((c, i) => allItems.push({ type: 'cut', id: c.id, start: c.start, end: c.end, idx: i + 1 }));
+        allItems.sort((a, b) => a.start - b.start);
+
+        if (allItems.length === 0 && duration > 0) {
+            allItems.push({ type: 'kept', start: trimIn, end: trimOut, idx: 1 });
+        }
+
+        allItems.forEach(item => {
+            if (item.type === 'kept') {
+                const dur = (item.end - item.start).toFixed(1);
+                const chip = document.createElement('div');
+                chip.className = 'clip-chip-kept';
+                chip.dataset.start = item.start;
+                chip.dataset.end = item.end;
+                chip.title = `Clip #${item.idx}: ${formatTime(item.start)} - ${formatTime(item.end)} (${dur}s) • Click to jump here`;
+                chip.innerHTML = `
+                    <span class="clip-badge">🎬 Clip #${item.idx}</span>
+                    <span class="clip-time">${formatTime(item.start)} - ${formatTime(item.end)}</span>
+                    <span class="clip-dur">${dur}s</span>
+                    <button type="button" class="btn-clip-trash" title="Cut / Remove this clip">🗑️ Cut</button>
+                `;
+                chip.addEventListener('click', () => {
+                    video.currentTime = item.start;
+                    if (audio) audio.currentTime = item.start;
+                    updateTimeDisplay();
+                    if (!isPlaying) togglePlay();
+                });
+                chip.querySelector('.btn-clip-trash').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    middleCuts.push({
+                        id: cutCounter++,
+                        start: parseFloat(item.start.toFixed(2)),
+                        end: parseFloat(item.end.toFixed(2))
+                    });
+                    updateTrimHighlight();
+                });
+                clipsStripContainer.appendChild(chip);
+            } else {
+                const diff = (item.end - item.start).toFixed(1);
+                const chip = document.createElement('div');
+                chip.className = 'clip-chip-cut';
+                chip.title = `Cut #${item.idx}: ${formatTime(item.start)} - ${formatTime(item.end)} (-${diff}s Removed from video)`;
+                chip.innerHTML = `
+                    <span class="cut-badge">✂️ Cut #${item.idx} (Removed)</span>
+                    <span class="cut-time">${formatTime(item.start)} - ${formatTime(item.end)}</span>
+                    <span class="cut-dur">-${diff}s</span>
+                    <button type="button" class="btn-clip-restore" title="Restore this part to video">↩ Restore</button>
+                `;
+                chip.querySelector('.btn-clip-restore').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    middleCuts = middleCuts.filter(c => c.id !== item.id);
+                    updateTrimHighlight();
+                });
+                clipsStripContainer.appendChild(chip);
+            }
+        });
+
+        // 3. If end is trimmed
+        if (trimOut < duration - 0.05) {
+            const cutChip = document.createElement('div');
+            cutChip.className = 'clip-chip-cut';
+            const diff = (duration - trimOut).toFixed(1);
+            cutChip.title = `End Trimmed: ${trimOut.toFixed(1)}s - ${duration.toFixed(1)}s (-${diff}s)`;
+            cutChip.innerHTML = `
+                <span class="cut-badge">✂️ End Trim</span>
+                <span class="cut-time">${formatTime(trimOut)} - ${formatTime(duration)}</span>
+                <span class="cut-dur">-${diff}s</span>
+                <button type="button" class="btn-clip-restore" title="Restore end of video">↩ Restore</button>
+            `;
+            cutChip.querySelector('.btn-clip-restore').addEventListener('click', (e) => {
+                e.stopPropagation();
+                trimOut = duration;
+                if (trimOutInput) trimOutInput.value = duration.toFixed(1);
+                updateTrimHighlight();
+            });
+            clipsStripContainer.appendChild(cutChip);
+        }
+    }
+
     function startPlayback() {
+        const segments = getKeptSegments();
+        const firstStart = segments.length > 0 ? segments[0].start : trimIn;
+
         if (video.currentTime >= trimOut || video.currentTime < trimIn) {
-            video.currentTime = trimIn;
-            if (audio) audio.currentTime = trimIn;
+            video.currentTime = firstStart;
+            if (audio) audio.currentTime = firstStart;
+        } else {
+            const effectiveCuts = getEffectiveCuts();
+            for (const cut of effectiveCuts) {
+                if (video.currentTime >= cut.start && video.currentTime < cut.end) {
+                    video.currentTime = cut.end;
+                    if (audio) audio.currentTime = cut.end;
+                    break;
+                }
+            }
         }
         video.play().then(() => {
             if (audio) audio.play();
@@ -1343,73 +2185,237 @@
             e.preventDefault();
             togglePlay();
         } else if (e.key === 'i' || e.key === 'I') {
-            setTrimIn();
+            if (btnTrimStartHere) btnTrimStartHere.click();
         } else if (e.key === 'o' || e.key === 'O') {
-            setTrimOut();
+            if (btnTrimEndHere) btnTrimEndHere.click();
+        } else if (e.key === 'a' || e.key === 'A' || e.key === 'p' || e.key === 'P') {
+            if (btnApplyPreviewTrim) btnApplyPreviewTrim.click();
+        } else if (e.key === 'c' || e.key === 'C' || e.key === '[' || e.key === ']') {
+            if (btnSmartCutMiddle) btnSmartCutMiddle.click();
+        } else if (e.key === 's' || e.key === 'S') {
+            if (btnSmartSplit) btnSmartSplit.click();
         }
     });
 
-    // Trim In / Out buttons
-    function setTrimIn() {
-        trimIn = Math.min(video.currentTime, trimOut - 0.5);
-        trimInInput.value = trimIn.toFixed(1);
-        updateTrimHighlight();
+    // 1-Click Trim In (Start to Current Playhead)
+    if (btnTrimStartHere) {
+        btnTrimStartHere.addEventListener('click', function() {
+            trimIn = Math.min(video.currentTime, trimOut - 0.5);
+            if (trimInInput) trimInInput.value = trimIn.toFixed(1);
+            updateTrimHighlight();
+        });
     }
 
-    function setTrimOut() {
-        trimOut = Math.max(video.currentTime, trimIn + 0.5);
-        trimOutInput.value = trimOut.toFixed(1);
-        updateTrimHighlight();
+    // 1-Click Trim Out (Current Playhead to End)
+    if (btnTrimEndHere) {
+        btnTrimEndHere.addEventListener('click', function() {
+            trimOut = Math.max(video.currentTime, trimIn + 0.5);
+            if (trimOutInput) trimOutInput.value = trimOut.toFixed(1);
+            updateTrimHighlight();
+        });
     }
 
-    btnSetIn.addEventListener('click', setTrimIn);
-    btnSetOut.addEventListener('click', setTrimOut);
+    // Apply & Preview Trim (Plays only the final edited broadcast story)
+    if (btnApplyPreviewTrim) {
+        btnApplyPreviewTrim.addEventListener('click', function() {
+            const segments = getKeptSegments();
+            if (segments.length === 0) {
+                alert('No valid video clips to preview! Please check your trim.');
+                return;
+            }
 
-    trimInInput.addEventListener('change', function() {
-        trimIn = Math.max(0, Math.min(parseFloat(this.value) || 0, trimOut - 0.5));
-        this.value = trimIn.toFixed(1);
-        updateTrimHighlight();
-    });
+            const totalKept = getTotalKeptDuration();
+            const cuts = getEffectiveCuts();
 
-    trimOutInput.addEventListener('change', function() {
-        trimOut = Math.min(duration, Math.max(parseFloat(this.value) || duration, trimIn + 0.5));
-        this.value = trimOut.toFixed(1);
-        updateTrimHighlight();
-    });
+            // Seek to start of first kept clip
+            video.currentTime = segments[0].start;
+            if (audio) audio.currentTime = segments[0].start;
 
-    btnSeekStart.addEventListener('click', () => {
-        video.currentTime = trimIn;
-        if (audio) audio.currentTime = trimIn;
-        updateTimeDisplay();
-    });
+            // Start smooth playback
+            startPlayback();
 
-    btnSeekEnd.addEventListener('click', () => {
-        video.currentTime = trimOut;
-        if (audio) audio.currentTime = trimOut;
-        updateTimeDisplay();
-    });
+            // Display floating confirmation banner
+            if (trimAppliedBanner) {
+                const cutCountText = cuts.length > 0 ? ` • ${cuts.length} cut${cuts.length > 1 ? 's' : ''} removed (-${((trimOut - trimIn) - totalKept).toFixed(1)}s)` : '';
+                if (trimAppliedBannerText) {
+                    trimAppliedBannerText.textContent = `✅ Trim Applied! Playing ${totalKept.toFixed(1)}s Final Broadcast Video${cutCountText}`;
+                }
+                trimAppliedBanner.style.display = 'flex';
+                setTimeout(() => {
+                    if (trimAppliedBanner) trimAppliedBanner.style.display = 'none';
+                }, 4500);
+            }
 
-    btnStepBack.addEventListener('click', () => {
-        video.currentTime = Math.max(trimIn, video.currentTime - 1);
-        if (audio) audio.currentTime = video.currentTime;
-        updateTimeDisplay();
-    });
+            // Glow button state
+            btnApplyPreviewTrim.classList.add('active-applied');
+            setTimeout(() => {
+                if (btnApplyPreviewTrim) btnApplyPreviewTrim.classList.remove('active-applied');
+            }, 1200);
 
-    btnStepFwd.addEventListener('click', () => {
-        video.currentTime = Math.min(trimOut, video.currentTime + 1);
-        if (audio) audio.currentTime = video.currentTime;
-        updateTimeDisplay();
-    });
+            updateTrimHighlight();
+            updateTimeDisplay();
+        });
+    }
+
+    // Smart 2-Click Middle Cut (Mark Start -> Mark End & Cut)
+    if (btnSmartCutMiddle) {
+        btnSmartCutMiddle.addEventListener('click', function() {
+            const cur = video.currentTime;
+            if (cutInProgressStart === null) {
+                // Click 1: Start Cut
+                cutInProgressStart = cur;
+                btnSmartCutMiddle.classList.add('cutting-active');
+                if (smartCutBtnText) {
+                    smartCutBtnText.textContent = `🔴 Mark Cut End (${formatTime(cutInProgressStart)})`;
+                }
+                if (flagStart && duration > 0) {
+                    flagStart.style.left = ((cutInProgressStart / duration) * 100) + '%';
+                    flagStart.style.display = 'block';
+                }
+            } else {
+                // Click 2: Finish Cut
+                let s = Math.min(cutInProgressStart, cur);
+                let e = Math.max(cutInProgressStart, cur);
+
+                if (e - s < 0.2) {
+                    e = Math.min(trimOut, s + 0.5);
+                }
+
+                s = Math.max(trimIn, s);
+                e = Math.min(trimOut, e);
+
+                middleCuts.push({
+                    id: cutCounter++,
+                    start: parseFloat(s.toFixed(2)),
+                    end: parseFloat(e.toFixed(2))
+                });
+
+                cutInProgressStart = null;
+                btnSmartCutMiddle.classList.remove('cutting-active');
+                if (smartCutBtnText) {
+                    smartCutBtnText.textContent = '✂️ Cut Middle Part';
+                }
+                if (flagStart) flagStart.style.display = 'none';
+
+                // Skip video past the cut immediately
+                video.currentTime = e;
+                if (audio) audio.currentTime = e;
+                updateTimeDisplay();
+
+                updateTrimHighlight();
+            }
+        });
+    }
+
+    // Split Clip (Quick 2s Cut at Playhead to create separate clips)
+    if (btnSmartSplit) {
+        btnSmartSplit.addEventListener('click', function() {
+            const cur = video.currentTime;
+            const cutEnd = Math.min(trimOut, cur + 2.0);
+            if (cutEnd - cur >= 0.2) {
+                middleCuts.push({
+                    id: cutCounter++,
+                    start: parseFloat(cur.toFixed(2)),
+                    end: parseFloat(cutEnd.toFixed(2))
+                });
+                updateTrimHighlight();
+            }
+        });
+    }
+
+    // Reset All Cuts & Trims
+    if (btnSmartReset) {
+        btnSmartReset.addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove all cuts and restore the full video?')) {
+                trimIn = 0;
+                trimOut = duration;
+                middleCuts = [];
+                cutInProgressStart = null;
+                if (smartCutBtnText) smartCutBtnText.textContent = '✂️ Cut Middle Part';
+                if (btnSmartCutMiddle) btnSmartCutMiddle.classList.remove('cutting-active');
+                if (flagStart) flagStart.style.display = 'none';
+                if (trimInInput) trimInInput.value = (0).toFixed(1);
+                if (trimOutInput) trimOutInput.value = duration.toFixed(1);
+                updateTrimHighlight();
+            }
+        });
+    }
+
+    // Toggle Fine-Tune Numbers Panel
+    if (btnToggleFineTune && fineTunePanel) {
+        btnToggleFineTune.addEventListener('click', function() {
+            const isHidden = fineTunePanel.style.display === 'none';
+            fineTunePanel.style.display = isHidden ? 'block' : 'none';
+            this.style.background = isHidden ? '#334155' : 'transparent';
+        });
+    }
+
+    // Fine-tune inputs (if user uses them)
+    if (trimInInput) {
+        trimInInput.addEventListener('change', function() {
+            trimIn = Math.max(0, Math.min(parseFloat(this.value) || 0, trimOut - 0.5));
+            this.value = trimIn.toFixed(1);
+            updateTrimHighlight();
+        });
+    }
+
+    if (trimOutInput) {
+        trimOutInput.addEventListener('change', function() {
+            trimOut = Math.min(duration, Math.max(parseFloat(this.value) || duration, trimIn + 0.5));
+            this.value = trimOut.toFixed(1);
+            updateTrimHighlight();
+        });
+    }
+
+    // Step -1s / +1s
+    if (btnStepBack) {
+        btnStepBack.addEventListener('click', () => {
+            video.currentTime = Math.max(0, video.currentTime - 1);
+            if (audio) audio.currentTime = video.currentTime;
+            updateTimeDisplay();
+        });
+    }
+
+    if (btnStepFwd) {
+        btnStepFwd.addEventListener('click', () => {
+            video.currentTime = Math.min(duration, video.currentTime + 1);
+            if (audio) audio.currentTime = video.currentTime;
+            updateTimeDisplay();
+        });
+    }
+
+    // Transport buttons Jump Start / End
+    if (btnSeekStart) {
+        btnSeekStart.addEventListener('click', () => {
+            const segments = getKeptSegments();
+            const firstStart = segments.length > 0 ? segments[0].start : trimIn;
+            video.currentTime = firstStart;
+            if (audio) audio.currentTime = firstStart;
+            updateTimeDisplay();
+        });
+    }
+
+    if (btnSeekEnd) {
+        btnSeekEnd.addEventListener('click', () => {
+            const segments = getKeptSegments();
+            const lastEnd = segments.length > 0 ? segments[segments.length - 1].end : trimOut;
+            video.currentTime = lastEnd;
+            if (audio) audio.currentTime = lastEnd;
+            updateTimeDisplay();
+        });
+    }
 
     // Scrubber click / drag
-    scrubberTrack.addEventListener('click', function(e) {
-        const rect = scrubberTrack.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
-        const targetTime = pos * duration;
-        video.currentTime = Math.max(0, Math.min(duration, targetTime));
-        if (audio) audio.currentTime = video.currentTime;
-        updateTimeDisplay();
-    });
+    if (scrubberTrack) {
+        scrubberTrack.addEventListener('click', function(e) {
+            const rect = scrubberTrack.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            const targetTime = pos * duration;
+            video.currentTime = Math.max(0, Math.min(duration, targetTime));
+            if (audio) audio.currentTime = video.currentTime;
+            updateTimeDisplay();
+        });
+    }
 
     function updateTrimHighlight() {
         if (!duration) return;
@@ -1418,9 +2424,63 @@
         trimHighlight.style.left = startPct + '%';
         trimHighlight.style.width = widthPct + '%';
 
-        const trimmedSec = (trimOut - trimIn).toFixed(1);
-        const frames = Math.round(trimmedSec * 30);
-        trimStatsBadge.textContent = `Selected: ${trimmedSec}s (~${frames} frames)`;
+        // Render Cut Zone overlays on timeline track
+        if (cutsContainer) {
+            cutsContainer.innerHTML = '';
+            middleCuts.forEach((cut, idx) => {
+                const cs = Math.max(0, Math.min(duration, cut.start));
+                const ce = Math.max(0, Math.min(duration, cut.end));
+                if (ce <= cs) return;
+
+                const cutLeftPct = (cs / duration) * 100;
+                const cutWidthPct = ((ce - cs) / duration) * 100;
+
+                const cutEl = document.createElement('div');
+                cutEl.className = 'cut-zone-bar';
+                cutEl.style.left = cutLeftPct + '%';
+                cutEl.style.width = cutWidthPct + '%';
+                cutEl.title = `Cut #${idx + 1}: ${cs.toFixed(1)}s - ${ce.toFixed(1)}s (-${(ce - cs).toFixed(1)}s) • Click to preview`;
+                cutEl.innerHTML = `<span class="cut-zone-tag">✂️ #${idx + 1} (-${(ce - cs).toFixed(1)}s)</span>`;
+
+                cutEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    video.currentTime = Math.max(trimIn, cs - 1.0);
+                    if (audio) audio.currentTime = video.currentTime;
+                    updateTimeDisplay();
+                    if (!isPlaying) togglePlay();
+                });
+
+                cutsContainer.appendChild(cutEl);
+            });
+        }
+
+        // Render pending flag for in-progress cut
+        if (flagStart) {
+            if (cutInProgressStart !== null && cutInProgressStart >= 0 && cutInProgressStart <= duration) {
+                flagStart.style.left = ((cutInProgressStart / duration) * 100) + '%';
+                flagStart.style.display = 'block';
+            } else {
+                flagStart.style.display = 'none';
+            }
+        }
+        if (flagEnd) {
+            flagEnd.style.display = 'none';
+        }
+
+        // Update stats badge
+        const totalKept = getTotalKeptDuration();
+        const frames = Math.round(totalKept * 30);
+        const cuts = getEffectiveCuts();
+        const totalCutSec = (trimOut - trimIn) - totalKept;
+
+        if (cuts.length > 0 && totalCutSec > 0.05) {
+            trimStatsBadge.innerHTML = `Selected: ${totalKept.toFixed(1)}s (~${frames} frames) • ${cuts.length} cut${cuts.length > 1 ? 's' : ''} (-${totalCutSec.toFixed(1)}s) <span style="color: #34d399; font-weight: 800; margin-left: 6px;">[✅ Trim Applied]</span>`;
+        } else {
+            trimStatsBadge.textContent = `Selected: ${totalKept.toFixed(1)}s (~${frames} frames)`;
+        }
+
+        // Render Active Story Clips Strip
+        renderClipsStrip();
     }
 
     function formatTime(sec) {
@@ -1431,24 +2491,93 @@
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
     }
 
+    function getKeptTimeFromRawTime(rawTime) {
+        if (!duration || rawTime <= trimIn) return 0;
+        if (rawTime >= trimOut) return getTotalKeptDuration();
+
+        let keptTime = 0;
+        const cuts = getEffectiveCuts();
+        let cur = trimIn;
+
+        for (const cut of cuts) {
+            if (rawTime < cut.start) {
+                keptTime += Math.max(0, rawTime - cur);
+                return keptTime;
+            } else if (rawTime <= cut.end) {
+                keptTime += Math.max(0, cut.start - cur);
+                return keptTime;
+            } else {
+                keptTime += Math.max(0, cut.start - cur);
+                cur = cut.end;
+            }
+        }
+
+        if (rawTime > cur) {
+            keptTime += Math.min(rawTime, trimOut) - cur;
+        }
+        return Math.min(keptTime, getTotalKeptDuration());
+    }
+
+    function highlightActiveClip() {
+        if (!clipsStripContainer) return;
+        const keptChips = clipsStripContainer.querySelectorAll('.clip-chip-kept');
+        const cur = video.currentTime;
+        keptChips.forEach(chip => {
+            const start = parseFloat(chip.dataset.start);
+            const end = parseFloat(chip.dataset.end);
+            if (cur >= start && cur < end) {
+                chip.classList.add('clip-is-playing');
+            } else {
+                chip.classList.remove('clip-is-playing');
+            }
+        });
+    }
+
     function updateTimeDisplay() {
-        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(duration)}`;
+        const totalKept = getTotalKeptDuration();
+        const cuts = getEffectiveCuts();
+        const isCutActive = cuts.length > 0 || trimIn > 0.05 || trimOut < duration - 0.05;
+
+        if (isCutActive && duration > 0) {
+            const keptCurrent = getKeptTimeFromRawTime(video.currentTime);
+            timeDisplay.innerHTML = `<span style="color: #38bdf8; font-weight: 800;">${formatTime(keptCurrent)}</span> / <span>${formatTime(totalKept)}</span> <span style="font-size: 11px; color: #10b981; font-weight: 700; margin-left: 5px;">[Trimmed]</span>`;
+        } else {
+            timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(duration)}`;
+        }
+
         if (duration) {
             const playPct = (video.currentTime / duration) * 100;
             playhead.style.left = playPct + '%';
         }
+
+        highlightActiveClip();
     }
 
-    // Video playback loop boundary checking
+    // Video playback loop boundary checking & middle cut skipping
     video.addEventListener('timeupdate', function() {
         updateTimeDisplay();
-        if (isPlaying && video.currentTime >= trimOut) {
-            if (loopCheck.checked) {
-                video.currentTime = trimIn;
-                if (audio) audio.currentTime = trimIn;
-            } else {
-                pausePlayback();
-                video.currentTime = trimOut;
+        if (isPlaying) {
+            if (video.currentTime >= trimOut) {
+                if (loopCheck.checked) {
+                    const segments = getKeptSegments();
+                    const firstStart = segments.length > 0 ? segments[0].start : trimIn;
+                    video.currentTime = firstStart;
+                    if (audio) audio.currentTime = firstStart;
+                } else {
+                    pausePlayback();
+                    video.currentTime = trimOut;
+                }
+                return;
+            }
+
+            // Skip middle cut areas smoothly
+            const effectiveCuts = getEffectiveCuts();
+            for (const cut of effectiveCuts) {
+                if (video.currentTime >= cut.start && video.currentTime < cut.end) {
+                    video.currentTime = cut.end;
+                    if (audio) audio.currentTime = cut.end;
+                    break;
+                }
             }
         }
     });
@@ -1540,6 +2669,31 @@
     }
 
     function drawCanvasFrame(timestamp) {
+        // High-precision 60fps frame cut-zone skipper:
+        // Guarantees zero glitch/leak of cut frames during playback
+        if (isPlaying && duration > 0) {
+            if (video.currentTime >= trimOut) {
+                if (loopCheck && loopCheck.checked) {
+                    const segments = getKeptSegments();
+                    const firstStart = segments.length > 0 ? segments[0].start : trimIn;
+                    video.currentTime = firstStart;
+                    if (audio) audio.currentTime = firstStart;
+                } else {
+                    pausePlayback();
+                    video.currentTime = trimOut;
+                }
+            } else {
+                const effectiveCuts = getEffectiveCuts();
+                for (const cut of effectiveCuts) {
+                    if (video.currentTime >= cut.start && video.currentTime < cut.end) {
+                        video.currentTime = cut.end;
+                        if (audio) audio.currentTime = cut.end;
+                        break;
+                    }
+                }
+            }
+        }
+
         const W = canvas.width;
         const H = canvas.height;
 
@@ -1558,7 +2712,7 @@
         const baseRefW = isVertical ? 720 : (isSquare ? 720 : 1280);
         const S = W / baseRefW;
 
-        // 3. Channel Watermark Logo (Top-Right)
+        // 3. Channel Watermark Logo (Top-Right) — Always shown for branding
         if (logoImg && logoImg.complete) {
             ctx.save();
             ctx.shadowColor = 'rgba(0,0,0,0.7)';
@@ -1569,6 +2723,11 @@
             const logoY = Math.round(20 * S);
             ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
             ctx.restore();
+        }
+
+        // If theme is 'none', keep video clean & simple (no headline straps, ticker, or badges)
+        if (theme.isNone || currentTheme === 'none') {
+            return;
         }
 
         // 4. Live / Breaking Badge (Top-Left)
@@ -1737,11 +2896,20 @@
         if (isNaN(trimIn) || trimIn < 0) trimIn = 0;
         if (isNaN(trimOut) || trimOut <= trimIn) trimOut = duration;
 
+        const keptSegments = getKeptSegments();
+        if (keptSegments.length === 0) {
+            alert('No valid video segments to render! Please check your trim and cuts.');
+            return;
+        }
+
+        const totalRenderSec = getTotalKeptDuration();
+        const cuts = getEffectiveCuts();
+        const cutCountText = cuts.length > 0 ? ` (${cuts.length} middle cut${cuts.length > 1 ? 's' : ''} removed)` : '';
+        const formatLabel = `${currentRatioKey} (${canvas.width}x${canvas.height} ${currentQualityKey === '1080' ? 'Full HD' : 'HD'})`;
+
         // Confirm
         pausePlayback();
-        const renderLen = (trimOut - trimIn).toFixed(1);
-        const formatLabel = `${currentRatioKey} (${canvas.width}x${canvas.height} ${currentQualityKey === '1080' ? 'Full HD' : 'HD'})`;
-        if (!confirm(`Ready to render broadcast news video?\nLength: ${renderLen}s\nPreset: ${formatLabel}`)) {
+        if (!confirm(`Ready to render broadcast news video?\nLength: ${totalRenderSec.toFixed(1)}s${cutCountText}\nPreset: ${formatLabel}`)) {
             return;
         }
 
@@ -1877,61 +3045,100 @@
                 }
             };
 
-            // 5. Seek video to trimIn and wait for buffer
-            video.currentTime = trimIn;
-            if (audio) audio.currentTime = trimIn;
+            // 5. Execute Multi-Segment Recording (seamlessly skipping cut middle parts)
+            let accumulatedSec = 0;
 
-            await new Promise(resolve => {
-                const onSeeked = () => {
-                    video.removeEventListener('seeked', onSeeked);
-                    resolve();
-                };
-                video.addEventListener('seeked', onSeeked);
-                setTimeout(resolve, 350);
-            });
+            for (let i = 0; i < keptSegments.length; i++) {
+                const seg = keptSegments[i];
+                const segDuration = seg.end - seg.start;
 
-            // 6. Start recorder
-            recorder.start(100);
-            isPlaying = true;
-            try {
-                const p1 = video.play();
-                if (p1 && typeof p1.catch === 'function') p1.catch(() => {});
-                if (audio) {
-                    const p2 = audio.play();
-                    if (p2 && typeof p2.catch === 'function') p2.catch(() => {});
-                }
-            } catch (e) {}
+                // Seek to segment start and wait for buffer
+                video.currentTime = seg.start;
+                if (audio) audio.currentTime = seg.start;
 
-            const startTime = Date.now();
-            const totalDurationMs = Math.max(1000, (trimOut - trimIn) * 1000);
-            let isRenderFinished = false;
+                await new Promise(resolve => {
+                    let done = false;
+                    const onSeeked = () => {
+                        if (!done) {
+                            done = true;
+                            video.removeEventListener('seeked', onSeeked);
+                            resolve();
+                        }
+                    };
+                    video.addEventListener('seeked', onSeeked);
+                    setTimeout(onSeeked, 300);
+                });
 
-            const progressInterval = setInterval(() => {
-                if (isRenderFinished) return;
-                const elapsed = Date.now() - startTime;
-                const pct = Math.min(99, Math.round((elapsed / totalDurationMs) * 100));
-                renderProgressBar.style.width = pct + '%';
-                renderProgressText.textContent = `${pct}% completed (${(elapsed / 1000).toFixed(1)}s / ${(totalDurationMs / 1000).toFixed(1)}s)`;
+                // Redraw canvas with the seeked frame
+                drawCanvasFrame(performance.now());
 
-                if (elapsed >= totalDurationMs) {
-                    isRenderFinished = true;
-                    clearInterval(progressInterval);
-                    pausePlayback();
-                    if (recorder.state === 'recording') {
-                        try {
-                            recorder.requestData(); // Flush all recorded chunks
-                        } catch (e) {}
-                        setTimeout(() => {
-                            if (recorder.state === 'recording') {
-                                recorder.stop();
-                            }
-                        }, 200);
+                // Start or Resume recorder
+                if (i === 0) {
+                    recorder.start(100);
+                } else {
+                    if (recorder.state === 'paused') {
+                        recorder.resume();
                     }
                 }
-            }, 100);
+
+                // Play segment
+                isPlaying = true;
+                try {
+                    const p1 = video.play();
+                    if (p1 && typeof p1.catch === 'function') p1.catch(() => {});
+                    if (audio) {
+                        const p2 = audio.play();
+                        if (p2 && typeof p2.catch === 'function') p2.catch(() => {});
+                    }
+                } catch (e) {}
+
+                // Play until segment end
+                await new Promise(resolve => {
+                    const checkInterval = setInterval(() => {
+                        const curPlayedInSeg = Math.max(0, Math.min(segDuration, video.currentTime - seg.start));
+                        const totalElapsed = accumulatedSec + curPlayedInSeg;
+                        const pct = Math.min(99, Math.round((totalElapsed / totalRenderSec) * 100));
+
+                        renderProgressBar.style.width = pct + '%';
+                        renderProgressText.textContent = `${pct}% completed (${totalElapsed.toFixed(1)}s / ${totalRenderSec.toFixed(1)}s) • Segment ${i + 1}/${keptSegments.length}`;
+
+                        if (video.currentTime >= seg.end - 0.05 || video.ended) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 50);
+                });
+
+                accumulatedSec += segDuration;
+                video.pause();
+                if (audio) audio.pause();
+
+                // If more segments remain, pause recorder during seek
+                if (i < keptSegments.length - 1) {
+                    if (recorder.state === 'recording') {
+                        recorder.pause();
+                    }
+                    await new Promise(r => setTimeout(r, 60));
+                }
+            }
+
+            // Finish recording
+            pausePlayback();
+            renderProgressBar.style.width = '100%';
+            renderProgressText.textContent = '100% - Packaging video and saving to story...';
+
+            if (recorder.state === 'recording' || recorder.state === 'paused') {
+                try {
+                    recorder.requestData();
+                } catch (e) {}
+                setTimeout(() => {
+                    if (recorder.state !== 'inactive') {
+                        recorder.stop();
+                    }
+                }, 200);
+            }
 
             recorder.onstop = async () => {
-                clearInterval(progressInterval);
                 renderProgressBar.style.width = '100%';
                 renderProgressText.textContent = '100% - Packaging video and saving to story...';
 

@@ -455,6 +455,27 @@
         border-color: #0284c7;
     }
 
+    /* Download Story Media Button */
+    .btn-action-download {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: 1px solid #10b981;
+        background: #ecfdf5;
+        color: #059669;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action-download:hover {
+        background: #10b981;
+        color: #ffffff;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+    }
+
     /* Pill badges in verification action column */
     .badge-action-pill {
         display: inline-flex;
@@ -666,10 +687,10 @@
                 class="date-input" 
                 onchange="this.form.submit()"
             >
-            <a href="{% url 'desk_news_verify_list' %}?date={{ today_str }}" class="date-quick-btn {% if selected_date == today_str %}active{% endif %}">
+            <a href="{% if is_input %}{% url 'input_news_verify_list' %}{% else %}{% url 'desk_news_verify_list' %}{% endif %}?date={{ today_str }}" class="date-quick-btn {% if selected_date == today_str %}active{% endif %}">
                 Today
             </a>
-            <a href="{% url 'desk_news_verify_list' %}?date=all" class="date-quick-btn {% if selected_date == 'all' %}active{% endif %}">
+            <a href="{% if is_input %}{% url 'input_news_verify_list' %}{% else %}{% url 'desk_news_verify_list' %}{% endif %}?date=all" class="date-quick-btn {% if selected_date == 'all' %}active{% endif %}">
                 All Dates
             </a>
         </div>
@@ -719,7 +740,7 @@
             </button>
 
             {% if query or type_filter or category_filter or district_filter or status_filter or selected_date != today_str %}
-            <a href="{% url 'desk_news_verify_list' %}" class="btn btn-secondary btn-sm" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; color: #64748b;" title="Reset Filters">
+            <a href="{% if is_input %}{% url 'input_news_verify_list' %}{% else %}{% url 'desk_news_verify_list' %}{% endif %}" class="btn btn-secondary btn-sm" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; color: #64748b;" title="Reset Filters">
                 Clear
             </a>
             {% endif %}
@@ -930,6 +951,14 @@
                                     </svg>
                                     <span>Selected</span>
                                 </span>
+                                <!-- Download to local computer button -->
+                                <a href="{% url 'news_download_media' item.pk %}" class="btn-action-download" title="Download Full News Package (Document + Video) to Local PC" data-guard-bypass="true">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </a>
                             {% elif item.status == 'Rejected' %}
                                 <!-- Reject hone ke baad select button show nahi karega -->
                                 <span class="badge-action-pill pill-rejected" title="Story rejected (media deleted from database)">
@@ -998,10 +1027,10 @@
             {% endif %}
         </p>
         <div style="display: flex; gap: 10px; justify-content: center;">
-            <a href="{% url 'desk_news_verify_list' %}?date=all" class="btn btn-secondary btn-sm" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; font-weight: 600;">
+            <a href="{% if is_input %}{% url 'input_news_verify_list' %}{% else %}{% url 'desk_news_verify_list' %}{% endif %}?date=all" class="btn btn-secondary btn-sm" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; font-weight: 600;">
                 Show All Dates
             </a>
-            <a href="{% url 'desk_news_verify_list' %}" class="btn btn-secondary btn-sm" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; font-weight: 600;">
+            <a href="{% if is_input %}{% url 'input_news_verify_list' %}{% else %}{% url 'desk_news_verify_list' %}{% endif %}" class="btn btn-secondary btn-sm" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; text-decoration: none; font-weight: 600;">
                 Reset to Today
             </a>
         </div>
@@ -1095,7 +1124,33 @@
                         </span>
                     `;
 
-                    // Action column: Show ONLY Selected badge! (Reject button is removed!)
+                    // Automatic Local Download trigger
+                    if (data.download_url) {
+                        const dlAnchor = document.createElement('a');
+                        dlAnchor.href = data.download_url;
+                        if (data.download_filename) {
+                            dlAnchor.setAttribute('download', data.download_filename);
+                        }
+                        dlAnchor.setAttribute('data-guard-bypass', 'true');
+                        dlAnchor.style.display = 'none';
+                        document.body.appendChild(dlAnchor);
+                        dlAnchor.click();
+                        setTimeout(() => {
+                            dlAnchor.remove();
+                        }, 1000);
+                    }
+
+                    const downloadBtnHtml = data.download_url ? `
+                        <a href="${data.download_url}" class="btn-action-download" title="Download Full News Package (Document + Video) to Local PC" data-guard-bypass="true">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                        </a>
+                    ` : '';
+
+                    // Action column: Show Selected badge + Download button + View button!
                     actionControls.innerHTML = `
                         <span class="badge-action-pill pill-selected" title="Story is approved &amp; forwarded to Desk">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -1103,10 +1158,11 @@
                             </svg>
                             <span>Selected</span>
                         </span>
+                        ${downloadBtnHtml}
                         ${viewBtn}
                     `;
 
-                    const successToast = {% if is_input %}`Story approved & forwarded to Editorial Desk!`{% else %}`Story selected & approved for broadcast!`{% endif %};
+                    const successToast = {% if is_input %}`✓ Story approved & full package (Document + Video) downloading to your PC!`{% else %}`✓ Story selected & full package (Document + Video) downloading to your PC!`{% endif %};
                     showToast(successToast);
                 } else if (newStatus === 'Rejected') {
                     // Rejected:

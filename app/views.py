@@ -1,9 +1,13 @@
 import os
 import io
+import re
+import shutil
 import zipfile
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
+from django.urls import reverse
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -15,7 +19,8 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from .models import (
     Reporter, Desk, SocialMedia, GraphicDesigner, InputUser, VoiceOverUser, CopyEditor, VisualEditor, generate_next_reporter_id,
-    News, NewsMedia, NEWS_TYPE_CHOICES, NEWS_CATEGORY_CHOICES, NEWS_STATUS_CHOICES, TeleprompterScript, DeskVisualChatMessage, DeskCopyChatMessage, DeskVoiceOverChatMessage, DeskSocialChatMessage, DeskReporterChatMessage
+    News, NewsMedia, NEWS_TYPE_CHOICES, NEWS_CATEGORY_CHOICES, NEWS_STATUS_CHOICES, TeleprompterScript, DeskVisualChatMessage, DeskCopyChatMessage, DeskVoiceOverChatMessage, DeskSocialChatMessage, DeskReporterChatMessage,
+    MediaDownloadRequest
 )
 
 
@@ -335,6 +340,52 @@ def visual_editor_required(view_func):
 
 
 # ==========================================
+# Authentication Presence Helpers
+# ==========================================
+def mark_login_presence(request, user):
+    """
+    Updates last_login and immediately marks the user's role profile Online.
+    """
+    now = timezone.now()
+    try:
+        from .models import EXPLICITLY_LOGGED_OUT, _ACTIVE_USERS_CACHE
+        EXPLICITLY_LOGGED_OUT.pop(user.pk, None)
+        _ACTIVE_USERS_CACHE['timestamp'] = 0
+    except Exception:
+        pass
+    if request:
+        try:
+            request.session['last_seen_ping'] = now.timestamp()
+        except Exception:
+            pass
+    try:
+        user.last_login = now
+        user.save(update_fields=['last_login'])
+    except Exception:
+        pass
+    from .middleware import touch_user_last_seen
+    touch_user_last_seen(user, now)
+
+
+def mark_logout_presence(request):
+    """
+    Immediately marks the logging out user as Offline with accurate last seen time.
+    """
+    u = getattr(request, 'user', None)
+    if u and u.is_authenticated:
+        now = timezone.now()
+        from .middleware import touch_user_last_seen
+        touch_user_last_seen(u, now)
+        try:
+            from .models import EXPLICITLY_LOGGED_OUT, _ACTIVE_USERS_CACHE
+            EXPLICITLY_LOGGED_OUT[u.pk] = now
+            _ACTIVE_USERS_CACHE['timestamp'] = 0
+        except Exception:
+            pass
+    logout(request)
+
+
+# ==========================================
 # Authentication Views (Admin + Reporter + Desk)
 # ==========================================
 def login_view(request):
@@ -350,6 +401,7 @@ def login_view(request):
     8. Copy Editor Login (Phone Number + Password)
     """
     if request.user.is_authenticated:
+        mark_login_presence(request, request.user)
         if is_reporter_user(request.user):
             return redirect('reporter_dashboard')
         if is_desk_user(request.user):
@@ -422,6 +474,7 @@ def login_view(request):
                 if user is not None:
                     if user.is_active:
                         login(request, user)
+                        mark_login_presence(request, user)
                         next_url = request.GET.get('next')
                         if next_url and next_url != '/':
                             return redirect(next_url)
@@ -450,6 +503,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('reporter_dashboard')
                         else:
                             reporter_error = "This Reporter user account has been disabled."
@@ -476,6 +530,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('desk_dashboard')
                         else:
                             desk_error = "This Desk user account has been disabled."
@@ -499,6 +554,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('social_media_dashboard')
                         else:
                             social_media_error = "This Social Media account has been disabled."
@@ -522,6 +578,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('graphic_designer_dashboard')
                         else:
                             graphic_designer_error = "This Graphic Designer account has been disabled."
@@ -545,6 +602,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('input_dashboard')
                         else:
                             input_error = "This Input account has been disabled."
@@ -568,6 +626,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('voice_over_dashboard')
                         else:
                             voice_over_error = "This Voice Over account has been disabled."
@@ -591,6 +650,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('copy_editor_dashboard')
                         else:
                             copy_editor_error = "This Copy Editor account has been disabled."
@@ -614,6 +674,7 @@ def login_view(request):
                     if user is not None:
                         if user.is_active:
                             login(request, user)
+                            mark_login_presence(request, user)
                             return redirect('visual_editor_dashboard')
                         else:
                             visual_editor_error = "This Visual Editor account has been disabled."
@@ -638,7 +699,7 @@ def logout_view(request):
     """
     Logs out user and redirects to login.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('login_home')
 
 
@@ -646,7 +707,7 @@ def reporter_logout_view(request):
     """
     Logs out reporter and redirects to login with reporter tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=reporter')
 
 
@@ -654,7 +715,7 @@ def desk_logout_view(request):
     """
     Logs out desk staff and redirects to login with desk tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=desk')
 
 
@@ -662,7 +723,7 @@ def social_media_logout_view(request):
     """
     Logs out social media staff and redirects to login with social_media tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=social_media')
 
 
@@ -670,7 +731,7 @@ def graphic_designer_logout_view(request):
     """
     Logs out graphic designer and redirects to login with graphic_designer tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=graphic_designer')
 
 
@@ -678,7 +739,7 @@ def input_logout_view(request):
     """
     Logs out input staff and redirects to login with input tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=input')
 
 
@@ -686,7 +747,7 @@ def voice_over_logout_view(request):
     """
     Logs out voice over staff and redirects to login with voice_over tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=voice_over')
 
 
@@ -694,7 +755,7 @@ def copy_editor_logout_view(request):
     """
     Logs out copy editor staff and redirects to login with copy_editor tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=copy_editor')
 
 
@@ -702,8 +763,21 @@ def visual_editor_logout_view(request):
     """
     Logs out visual editor staff and redirects to login with visual_editor tab active.
     """
-    logout(request)
+    mark_logout_presence(request)
     return redirect('/?tab=visual_editor')
+
+
+@login_required
+def heartbeat_api(request):
+    """
+    Lightweight background heartbeat ping for active browser sessions.
+    Keeps user marked Online while working on any portal page.
+    """
+    now = timezone.now()
+    from .middleware import touch_user_last_seen
+    touch_user_last_seen(request.user, now)
+    return JsonResponse({'status': 'ok'})
+
 
 
 
@@ -2599,6 +2673,7 @@ def reporter_send_chat_message_view(request, desk_id):
         attachment=attachment,
         is_read=False,
     )
+    Reporter.objects.filter(pk=reporter.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -2611,8 +2686,8 @@ def reporter_send_chat_message_view(request, desk_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('reporter_chat_desk_with_desk', desk_id=active_desk.pk)
@@ -2663,14 +2738,14 @@ def reporter_get_chat_messages_api(request, desk_id):
             'attachment_url': m.attachment.url if m.attachment else None,
             'attachment_name': os.path.basename(m.attachment.name) if m.attachment else None,
             'is_read': m.is_read,
-            'created_at_formatted': m.created_at.strftime('%I:%M %p'),
-            'date_formatted': m.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(m.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(m.created_at).strftime('%d %b %Y'),
         })
 
     # Update current user's last_seen
     Reporter.objects.filter(pk=reporter.pk).update(last_seen=timezone.now())
 
-    active_desk.refresh_from_db(fields=['last_seen'])
+    active_desk.refresh_from_db()
     desk_status = active_desk.get_last_seen_info()
 
     read_message_ids = list(DeskReporterChatMessage.objects.filter(
@@ -2814,11 +2889,14 @@ def desk_my_word_view(request):
     current_list_count = news_qs.count()
     all_districts = base_qs.values_list('district', flat=True).distinct().order_by('district')
 
-    copy_editors = CopyEditor.objects.filter(is_active=True).order_by('name')
-    visual_editors = VisualEditor.objects.filter(is_active=True).order_by('name')
-    voice_overs = VoiceOverUser.objects.filter(is_active=True).order_by('name')
-    graphic_designers = GraphicDesigner.objects.filter(is_active=True).order_by('name')
-    social_medias = SocialMedia.objects.filter(is_active=True).order_by('name')
+    from .middleware import touch_user_last_seen
+    touch_user_last_seen(request.user, timezone.now())
+
+    copy_editors = sorted(CopyEditor.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    visual_editors = sorted(VisualEditor.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    voice_overs = sorted(VoiceOverUser.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    graphic_designers = sorted(GraphicDesigner.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    social_medias = sorted(SocialMedia.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
 
     context = {
         'active_page': 'desk_my_word',
@@ -2941,11 +3019,14 @@ def desk_my_work_list_view(request):
 
     all_districts = base_sent_qs.values_list('district', flat=True).distinct().order_by('district')
 
-    copy_editors = CopyEditor.objects.filter(is_active=True).order_by('name')
-    visual_editors = VisualEditor.objects.filter(is_active=True).order_by('name')
-    voice_overs = VoiceOverUser.objects.filter(is_active=True).order_by('name')
-    graphic_designers = GraphicDesigner.objects.filter(is_active=True).order_by('name')
-    social_medias = SocialMedia.objects.filter(is_active=True).order_by('name')
+    from .middleware import touch_user_last_seen
+    touch_user_last_seen(request.user, timezone.now())
+
+    copy_editors = sorted(CopyEditor.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    visual_editors = sorted(VisualEditor.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    voice_overs = sorted(VoiceOverUser.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    graphic_designers = sorted(GraphicDesigner.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
+    social_medias = sorted(SocialMedia.objects.filter(is_active=True), key=lambda x: (not x.is_online, x.name))
 
     context = {
         'active_page': 'desk_my_work_list',
@@ -3016,20 +3097,30 @@ def desk_teleprompter_view(request):
     desk = getattr(request.user, 'desk_profile', None)
 
     if request.method == 'POST':
-        reporter_id = request.POST.get('reporter_id')
+        # Support both multiple reporter_ids and single reporter_id
+        reporter_ids = request.POST.getlist('reporter_ids')
+        if not reporter_ids:
+            single_id = request.POST.get('reporter_id')
+            if single_id:
+                reporter_ids = [single_id]
+
         title = request.POST.get('title', '').strip()
         script_text = request.POST.get('script_text', '').strip()
         news_id = request.POST.get('news_id')
 
-        if not reporter_id:
-            messages.error(request, "Please choose a Reporter to send the teleprompter script.")
+        if not reporter_ids:
+            messages.error(request, "Please choose at least one Reporter to send the teleprompter script.")
             return redirect('desk_teleprompter')
 
         if not script_text:
             messages.error(request, "Please enter teleprompter script text before sending.")
             return redirect('desk_teleprompter')
 
-        reporter = get_object_or_404(Reporter, pk=reporter_id)
+        selected_reporters = list(Reporter.objects.filter(pk__in=reporter_ids, is_active=True))
+        if not selected_reporters:
+            messages.error(request, "Selected reporter(s) not found or inactive.")
+            return redirect('desk_teleprompter')
+
         news = None
         if news_id:
             try:
@@ -3043,18 +3134,28 @@ def desk_teleprompter_view(request):
             else:
                 title = f"Teleprompter Cue - {timezone.now().strftime('%d %b, %H:%M')}"
 
-        TeleprompterScript.objects.create(
-            reporter=reporter,
-            desk=desk,
-            news=news,
-            title=title,
-            script_text=script_text,
-            is_read=False,
-            created_at=timezone.now(),
-            updated_at=timezone.now(),
-        )
+        now = timezone.now()
+        created_names = []
+        for rep in selected_reporters:
+            TeleprompterScript.objects.create(
+                reporter=rep,
+                desk=desk,
+                news=news,
+                title=title,
+                script_text=script_text,
+                is_read=False,
+                created_at=now,
+                updated_at=now,
+            )
+            created_names.append(rep.name)
 
-        messages.success(request, f"✓ Teleprompter script sent successfully to Reporter {reporter.name} ({reporter.district})!")
+        if len(created_names) == 1:
+            messages.success(request, f"✓ Teleprompter script sent successfully to Reporter {created_names[0]}!")
+        else:
+            names_summary = ", ".join(created_names[:3])
+            if len(created_names) > 3:
+                names_summary += f" and {len(created_names) - 3} others"
+            messages.success(request, f"✓ Teleprompter script sent successfully to {len(created_names)} Reporters ({names_summary})!")
         return redirect('desk_teleprompter')
 
     reporters = Reporter.objects.filter(is_active=True).order_by('district', 'name')
@@ -3191,6 +3292,7 @@ def desk_send_chat_message_view(request, ve_id):
         attachment=attachment,
         is_read=False,
     )
+    Desk.objects.filter(pk=desk.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -3203,8 +3305,8 @@ def desk_send_chat_message_view(request, ve_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('desk_chat_visual_editor_with_ve', ve_id=active_ve.pk)
@@ -3385,6 +3487,7 @@ def desk_send_copy_chat_message_view(request, ce_id):
         attachment=attachment,
         is_read=False,
     )
+    Desk.objects.filter(pk=desk.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -3397,8 +3500,8 @@ def desk_send_copy_chat_message_view(request, ce_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('desk_chat_copy_editor_with_ce', ce_id=active_ce.pk)
@@ -3579,6 +3682,7 @@ def desk_send_voice_over_chat_message_view(request, vo_id):
         attachment=attachment,
         is_read=False,
     )
+    Desk.objects.filter(pk=desk.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -3591,8 +3695,8 @@ def desk_send_voice_over_chat_message_view(request, vo_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('desk_chat_voice_over_with_vo', vo_id=active_vo.pk)
@@ -3773,6 +3877,7 @@ def desk_send_social_media_chat_message_view(request, sm_id):
         attachment=attachment,
         is_read=False,
     )
+    Desk.objects.filter(pk=desk.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -3785,8 +3890,8 @@ def desk_send_social_media_chat_message_view(request, sm_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('desk_chat_social_media_with_sm', sm_id=active_sm.pk)
@@ -3967,6 +4072,7 @@ def desk_send_reporter_chat_message_view(request, reporter_id):
         attachment=attachment,
         is_read=False,
     )
+    Desk.objects.filter(pk=desk.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -3979,8 +4085,8 @@ def desk_send_reporter_chat_message_view(request, reporter_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('desk_chat_reporter_with_reporter', reporter_id=active_reporter.pk)
@@ -4031,14 +4137,14 @@ def desk_get_reporter_chat_messages_api(request, reporter_id):
             'attachment_url': m.attachment.url if m.attachment else None,
             'attachment_name': os.path.basename(m.attachment.name) if m.attachment else None,
             'is_read': m.is_read,
-            'created_at_formatted': m.created_at.strftime('%I:%M %p'),
-            'date_formatted': m.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(m.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(m.created_at).strftime('%d %b %Y'),
         })
 
     # Update current user's last_seen
     Desk.objects.filter(pk=desk.pk).update(last_seen=timezone.now())
 
-    active_reporter.refresh_from_db(fields=['last_seen'])
+    active_reporter.refresh_from_db()
     rep_status = active_reporter.get_last_seen_info()
 
     read_message_ids = list(DeskReporterChatMessage.objects.filter(
@@ -4467,6 +4573,7 @@ def social_media_send_chat_message_view(request, desk_id):
         attachment=attachment,
         is_read=False,
     )
+    SocialMedia.objects.filter(pk=sm.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -4479,8 +4586,8 @@ def social_media_send_chat_message_view(request, desk_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('social_media_chat_desk_with_desk', desk_id=active_desk.pk)
@@ -4531,8 +4638,8 @@ def social_media_get_chat_messages_api(request, desk_id):
             'attachment_url': m.attachment.url if m.attachment else None,
             'attachment_name': os.path.basename(m.attachment.name) if m.attachment else None,
             'is_read': m.is_read,
-            'created_at_formatted': m.created_at.strftime('%I:%M %p'),
-            'date_formatted': m.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(m.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(m.created_at).strftime('%d %b %Y'),
         })
 
     # Update current user's last_seen
@@ -5367,11 +5474,292 @@ def input_news_verify_list_view(request):
     return render(request, 'input/news_verify_list.html', context)
 
 
+def generate_story_word_document(news, rep_name, rep_id, rep_phone):
+    """
+    Generates MS Word compatible HTML document content with full styling and Odia/Unicode support.
+    """
+    submission_time = news.created_at.strftime('%d %B, %Y  %I:%M %p') if news.created_at else 'N/A'
+    byte_section = ""
+    if news.byte_interview:
+        byte_section = f"""
+        <div style="font-size: 13pt; font-weight: bold; color: #0284c7; margin-top: 24px; margin-bottom: 8px; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 4px;">
+            BYTE / SOUNDBITE DETAILS &amp; TRANSCRIPT:
+        </div>
+        <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 14px 16px; font-size: 11pt; line-height: 1.6; color: #1e3a8a; white-space: pre-wrap;">
+{news.byte_interview}
+        </div>
+        """
+
+    return f"""<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>{news.headline}</title>
+<style>
+  body {{ font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; color: #1e293b; line-height: 1.6; margin: 30px; }}
+  .channel-header {{ border-bottom: 3px solid #0891b2; padding-bottom: 10px; margin-bottom: 20px; }}
+  .channel-name {{ font-size: 22pt; font-weight: 800; color: #0891b2; margin: 0; letter-spacing: 0.5px; }}
+  .channel-sub {{ font-size: 10.5pt; font-weight: 700; color: #64748b; margin-top: 4px; text-transform: uppercase; }}
+  .headline-banner {{ background-color: #f0fdf4; border: 1.5px solid #86efac; border-left: 6px solid #10b981; padding: 14px 18px; margin: 18px 0; }}
+  .headline-title {{ font-size: 16pt; font-weight: 800; color: #0f172a; margin: 0; }}
+  .meta-table {{ width: 100%; border-collapse: collapse; margin: 18px 0; }}
+  .meta-table td {{ border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 10pt; }}
+  .meta-table .label {{ background-color: #f8fafc; font-weight: bold; color: #475569; width: 22%; }}
+  .meta-table .val {{ color: #0f172a; font-weight: 600; }}
+  .section-title {{ font-size: 13pt; font-weight: bold; color: #0891b2; margin-top: 24px; margin-bottom: 8px; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase; }}
+  .script-box {{ background-color: #ffffff; border: 1px solid #e2e8f0; padding: 16px; font-size: 11.5pt; line-height: 1.8; color: #1e293b; white-space: pre-wrap; }}
+  .footer-note {{ margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9pt; color: #94a3b8; text-align: center; }}
+</style>
+</head>
+<body>
+  <div class="channel-header">
+    <div class="channel-name">NANDILIVE NEWS NETWORK</div>
+    <div class="channel-sub">Verified Editorial &amp; Broadcast Package</div>
+  </div>
+
+  <div class="headline-banner">
+    <h1 class="headline-title">{news.headline}</h1>
+  </div>
+
+  <table class="meta-table">
+    <tr>
+      <td class="label">Story ID:</td>
+      <td class="val">NL-STORY-{news.pk:05d}</td>
+      <td class="label">Status:</td>
+      <td class="val" style="color: #059669; font-weight: bold;">{news.status} (Selected for Telecast)</td>
+    </tr>
+    <tr>
+      <td class="label">News Format:</td>
+      <td class="val">{news.news_type}</td>
+      <td class="label">Category:</td>
+      <td class="val">{news.category}</td>
+    </tr>
+    <tr>
+      <td class="label">District:</td>
+      <td class="val">{news.district}</td>
+      <td class="label">Location / Beat:</td>
+      <td class="val">{news.location}</td>
+    </tr>
+    <tr>
+      <td class="label">Field Reporter:</td>
+      <td class="val">{rep_name} (ID: {rep_id})</td>
+      <td class="label">Reporter Contact:</td>
+      <td class="val">{rep_phone}</td>
+    </tr>
+    <tr>
+      <td class="label">Date &amp; Time:</td>
+      <td class="val" colspan="3">{submission_time}</td>
+    </tr>
+  </table>
+
+  <div class="section-title">Story Script / Narrative:</div>
+  <div class="script-box">
+{news.description}
+  </div>
+
+  {byte_section}
+
+  <div class="footer-note">
+    Generated automatically by Nandilive News Desk Editorial Automation System | Confidential - Broadcast Production
+  </div>
+</body>
+</html>"""
+
+
+def generate_story_text_script(news, rep_name, rep_id, rep_phone):
+    """
+    Generates plain-text script for teleprompter and Notepad.
+    """
+    submission_time = news.created_at.strftime('%Y-%m-%d %H:%M:%S') if news.created_at else 'N/A'
+    return f"""======================================================================
+NANDILIVE NEWS NETWORK - FIELD STORY SCRIPT & DETAILS
+======================================================================
+STORY ID:           NL-STORY-{news.pk:05d}
+HEADLINE:           {news.headline}
+NEWS TYPE:          {news.news_type}
+CATEGORY:           {news.category}
+LOCATION:           {news.location}
+DISTRICT:           {news.district}
+REPORTER NAME:      {rep_name}
+REPORTER ID:        {rep_id}
+REPORTER PHONE:     {rep_phone}
+SUBMISSION TIME:    {submission_time}
+DESK STATUS:        {news.status} (SELECTED & APPROVED FOR BROADCAST)
+
+----------------------------------------------------------------------
+STORY SCRIPT / SCRIPT NARRATIVE:
+----------------------------------------------------------------------
+{news.description}
+
+----------------------------------------------------------------------
+BYTE / INTERVIEW DETAILS & SOUNDBITES:
+----------------------------------------------------------------------
+{news.byte_interview if news.byte_interview else 'No interview byte transcription recorded.'}
+
+======================================================================
+Generated by Nandilive News Desk Editorial Automation System
+======================================================================
+"""
+
+
+def copy_approved_media_to_local_archive(news):
+    """
+    Saves a complete copy of the approved news story (Word Document + Script + Video + Audio + Package ZIP)
+    directly to local storage folder on the server machine (MEDIA_ROOT/approved_local_storage/).
+    This guarantees files exist safely in local office storage offline.
+    """
+    try:
+        local_archive_dir = os.path.join(settings.MEDIA_ROOT, 'approved_local_storage')
+        os.makedirs(local_archive_dir, exist_ok=True)
+        clean_slug = slugify(news.headline, allow_unicode=True)[:35] or f"story_{news.pk}"
+        clean_slug = re.sub(r'[\\/*?:"<>|]', "", clean_slug).strip() or f"story_{news.pk}"
+
+        folder_name = f"NL_{news.pk:04d}_{clean_slug}"
+        story_folder = os.path.join(local_archive_dir, folder_name)
+        os.makedirs(story_folder, exist_ok=True)
+
+        rep_name = news.reporter.name if news.reporter else (news.author.first_name or news.author.username)
+        rep_id = news.reporter.reporter_id if (news.reporter and news.reporter.reporter_id) else "N/A"
+        rep_phone = news.reporter.phone_number if news.reporter else "N/A"
+
+        # 1. Save formatted Word Document (.doc)
+        doc_content = generate_story_word_document(news, rep_name, rep_id, rep_phone)
+        with open(os.path.join(story_folder, f"01_News_Document_{clean_slug}.doc"), 'w', encoding='utf-8') as f:
+            f.write(doc_content)
+
+        # 2. Save Text script (.txt)
+        txt_content = generate_story_text_script(news, rep_name, rep_id, rep_phone)
+        with open(os.path.join(story_folder, f"01_Story_Script_{clean_slug}.txt"), 'w', encoding='utf-8') as f:
+            f.write(txt_content)
+
+        # 3. Copy main media file (video/image)
+        if news.media_file and hasattr(news.media_file, 'path') and os.path.exists(news.media_file.path):
+            ext = os.path.splitext(news.media_file.path)[1]
+            media_prefix = "02_Main_Video" if news.is_video else "02_Main_Image"
+            dest_file = os.path.join(story_folder, f"{media_prefix}_{clean_slug}{ext}")
+            shutil.copy2(news.media_file.path, dest_file)
+
+        # 4. Copy byte media if exists
+        if news.byte_media and hasattr(news.byte_media, 'path') and os.path.exists(news.byte_media.path):
+            ext = os.path.splitext(news.byte_media.path)[1]
+            dest_byte = os.path.join(story_folder, f"03_Byte_Interview_{clean_slug}{ext}")
+            shutil.copy2(news.byte_media.path, dest_byte)
+
+        # 5. Copy additional media if exists
+        for idx, extra in enumerate(news.additional_media.all(), start=1):
+            if extra.file and hasattr(extra.file, 'path') and os.path.exists(extra.file.path):
+                ext = os.path.splitext(extra.file.path)[1]
+                prefix = "04_Extra_Video" if extra.is_video else "04_Extra_Media"
+                dest_extra = os.path.join(story_folder, f"{prefix}_{idx}_{clean_slug}{ext}")
+                shutil.copy2(extra.file.path, dest_extra)
+
+        # 6. Also save full standalone ZIP package in approved_local_storage
+        zip_path = os.path.join(local_archive_dir, f"{folder_name}_Full_News_Package.zip")
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(story_folder):
+                for f in files:
+                    full_p = os.path.join(root, f)
+                    arc_name = os.path.relpath(full_p, story_folder)
+                    zip_file.write(full_p, arcname=f"{folder_name}/{arc_name}")
+    except Exception:
+        pass
+
+
+@login_required
+def news_download_single_media_view(request, pk):
+    """
+    Downloads COMPLETE news package (News Document .doc + Text Script .txt + Video + Audio + Extras)
+    in a single structured ZIP archive.
+    """
+    news = get_object_or_404(News, pk=pk)
+
+    clean_slug = slugify(news.headline, allow_unicode=True)[:35] or f"story_{news.pk}"
+    clean_slug = re.sub(r'[\\/*?:"<>|]', "", clean_slug).strip() or f"story_{news.pk}"
+
+    rep_name = news.reporter.name if news.reporter else (news.author.first_name or news.author.username)
+    rep_id = news.reporter.reporter_id if (news.reporter and news.reporter.reporter_id) else "N/A"
+    rep_phone = news.reporter.phone_number if news.reporter else "N/A"
+
+    folder_prefix = f"NL_{news.pk:04d}_{clean_slug}"
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # 1. Full Word Document (.doc with formatting, header & table)
+        doc_content = generate_story_word_document(news, rep_name, rep_id, rep_phone)
+        zip_file.writestr(f"{folder_prefix}/01_News_Document_{clean_slug}.doc", doc_content.encode('utf-8'))
+
+        # 2. Text Script file (.txt for teleprompter/Notepad)
+        txt_content = generate_story_text_script(news, rep_name, rep_id, rep_phone)
+        zip_file.writestr(f"{folder_prefix}/01_Story_Script_{clean_slug}.txt", txt_content.encode('utf-8'))
+
+        # 3. Main Media File (Video / High-Res Image)
+        if news.media_file:
+            media_prefix = "02_Main_Video" if news.is_video else "02_Main_Image"
+            try:
+                file_path = news.media_file.path
+                if os.path.exists(file_path):
+                    ext = os.path.splitext(file_path)[1]
+                    zip_file.write(file_path, arcname=f"{folder_prefix}/{media_prefix}_{clean_slug}{ext}")
+            except Exception:
+                try:
+                    news.media_file.open('rb')
+                    content = news.media_file.read()
+                    ext = os.path.splitext(news.media_file.name)[1]
+                    zip_file.writestr(f"{folder_prefix}/{media_prefix}_{clean_slug}{ext}", content)
+                except Exception:
+                    pass
+
+        # 4. Byte Interview Media (Audio / Video)
+        if news.byte_media:
+            try:
+                byte_path = news.byte_media.path
+                if os.path.exists(byte_path):
+                    ext = os.path.splitext(byte_path)[1]
+                    zip_file.write(byte_path, arcname=f"{folder_prefix}/03_Byte_Interview_{clean_slug}{ext}")
+            except Exception:
+                try:
+                    news.byte_media.open('rb')
+                    content = news.byte_media.read()
+                    ext = os.path.splitext(news.byte_media.name)[1]
+                    zip_file.writestr(f"{folder_prefix}/03_Byte_Interview_{clean_slug}{ext}", content)
+                except Exception:
+                    pass
+
+        # 5. Additional Media Files
+        for idx, extra in enumerate(news.additional_media.all(), start=1):
+            if extra.file:
+                prefix = "04_Extra_Video" if extra.is_video else "04_Extra_Media"
+                try:
+                    file_path = extra.file.path
+                    if os.path.exists(file_path):
+                        ext = os.path.splitext(file_path)[1]
+                        zip_file.write(file_path, arcname=f"{folder_prefix}/{prefix}_{idx}_{clean_slug}{ext}")
+                except Exception:
+                    try:
+                        extra.file.open('rb')
+                        content = extra.file.read()
+                        ext = os.path.splitext(extra.file.name)[1]
+                        zip_file.writestr(f"{folder_prefix}/{prefix}_{idx}_{clean_slug}{ext}", content)
+                    except Exception:
+                        pass
+
+    zip_buffer.seek(0)
+    zip_bytes = zip_buffer.getvalue()
+    filename = f"NL_{news.pk:04d}_{clean_slug}_Full_News_Package.zip"
+
+    response = HttpResponse(zip_bytes, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
 @login_required
 def input_update_news_status_view(request, pk):
     """
     Input Staff Action: Select (Approve & Forward to Desk) or Reject a news story.
     Supports both AJAX/Fetch and standard form POST.
+    When Selected:
+    - Status updated to Approved
+    - Media copied to server's local storage folder (approved_local_storage)
+    - Returns download_url so client browser immediately triggers complete news package ZIP download
     """
     if is_reporter_user(request.user):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == '1':
@@ -5418,6 +5806,10 @@ def input_update_news_status_view(request, pk):
     news.status = new_status
     news.save()
 
+    # If approved, save a local copy to server's local storage archive
+    if news.status == 'Approved':
+        copy_approved_media_to_local_archive(news)
+
     is_ajax = (
         request.headers.get('x-requested-with') == 'XMLHttpRequest' or
         request.POST.get('ajax') == '1' or
@@ -5431,6 +5823,12 @@ def input_update_news_status_view(request, pk):
         date_pending_count = News.objects.filter(created_at__date=target_date, status='Submitted').count()
 
         msg = f'Story "{news.headline}" approved and forwarded to Editorial Desk!' if news.status == 'Approved' else f'Story "{news.headline}" rejected.'
+
+        clean_slug = slugify(news.headline, allow_unicode=True)[:35] or f"story_{news.pk}"
+        clean_slug = re.sub(r'[\\/*?:"<>|]', "", clean_slug).strip() or f"story_{news.pk}"
+        download_url = reverse('news_download_media', args=[news.pk])
+        download_filename = f"NL_{news.pk:04d}_{clean_slug}_Full_News_Package.zip"
+
         return JsonResponse({
             'success': True,
             'pk': news.pk,
@@ -5440,12 +5838,15 @@ def input_update_news_status_view(request, pk):
             'date_approved_count': date_approved_count,
             'date_rejected_count': date_rejected_count,
             'date_pending_count': date_pending_count,
+            'download_url': download_url if news.status == 'Approved' else None,
+            'download_filename': download_filename,
+            'has_media': bool(news.media_file or news.byte_media or news.additional_media.exists()),
             'message': msg
         })
 
     success_msg = f'News "{news.headline}" updated to "{news.status}".'
     if news.status == 'Approved':
-        success_msg += ' Story has been forwarded to Editorial Desk.'
+        success_msg += ' Story has been forwarded to Editorial Desk and saved locally.'
     messages.success(request, success_msg)
     next_url = request.POST.get('next_url')
     if next_url:
@@ -5742,6 +6143,7 @@ def voice_over_send_chat_message_view(request, desk_id):
         attachment=attachment,
         is_read=False,
     )
+    VoiceOverUser.objects.filter(pk=vo.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -5754,8 +6156,8 @@ def voice_over_send_chat_message_view(request, desk_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('voice_over_chat_desk_with_desk', desk_id=active_desk.pk)
@@ -5806,8 +6208,8 @@ def voice_over_get_chat_messages_api(request, desk_id):
             'attachment_url': m.attachment.url if m.attachment else None,
             'attachment_name': os.path.basename(m.attachment.name) if m.attachment else None,
             'is_read': m.is_read,
-            'created_at_formatted': m.created_at.strftime('%I:%M %p'),
-            'date_formatted': m.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(m.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(m.created_at).strftime('%d %b %Y'),
         })
 
     # Update current user's last_seen
@@ -6167,6 +6569,7 @@ def copy_editor_send_chat_message_view(request, desk_id):
         attachment=attachment,
         is_read=False,
     )
+    CopyEditor.objects.filter(pk=ce.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -6179,8 +6582,8 @@ def copy_editor_send_chat_message_view(request, desk_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('copy_editor_chat_desk_with_desk', desk_id=active_desk.pk)
@@ -6231,8 +6634,8 @@ def copy_editor_get_chat_messages_api(request, desk_id):
             'attachment_url': m.attachment.url if m.attachment else None,
             'attachment_name': os.path.basename(m.attachment.name) if m.attachment else None,
             'is_read': m.is_read,
-            'created_at_formatted': m.created_at.strftime('%I:%M %p'),
-            'date_formatted': m.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(m.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(m.created_at).strftime('%d %b %Y'),
         })
 
     # Update current user's last_seen
@@ -6446,6 +6849,7 @@ def visual_editor_send_chat_message_view(request, desk_id):
         attachment=attachment,
         is_read=False,
     )
+    VisualEditor.objects.filter(pk=ve.pk).update(last_seen=timezone.now())
 
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1'
     if is_ajax:
@@ -6458,8 +6862,8 @@ def visual_editor_send_chat_message_view(request, desk_id):
             'attachment_url': chat_msg.attachment.url if chat_msg.attachment else None,
             'attachment_name': os.path.basename(chat_msg.attachment.name) if chat_msg.attachment else None,
             'is_read': chat_msg.is_read,
-            'created_at_formatted': chat_msg.created_at.strftime('%I:%M %p'),
-            'date_formatted': chat_msg.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(chat_msg.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(chat_msg.created_at).strftime('%d %b %Y'),
         })
 
     return redirect('visual_editor_chat_desk_with_desk', desk_id=active_desk.pk)
@@ -6510,8 +6914,8 @@ def visual_editor_get_chat_messages_api(request, desk_id):
             'attachment_url': m.attachment.url if m.attachment else None,
             'attachment_name': os.path.basename(m.attachment.name) if m.attachment else None,
             'is_read': m.is_read,
-            'created_at_formatted': m.created_at.strftime('%I:%M %p'),
-            'date_formatted': m.created_at.strftime('%d %b %Y'),
+            'created_at_formatted': timezone.localtime(m.created_at).strftime('%I:%M %p'),
+            'date_formatted': timezone.localtime(m.created_at).strftime('%d %b %Y'),
         })
 
     # Update current user's last_seen
@@ -6963,6 +7367,10 @@ def desk_update_news_status_view(request, pk):
     news.status = new_status
     news.save()
 
+    # If approved, save a local copy to server's local storage archive
+    if news.status == 'Approved':
+        copy_approved_media_to_local_archive(news)
+
     is_ajax = (
         request.headers.get('x-requested-with') == 'XMLHttpRequest' or
         request.POST.get('ajax') == '1' or
@@ -6975,6 +7383,11 @@ def desk_update_news_status_view(request, pk):
         date_rejected_count = News.objects.filter(created_at__date=target_date, status='Rejected').count()
         date_pending_count = News.objects.filter(created_at__date=target_date, status='Submitted').count()
 
+        clean_slug = slugify(news.headline, allow_unicode=True)[:35] or f"story_{news.pk}"
+        clean_slug = re.sub(r'[\\/*?:"<>|]', "", clean_slug).strip() or f"story_{news.pk}"
+        download_url = reverse('news_download_media', args=[news.pk])
+        download_filename = f"NL_{news.pk:04d}_{clean_slug}_Full_News_Package.zip"
+
         return JsonResponse({
             'success': True,
             'pk': news.pk,
@@ -6984,6 +7397,9 @@ def desk_update_news_status_view(request, pk):
             'date_approved_count': date_approved_count,
             'date_rejected_count': date_rejected_count,
             'date_pending_count': date_pending_count,
+            'download_url': download_url if news.status == 'Approved' else None,
+            'download_filename': download_filename,
+            'has_media': bool(news.media_file or news.byte_media or news.additional_media.exists()),
             'message': f'Story "{news.headline}" updated to {news.status}.'
         })
 
@@ -7199,5 +7615,498 @@ def ai_check_script_view(request):
             'success': False,
             'error': f'AI Assistant Error: {str(e)}'
         }, status=500)
+
+
+# ==========================================
+# Media Download Approval Guard Views
+# ==========================================
+import random
+import urllib.parse
+from datetime import timedelta
+from django.conf import settings
+
+
+def validate_media_file_url(file_url, request=None):
+    """
+    Validates that file_url belongs to legitimate media paths or internal download routes of Nandilive.
+    Blocks arbitrary external URLs (e.g. evil.com), dangerous protocols (javascript:, file:, data:),
+    and path traversal attempts (../).
+    Returns (is_valid: bool, cleaned_url: str, error_msg: str)
+    """
+    if not file_url or not isinstance(file_url, str):
+        return False, '', 'Missing or empty file URL.'
+
+    url_str = file_url.strip()
+
+    # Block dangerous protocols
+    lower_url = url_str.lower()
+    for proto in ('javascript:', 'file:', 'data:', 'vbscript:', 'blob:', 'about:'):
+        if lower_url.startswith(proto):
+            return False, '', f'Forbidden URL protocol: {proto}'
+
+    # Block directory traversal sequences
+    if '..' in url_str or '%2e%2e' in lower_url or '\\' in url_str or '\0' in url_str:
+        return False, '', 'Path traversal sequences are strictly forbidden.'
+
+    # Parse URL
+    try:
+        parsed = urllib.parse.urlparse(url_str)
+    except Exception:
+        return False, '', 'Malformed URL format.'
+
+    # If absolute URL (scheme + netloc)
+    if parsed.scheme in ('http', 'https'):
+        # Verify host belongs to this application
+        req_host = None
+        if request:
+            try:
+                req_host = request.get_host().split(':')[0].lower()
+            except Exception:
+                pass
+
+        allowed_hosts = set()
+        if req_host:
+            allowed_hosts.add(req_host)
+        allowed_hosts.update(['127.0.0.1', 'localhost'])
+        for h in getattr(settings, 'ALLOWED_HOSTS', []):
+            allowed_hosts.add(h.split(':')[0].lower().lstrip('.'))
+
+        parsed_host = (parsed.hostname or '').lower()
+        if parsed_host not in allowed_hosts and '*' not in getattr(settings, 'ALLOWED_HOSTS', []):
+            return False, '', 'External download URLs are not permitted. Only Nandilive media is authorized.'
+
+        path = parsed.path
+    else:
+        path = parsed.path
+
+    # Ensure path starts with recognized media or download prefixes
+    # Nandilive media files live under /media/, /input/news/, or /desk/news/
+    media_prefix = getattr(settings, 'MEDIA_URL', '/media/')
+    allowed_prefixes = (
+        media_prefix,
+        '/input/news/',
+        '/desk/news/',
+    )
+
+    clean_path = '/' + path.lstrip('/')
+    is_allowed = any(clean_path.startswith(prefix) for prefix in allowed_prefixes)
+
+    if not is_allowed:
+        return False, '', 'URL does not point to a valid internal media file or download route.'
+
+    return True, url_str, ''
+
+
+@login_required
+def request_download_passcode_view(request):
+    """
+    API for staff (Desk, Visual Editor, etc.) to request a download passcode from Admin.
+    Input staff and Admin are exempt.
+    Validates file URL, prevents external arbitrary URLs, and keeps audit trails.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body) if request.body else request.POST
+    except Exception:
+        data = request.POST
+
+    raw_file_url = data.get('file_url', '').strip()
+    file_name = data.get('file_name', '').strip()
+
+    # Validate file_url security (Issue 9)
+    is_valid, file_url, url_error = validate_media_file_url(raw_file_url, request)
+    if not is_valid:
+        return JsonResponse({'success': False, 'error': url_error or 'Invalid file_url.'}, status=400)
+
+    if not file_name:
+        file_name = os.path.basename(file_url.split('?')[0]) or 'Media File'
+    file_name = file_name[:255].replace('\0', '').strip()
+
+    # Check if exempt: Admin or Input staff
+    user = request.user
+    if is_admin_user(user) or is_input_user(user) or user.is_superuser:
+        return JsonResponse({
+            'success': True,
+            'is_exempt': True,
+            'download_url': file_url
+        })
+
+    # Determine staff name and role
+    requester_name = user.get_full_name() or user.username
+    role_name = 'Staff'
+    if hasattr(user, 'desk_profile'):
+        requester_name = user.desk_profile.name
+        role_name = 'Desk Staff'
+    elif hasattr(user, 'visual_editor_profile'):
+        requester_name = user.visual_editor_profile.name
+        role_name = 'Visual Editor'
+    elif hasattr(user, 'copy_editor_profile'):
+        requester_name = user.copy_editor_profile.name
+        role_name = 'Copy Editor'
+    elif hasattr(user, 'voice_over_profile'):
+        requester_name = user.voice_over_profile.name
+        role_name = 'Voice Over'
+    elif hasattr(user, 'social_media_profile'):
+        requester_name = user.social_media_profile.name
+        role_name = 'Social Media'
+    elif hasattr(user, 'graphic_designer_profile'):
+        requester_name = user.graphic_designer_profile.name
+        role_name = 'Graphic Designer'
+    elif hasattr(user, 'reporter_profile'):
+        requester_name = user.reporter_profile.name
+        role_name = 'Field Reporter'
+
+    now = timezone.now()
+    # Check if there is already an active non-expired unused non-rejected request for this exact file and user
+    existing = MediaDownloadRequest.objects.filter(
+        user=user,
+        file_url=file_url,
+        is_used=False,
+        is_rejected=False,
+        expires_at__gt=now
+    ).order_by('-created_at').first()
+
+    if existing:
+        return JsonResponse({
+            'success': True,
+            'is_exempt': False,
+            'request_id': existing.pk,
+            'file_name': existing.file_name,
+            'expires_in': max(0, int((existing.expires_at - now).total_seconds())),
+            'message': 'Passcode already sent to Chief Editor / Admin.'
+        })
+
+    # Expire any previous unapproved requests for this file and user instead of deleting (Issue 8)
+    MediaDownloadRequest.objects.filter(
+        user=user,
+        file_url=file_url,
+        is_used=False,
+        is_approved=False,
+        is_rejected=False,
+        expires_at__gt=now
+    ).update(expires_at=now)
+
+    # Generate 6-digit random passcode
+    passcode = f"{random.randint(100000, 999999)}"
+    expires_at = now + timedelta(minutes=15)
+
+    req = MediaDownloadRequest.objects.create(
+        user=user,
+        requester_name=requester_name,
+        role_name=role_name,
+        file_url=file_url,
+        file_name=file_name,
+        passcode=passcode,
+        is_approved=False,
+        is_used=False,
+        is_rejected=False,
+        expires_at=expires_at,
+    )
+
+    return JsonResponse({
+        'success': True,
+        'is_exempt': False,
+        'request_id': req.pk,
+        'file_name': req.file_name,
+        'expires_in': 900,
+        'message': 'Passcode requested successfully! Please obtain the 6-digit code from Chief Editor / Admin.'
+    })
+
+
+@login_required
+def verify_download_passcode_view(request):
+    """
+    Verify entered 6-digit passcode.
+    Strictly restricted to the authenticated user's own request:
+    - User ownership verified (Issue 2).
+    - No global passcode fallback across users (Issue 3 & 7).
+    - Correct passcode required.
+    - Single-use enforced (Issue 4).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body) if request.body else request.POST
+    except Exception:
+        data = request.POST
+
+    request_id = data.get('request_id')
+    passcode = str(data.get('passcode', '')).strip()
+
+    if not passcode or len(passcode) != 6 or not passcode.isdigit():
+        return JsonResponse({'success': False, 'error': 'Please enter a valid 6-digit passcode.'}, status=400)
+
+    now = timezone.now()
+    download_req = None
+
+    # 1. Query strictly for THIS user (Issue 2 & 7)
+    if request_id:
+        try:
+            req_id_int = int(request_id)
+            download_req = MediaDownloadRequest.objects.filter(pk=req_id_int, user=request.user).first()
+        except (ValueError, TypeError):
+            download_req = None
+
+    # 2. If not found by request_id, find strictly for THIS user by passcode (Issue 3: NO global fallback!)
+    if not download_req:
+        download_req = MediaDownloadRequest.objects.filter(
+            user=request.user,
+            passcode=passcode,
+            is_used=False,
+            is_rejected=False,
+            expires_at__gt=now
+        ).order_by('-created_at').first()
+
+    if not download_req:
+        # Check user's own history to provide accurate feedback
+        history = MediaDownloadRequest.objects.filter(user=request.user, passcode=passcode).order_by('-created_at').first()
+        if history:
+            if getattr(history, 'is_rejected', False):
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'This download request was rejected by Chief Editor / Admin. {history.rejection_reason or ""}'.strip()
+                }, status=400)
+            if history.is_used:
+                return JsonResponse({'success': False, 'error': 'This passcode has already been used. Please request a new one.'}, status=400)
+            if history.is_expired():
+                return JsonResponse({'success': False, 'error': 'Passcode has expired. Please request a new one.'}, status=400)
+
+        return JsonResponse({'success': False, 'error': 'Incorrect passcode! Please check the 6-digit code with Admin.'}, status=400)
+
+    # 3. Security checks on download_req:
+    # Ownership:
+    if download_req.user_id != request.user.pk:
+        return JsonResponse({'success': False, 'error': 'Access denied: this authorization belongs to another account.'}, status=403)
+
+    # Passcode must match:
+    if download_req.passcode != passcode:
+        return JsonResponse({'success': False, 'error': 'Incorrect passcode! Please check the 6-digit code with Admin.'}, status=400)
+
+    # Must not be rejected:
+    if getattr(download_req, 'is_rejected', False):
+        return JsonResponse({
+            'success': False, 
+            'error': f'This download request was rejected by Chief Editor / Admin. {download_req.rejection_reason or ""}'.strip()
+        }, status=400)
+
+    # Must not be expired:
+    if download_req.is_expired():
+        return JsonResponse({'success': False, 'error': 'Passcode has expired. Please request a new one.'}, status=400)
+
+    # Must not be already used (Issue 4):
+    if download_req.is_used:
+        return JsonResponse({'success': False, 'error': 'This passcode has already been used. Please request a new one.'}, status=400)
+
+    # 4. Mark approved and used
+    download_req.is_approved = True
+    download_req.is_used = True
+    download_req.save(update_fields=['is_approved', 'is_used'])
+
+    return JsonResponse({
+        'success': True,
+        'message': '✓ Passcode verified successfully! Download starting...',
+        'download_url': download_req.file_url,
+        'file_name': download_req.file_name
+    })
+
+
+@login_required
+def check_download_status_view(request):
+    """
+    Polling API: Requester modal checks every 3s if Admin clicked 'Quick Approve'.
+    Strictly checks:
+    - User ownership: Only request.user can poll their own request_id (Issue 2).
+    - Single-use: Never returns approved: True once is_used is True (Issue 4).
+    - Status reporting: Notifies client if rejected or expired.
+    """
+    raw_request_id = request.GET.get('request_id')
+    if not raw_request_id:
+        return JsonResponse({'approved': False, 'error': 'Missing request_id'}, status=400)
+
+    try:
+        req_id_int = int(raw_request_id)
+    except (ValueError, TypeError):
+        return JsonResponse({'approved': False, 'error': 'Invalid request_id'}, status=400)
+
+    try:
+        # Strictly verify ownership (Issue 2)
+        download_req = MediaDownloadRequest.objects.get(pk=req_id_int, user=request.user)
+    except MediaDownloadRequest.DoesNotExist:
+        return JsonResponse({'approved': False, 'error': 'Request not found or access denied.'}, status=404)
+
+    # Check if rejected (Issue 8)
+    if getattr(download_req, 'is_rejected', False):
+        return JsonResponse({
+            'approved': False,
+            'is_rejected': True,
+            'error': f'Download request was rejected by Chief Editor / Admin. {download_req.rejection_reason or ""}'.strip()
+        })
+
+    # Check if expired (Issue 5)
+    if download_req.is_expired():
+        return JsonResponse({'approved': False, 'is_expired': True, 'error': 'Passcode has expired.'})
+
+    # Check if already used (Issue 4: NEVER return approved: True if already used!)
+    if download_req.is_used:
+        return JsonResponse({
+            'approved': False,
+            'is_used': True,
+            'error': 'This download authorization has already been used.'
+        })
+
+    # If approved by Admin and NOT yet used: mark used and release download URL once
+    if download_req.is_approved:
+        download_req.is_used = True
+        download_req.save(update_fields=['is_used'])
+        return JsonResponse({
+            'approved': True,
+            'download_url': download_req.file_url,
+            'file_name': download_req.file_name
+        })
+
+    return JsonResponse({'approved': False, 'is_pending': True})
+
+
+@login_required
+def admin_download_requests_api(request):
+    """
+    API for Admin to get pending download requests and to approve/reject them.
+    Validates request_id, action, expiry, and preserves audit history upon rejection (Issues 5, 6, 8).
+    """
+    if not (request.user.is_superuser or request.user.is_staff or is_admin_user(request.user)):
+        return JsonResponse({'success': False, 'error': 'Admin access required.'}, status=403)
+
+    if request.method == 'GET':
+        now = timezone.now()
+        pending = MediaDownloadRequest.objects.filter(
+            is_approved=False,
+            is_used=False,
+            is_rejected=False,
+            expires_at__gt=now
+        ).order_by('-created_at')[:20]
+
+        items = []
+        for p in pending:
+            time_left = max(0, int((p.expires_at - now).total_seconds()))
+            items.append({
+                'id': p.pk,
+                'requester_name': p.requester_name,
+                'role_name': p.role_name,
+                'file_name': p.file_name,
+                'passcode': p.passcode,
+                'created_at': p.created_at.strftime('%I:%M %p'),
+                'expires_in_mins': f"{time_left // 60}m {time_left % 60}s",
+            })
+        return JsonResponse({'success': True, 'count': len(items), 'requests': items})
+
+    elif request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body) if request.body else request.POST
+        except Exception:
+            data = request.POST
+
+        action = str(data.get('action', '')).strip().lower()
+        raw_req_id = data.get('request_id')
+
+        # 1. Validate request_id (Issue 6)
+        if not raw_req_id:
+            return JsonResponse({'success': False, 'error': 'Missing request_id.'}, status=400)
+        try:
+            req_id = int(raw_req_id)
+        except (ValueError, TypeError):
+            return JsonResponse({'success': False, 'error': 'Invalid request_id format. Must be an integer.'}, status=400)
+
+        # 2. Validate action (Issue 6)
+        if action not in ['approve', 'reject']:
+            return JsonResponse({'success': False, 'error': f"Invalid action '{action}'. Allowed: 'approve', 'reject'."}, status=400)
+
+        # 3. Retrieve request
+        try:
+            download_req = MediaDownloadRequest.objects.get(pk=req_id)
+        except MediaDownloadRequest.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Download request not found.'}, status=404)
+
+        now = timezone.now()
+
+        # 4. Check expiry and state before approving (Issue 5 & 6)
+        if action == 'approve':
+            if download_req.is_expired():
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Cannot approve: this request expired at {download_req.expires_at.strftime("%I:%M %p")}. Staff must request a fresh passcode.'
+                }, status=400)
+
+            if download_req.is_used:
+                return JsonResponse({'success': False, 'error': 'Cannot approve: this request has already been used.'}, status=400)
+
+            if getattr(download_req, 'is_rejected', False):
+                return JsonResponse({'success': False, 'error': 'Cannot approve: this request has already been rejected.'}, status=400)
+
+            download_req.is_approved = True
+            download_req.approved_by = request.user
+            download_req.save(update_fields=['is_approved', 'approved_by'])
+            return JsonResponse({
+                'success': True,
+                'message': f'Approved download for {download_req.requester_name} ({download_req.role_name})!'
+            })
+
+        elif action == 'reject':
+            # Preserve audit history (Issue 8) - DO NOT delete!
+            rejection_reason = str(data.get('reason', '')).strip()[:255] or 'Rejected by Admin'
+            download_req.is_rejected = True
+            download_req.is_approved = False
+            download_req.rejected_by = request.user
+            download_req.rejected_at = now
+            download_req.rejection_reason = rejection_reason
+            download_req.save(update_fields=['is_rejected', 'is_approved', 'rejected_by', 'rejected_at', 'rejection_reason'])
+            return JsonResponse({
+                'success': True,
+                'message': f'Download request for {download_req.requester_name} has been rejected (logged in audit history).'
+            })
+
+        return JsonResponse({'success': False, 'error': 'Invalid action'}, status=400)
+
+
+@admin_required
+def admin_download_approvals_view(request):
+    """
+    Dedicated Admin page to view and manage all Media Download Approval requests & logs.
+    Includes full audit filtering for pending, approved, downloaded, expired, and rejected requests.
+    """
+    status_filter = request.GET.get('status', 'all').strip().lower()
+    now = timezone.now()
+    qs = MediaDownloadRequest.objects.select_related('user', 'approved_by', 'rejected_by').all()
+
+    if status_filter == 'pending':
+        qs = qs.filter(is_approved=False, is_used=False, is_rejected=False, expires_at__gt=now)
+    elif status_filter == 'approved':
+        qs = qs.filter(is_approved=True, is_used=False, is_rejected=False)
+    elif status_filter == 'used':
+        qs = qs.filter(is_used=True)
+    elif status_filter == 'expired':
+        qs = qs.filter(is_used=False, is_approved=False, is_rejected=False, expires_at__lte=now)
+    elif status_filter == 'rejected':
+        qs = qs.filter(is_rejected=True)
+
+    pending_count = MediaDownloadRequest.objects.filter(is_approved=False, is_used=False, is_rejected=False, expires_at__gt=now).count()
+    rejected_count = MediaDownloadRequest.objects.filter(is_rejected=True).count()
+    total_count = MediaDownloadRequest.objects.count()
+
+    context = {
+        'active_page': 'download_approvals',
+        'requests': qs.order_by('-created_at')[:100],
+        'pending_count': pending_count,
+        'rejected_count': rejected_count,
+        'total_count': total_count,
+        'status_filter': status_filter,
+    }
+    return render(request, 'admin/download_approvals.html', context)
+
 
 

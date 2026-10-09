@@ -19,7 +19,173 @@ def generate_next_reporter_id():
     return f"NL_{max_num + 1}"
 
 
-class Reporter(models.Model):
+_ACTIVE_PRESENCE_CACHE = {
+    'timestamp': 0,
+    'user_ids': set(),
+}
+_ACTIVE_USERS_CACHE = _ACTIVE_PRESENCE_CACHE
+EXPLICITLY_LOGGED_OUT = {}  # user_id -> datetime of explicit sign-out
+
+
+def get_active_session_info():
+    """
+    Returns cached active presence set: user_ids
+    from active unexpired sessions in Django.
+    Cached for 5 seconds to eliminate database overhead while remaining real-time.
+    """
+    import time
+    from django.utils import timezone
+    from django.contrib.sessions.models import Session
+
+    now_ts = time.time()
+    if now_ts - _ACTIVE_PRESENCE_CACHE.get('timestamp', 0) < 5:
+        return _ACTIVE_PRESENCE_CACHE
+
+    active_ids = set()
+
+    try:
+        now = timezone.now()
+        # Query unexpired sessions; fallback gracefully if timezone comparison behaves unexpectedly
+        try:
+            sessions = Session.objects.filter(expire_date__gt=now)
+        except Exception:
+            sessions = Session.objects.all()
+
+        for s in sessions:
+            try:
+                # Check expire_date safely
+                if s.expire_date:
+                    if timezone.is_aware(s.expire_date):
+                        if s.expire_date <= now:
+                            continue
+                    else:
+                        if s.expire_date <= timezone.localtime(now).replace(tzinfo=None):
+                            continue
+
+                data = s.get_decoded()
+                uid = data.get('_auth_user_id')
+                if uid:
+                    active_ids.add(int(uid))
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    _ACTIVE_PRESENCE_CACHE['timestamp'] = now_ts
+    _ACTIVE_PRESENCE_CACHE['user_ids'] = active_ids
+    return _ACTIVE_PRESENCE_CACHE
+
+
+def get_active_session_user_ids():
+    """Backward compatibility helper"""
+    return get_active_session_info()['user_ids']
+
+
+def compute_profile_last_seen_info(profile):
+    """
+    Computes real-time online status and human-readable last seen text in local time (Asia/Kolkata).
+    A profile is ONLY Online if:
+    1. The profile's associated user account has an active, unexpired login session (is logged in).
+    2. The user has not explicitly logged out.
+    3. The user has recent activity (last_seen within 300 seconds / 5 minutes, or recent login).
+    If the user has NOT logged in, they are ALWAYS Offline!
+    """
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    now = timezone.now()
+    last = getattr(profile, 'last_seen', None)
+    user = getattr(profile, 'user', None)
+
+    # 1. Fallback to user.last_login if profile last_seen is not set or older
+    if user:
+        user_last_login = getattr(user, 'last_login', None)
+        if user_last_login and (not last or user_last_login > last):
+            last = user_last_login
+
+    # 2. Check active session: ONLY this user's specific account ID
+    is_in_active_session = False
+    if user:
+        active_uids = get_active_session_info().get('user_ids', set())
+        if user.pk in active_uids:
+            is_in_active_session = True
+
+    # 3. Check explicit logout
+    is_logged_out = False
+    if user:
+        logout_ts = EXPLICITLY_LOGGED_OUT.get(user.pk)
+        if logout_ts:
+            if last and last > logout_ts:
+                EXPLICITLY_LOGGED_OUT.pop(user.pk, None)
+            else:
+                is_logged_out = True
+
+    # 4. Determine Online vs Offline:
+    # A user MUST BE in an active session (LOGGED IN) to be Online!
+    is_online = False
+    if is_in_active_session and not is_logged_out:
+        if last:
+            diff = (now - last).total_seconds()
+            # Active within 5 minutes (300s) while logged in
+            if -60 <= diff < 300:
+                is_online = True
+            # Allow up to 10 minutes (600s) if user recently logged in
+            elif -60 <= diff < 600:
+                is_online = True
+        else:
+            # Active session with no last_seen recorded yet -> Online
+            is_online = True
+
+    if is_online:
+        return {'is_online': True, 'text': 'Online'}
+
+    if not last:
+        return {'is_online': False, 'text': 'Offline'}
+
+    # Convert to local timezone for accurate display in India (Asia/Kolkata)
+    local_last = timezone.localtime(last) if timezone.is_aware(last) else last
+    local_now = timezone.localtime(now) if timezone.is_aware(now) else now
+
+    time_str = local_last.strftime('%I:%M %p')
+    if local_last.date() == local_now.date():
+        return {'is_online': False, 'text': f"Last seen today at {time_str}"}
+    elif local_last.date() == (local_now - timedelta(days=1)).date():
+        return {'is_online': False, 'text': f"Last seen yesterday at {time_str}"}
+    else:
+        return {'is_online': False, 'text': f"Last seen on {local_last.strftime('%d %b, %I:%M %p')}"}
+
+
+
+class OnlineStatusMixin:
+    """
+    Mixin providing real-time online status and human-readable last seen text
+    with property getters and setters so views can assign pre-computed values without AttributeError.
+    """
+    def get_last_seen_info(self):
+        return compute_profile_last_seen_info(self)
+
+    @property
+    def is_online(self):
+        if hasattr(self, '_is_online'):
+            return bool(self._is_online)
+        return bool(self.get_last_seen_info().get('is_online'))
+
+    @is_online.setter
+    def is_online(self, value):
+        self._is_online = bool(value)
+
+    @property
+    def last_seen_text(self):
+        if hasattr(self, '_last_seen_text'):
+            return self._last_seen_text
+        return self.get_last_seen_info().get('text', '')
+
+    @last_seen_text.setter
+    def last_seen_text(self, value):
+        self._last_seen_text = value
+
+
+class Reporter(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='reporter_profile')
     reporter_id = models.CharField(
         max_length=30, 
@@ -45,25 +211,6 @@ class Reporter(models.Model):
         verbose_name_plural = "Reporters"
         ordering = ['-created_at']
 
-    def get_last_seen_info(self):
-        from django.utils import timezone
-        from datetime import timedelta
-        last = self.last_seen
-        if not last and hasattr(self, 'user') and self.user:
-            last = getattr(self.user, 'last_login', None)
-        if not last:
-            return {'is_online': False, 'text': 'Offline'}
-        now = timezone.now()
-        diff = (now - last).total_seconds()
-        if diff < 120:
-            return {'is_online': True, 'text': 'Online'}
-        elif last.date() == now.date():
-            return {'is_online': False, 'text': f"Last seen today at {last.strftime('%I:%M %p')}"}
-        elif last.date() == (now - timedelta(days=1)).date():
-            return {'is_online': False, 'text': f"Last seen yesterday at {last.strftime('%I:%M %p')}"}
-        else:
-            return {'is_online': False, 'text': f"Last seen on {last.strftime('%d %b, %I:%M %p')}"}
-
     def save(self, *args, **kwargs):
         if not self.reporter_id:
             self.reporter_id = generate_next_reporter_id()
@@ -74,7 +221,7 @@ class Reporter(models.Model):
         return f"{self.name}{rep_id} ({self.district} - {self.phone_number})"
 
 
-class Desk(models.Model):
+class Desk(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='desk_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Desk Staff")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -89,30 +236,11 @@ class Desk(models.Model):
         verbose_name_plural = "Desks"
         ordering = ['-created_at']
 
-    def get_last_seen_info(self):
-        from django.utils import timezone
-        from datetime import timedelta
-        last = self.last_seen
-        if not last and hasattr(self, 'user') and self.user:
-            last = getattr(self.user, 'last_login', None)
-        if not last:
-            return {'is_online': False, 'text': 'Offline'}
-        now = timezone.now()
-        diff = (now - last).total_seconds()
-        if diff < 120:
-            return {'is_online': True, 'text': 'Online'}
-        elif last.date() == now.date():
-            return {'is_online': False, 'text': f"Last seen today at {last.strftime('%I:%M %p')}"}
-        elif last.date() == (now - timedelta(days=1)).date():
-            return {'is_online': False, 'text': f"Last seen yesterday at {last.strftime('%I:%M %p')}"}
-        else:
-            return {'is_online': False, 'text': f"Last seen on {last.strftime('%d %b, %I:%M %p')}"}
-
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
 
 
-class SocialMedia(models.Model):
+class SocialMedia(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='social_media_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Social Media Staff")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -126,30 +254,11 @@ class SocialMedia(models.Model):
         verbose_name_plural = "Social Media Staff"
         ordering = ['-created_at']
 
-    def get_last_seen_info(self):
-        from django.utils import timezone
-        from datetime import timedelta
-        last = self.last_seen
-        if not last and hasattr(self, 'user') and self.user:
-            last = getattr(self.user, 'last_login', None)
-        if not last:
-            return {'is_online': False, 'text': 'Offline'}
-        now = timezone.now()
-        diff = (now - last).total_seconds()
-        if diff < 120:
-            return {'is_online': True, 'text': 'Online'}
-        elif last.date() == now.date():
-            return {'is_online': False, 'text': f"Last seen today at {last.strftime('%I:%M %p')}"}
-        elif last.date() == (now - timedelta(days=1)).date():
-            return {'is_online': False, 'text': f"Last seen yesterday at {last.strftime('%I:%M %p')}"}
-        else:
-            return {'is_online': False, 'text': f"Last seen on {last.strftime('%d %b, %I:%M %p')}"}
-
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
 
 
-class GraphicDesigner(models.Model):
+class GraphicDesigner(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='graphic_designer_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Graphic Designer")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -166,7 +275,7 @@ class GraphicDesigner(models.Model):
         return f"{self.name} ({self.phone_number})"
 
 
-class InputUser(models.Model):
+class InputUser(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='input_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Input Staff")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -187,7 +296,7 @@ class InputUser(models.Model):
 Input = InputUser
 
 
-class VoiceOverUser(models.Model):
+class VoiceOverUser(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='voice_over_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Voice Over Staff")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -201,25 +310,6 @@ class VoiceOverUser(models.Model):
         verbose_name_plural = "Voice Overs"
         ordering = ['-created_at']
 
-    def get_last_seen_info(self):
-        from django.utils import timezone
-        from datetime import timedelta
-        last = self.last_seen
-        if not last and hasattr(self, 'user') and self.user:
-            last = getattr(self.user, 'last_login', None)
-        if not last:
-            return {'is_online': False, 'text': 'Offline'}
-        now = timezone.now()
-        diff = (now - last).total_seconds()
-        if diff < 120:
-            return {'is_online': True, 'text': 'Online'}
-        elif last.date() == now.date():
-            return {'is_online': False, 'text': f"Last seen today at {last.strftime('%I:%M %p')}"}
-        elif last.date() == (now - timedelta(days=1)).date():
-            return {'is_online': False, 'text': f"Last seen yesterday at {last.strftime('%I:%M %p')}"}
-        else:
-            return {'is_online': False, 'text': f"Last seen on {last.strftime('%d %b, %I:%M %p')}"}
-
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
 
@@ -229,7 +319,7 @@ VoiceOver = VoiceOverUser
 VoiceHover = VoiceOverUser
 
 
-class CopyEditor(models.Model):
+class CopyEditor(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='copy_editor_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Copy Editor")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -243,30 +333,11 @@ class CopyEditor(models.Model):
         verbose_name_plural = "Copy Editors"
         ordering = ['-created_at']
 
-    def get_last_seen_info(self):
-        from django.utils import timezone
-        from datetime import timedelta
-        last = self.last_seen
-        if not last and hasattr(self, 'user') and self.user:
-            last = getattr(self.user, 'last_login', None)
-        if not last:
-            return {'is_online': False, 'text': 'Offline'}
-        now = timezone.now()
-        diff = (now - last).total_seconds()
-        if diff < 120:
-            return {'is_online': True, 'text': 'Online'}
-        elif last.date() == now.date():
-            return {'is_online': False, 'text': f"Last seen today at {last.strftime('%I:%M %p')}"}
-        elif last.date() == (now - timedelta(days=1)).date():
-            return {'is_online': False, 'text': f"Last seen yesterday at {last.strftime('%I:%M %p')}"}
-        else:
-            return {'is_online': False, 'text': f"Last seen on {last.strftime('%d %b, %I:%M %p')}"}
-
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
 
 
-class VisualEditor(models.Model):
+class VisualEditor(OnlineStatusMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='visual_editor_profile')
     name = models.CharField(max_length=150, help_text="Full Name of the Visual Editor")
     phone_number = models.CharField(max_length=20, unique=True, help_text="Login Phone Number")
@@ -279,25 +350,6 @@ class VisualEditor(models.Model):
         verbose_name = "Visual Editor"
         verbose_name_plural = "Visual Editors"
         ordering = ['-created_at']
-
-    def get_last_seen_info(self):
-        from django.utils import timezone
-        from datetime import timedelta
-        last = self.last_seen
-        if not last and hasattr(self, 'user') and self.user:
-            last = getattr(self.user, 'last_login', None)
-        if not last:
-            return {'is_online': False, 'text': 'Offline'}
-        now = timezone.now()
-        diff = (now - last).total_seconds()
-        if diff < 120:
-            return {'is_online': True, 'text': 'Online'}
-        elif last.date() == now.date():
-            return {'is_online': False, 'text': f"Last seen today at {last.strftime('%I:%M %p')}"}
-        elif last.date() == (now - timedelta(days=1)).date():
-            return {'is_online': False, 'text': f"Last seen yesterday at {last.strftime('%I:%M %p')}"}
-        else:
-            return {'is_online': False, 'text': f"Last seen on {last.strftime('%d %b, %I:%M %p')}"}
 
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
@@ -633,6 +685,48 @@ class DeskReporterChatMessage(models.Model):
 
     def __str__(self):
         return f"[{self.sender_type.upper()}] {self.desk.name} <-> {self.reporter.name}: {self.message[:30]}"
+
+
+class MediaDownloadRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='download_requests')
+    requester_name = models.CharField(max_length=150, help_text="Name of staff requesting download")
+    role_name = models.CharField(max_length=50, default='Staff', help_text="Role: Desk, Visual Editor, etc.")
+    file_url = models.TextField(help_text="URL of media file being requested")
+    file_name = models.CharField(max_length=255, help_text="Clean display name of the file/story")
+    passcode = models.CharField(max_length=6, help_text="6-digit auto-generated passcode")
+    is_approved = models.BooleanField(default=False, help_text="True if approved by Admin/Chief Editor")
+    is_used = models.BooleanField(default=False, help_text="True once successfully downloaded")
+    is_rejected = models.BooleanField(default=False, help_text="True if rejected by Admin")
+    rejection_reason = models.CharField(max_length=255, blank=True, null=True, help_text="Reason for rejection if provided")
+    rejected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='rejected_downloads')
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_downloads')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(help_text="Expiry time (e.g. +15 mins)")
+
+    class Meta:
+        db_table = 'app_mediadownloadrequest'
+        verbose_name = "Media Download Request"
+        verbose_name_plural = "Media Download Requests"
+        ordering = ['-created_at']
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    def status_label(self):
+        if self.is_used:
+            return "Used"
+        if getattr(self, 'is_rejected', False):
+            return "Rejected"
+        if self.is_approved:
+            return "Approved"
+        if self.is_expired():
+            return "Expired"
+        return "Pending"
+
+    def __str__(self):
+        return f"[{self.passcode}] {self.requester_name} ({self.role_name}) - {self.file_name[:25]} ({self.status_label()})"
 
 
 

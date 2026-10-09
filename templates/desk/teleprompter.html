@@ -7,7 +7,7 @@
 <style>
     .prompter-dispatch-grid {
         display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
+        grid-template-columns: 1.15fr 0.85fr;
         gap: 24px;
         align-items: start;
     }
@@ -76,9 +76,9 @@
 
     .prompter-textarea {
         font-family: inherit;
-        font-size: 15px;
+        font-size: 14.5px;
         line-height: 1.6;
-        min-height: 180px;
+        min-height: 160px;
         resize: vertical;
     }
 
@@ -91,13 +91,247 @@
         color: var(--text-muted);
     }
 
+    /* Multiple Reporter Selection Box */
+    .reporter-picker-box {
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: #f8fafc;
+        padding: 12px;
+        transition: all 0.15s ease;
+    }
+
+    .reporter-picker-box.has-error {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .picker-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .search-input-container {
+        flex: 1;
+        min-width: 200px;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon-inside {
+        position: absolute;
+        left: 10px;
+        pointer-events: none;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+    }
+
+    .reporter-search-field {
+        width: 100%;
+        padding: 8px 12px 8px 34px;
+        font-size: 12.5px;
+        border-radius: 6px;
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        color: #0f172a;
+        outline: none;
+        box-sizing: border-box;
+        transition: all 0.15s ease;
+    }
+
+    .reporter-search-field:focus {
+        border-color: #059669;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+    }
+
+    .picker-action-buttons {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-action-pill {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        color: #334155;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 7px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .btn-action-pill:hover {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #ffffff;
+    }
+
+    .reporter-list-scroll {
+        max-height: 240px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-right: 4px;
+    }
+
+    .reporter-list-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .reporter-list-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .reporter-select-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+        margin: 0;
+    }
+
+    .reporter-select-card:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+
+    .reporter-select-card.selected {
+        background: #ecfdf5;
+        border-color: #059669;
+        box-shadow: 0 1px 4px rgba(5, 150, 105, 0.12);
+    }
+
+    .checkbox-indicator-wrapper {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
+    .native-checkbox {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        margin: 0;
+        z-index: 2;
+    }
+
+    .custom-check-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        border: 2px solid #94a3b8;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+    }
+
+    .reporter-select-card.selected .custom-check-box {
+        background: #059669;
+        border-color: #059669;
+    }
+
+    .custom-check-box svg {
+        display: none;
+    }
+
+    .reporter-select-card.selected .custom-check-box svg {
+        display: block;
+    }
+
+    .reporter-avatar-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 800;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+
+    .reporter-select-card.selected .reporter-avatar-circle {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    .reporter-card-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .reporter-card-name {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.3;
+    }
+
+    .reporter-card-tags {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+        color: #64748b;
+        margin-top: 3px;
+        flex-wrap: wrap;
+    }
+
+    .district-chip {
+        background: #f1f5f9;
+        color: #334155;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 11px;
+    }
+
+    .selected-reporter-badge {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        background: #e2e8f0;
+        color: #475569;
+        transition: all 0.2s ease;
+    }
+
+    .selected-reporter-badge.active {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+    }
+
     .btn-dispatch {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         width: 100%;
-        padding: 12px 20px;
+        padding: 13px 20px;
         background: linear-gradient(135deg, #059669 0%, #047857 100%);
         color: #ffffff;
         border: none;
@@ -304,29 +538,89 @@
                     </div>
                 </div>
 
-                <!-- 3. Choose Reporter -->
+                <!-- 3. Choose Field Reporter(s) Multi-Select -->
                 <div class="form-group">
-                    <label class="form-label" for="reporterSelect" style="display: flex; align-items: center; justify-content: space-between;">
-                        <span>Choose Field Reporter to Send <span style="color: #dc2626;">*</span></span>
-                        <span style="font-size: 11.5px; color: #0284c7; font-weight: 600;">Only this reporter can view this prompter</span>
-                    </label>
-                    <select name="reporter_id" id="reporterSelect" class="form-select" required>
-                        <option value="">-- Select Field Reporter --</option>
-                        {% for rep in reporters %}
-                        <option value="{{ rep.pk }}" {% if selected_reporter_id|stringformat:"s" == rep.pk|stringformat:"s" %}selected{% endif %}>
-                            🎤 {{ rep.name }} &bull; {{ rep.district }} Bureau (📞 {{ rep.phone_number }})
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label class="form-label" style="margin-bottom: 0;">
+                            Choose Field Reporter(s) to Send <span style="color: #dc2626;">*</span>
+                        </label>
+                        <span id="selectedCountBadge" class="selected-reporter-badge">0 of {{ reporters.count }} Selected</span>
+                    </div>
+
+                    <div class="reporter-picker-box" id="reporterPickerBox">
+                        <!-- Toolbar: Search + Quick Select -->
+                        <div class="picker-toolbar">
+                            <div class="search-input-container">
+                                <span class="search-icon-inside">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </span>
+                                <input type="text" id="reporterSearchInput" class="reporter-search-field" placeholder="Search by name, district, or phone..." oninput="handleSearchReporters(this.value)">
+                            </div>
+                            <div class="picker-action-buttons">
+                                <button type="button" class="btn-action-pill" onclick="handleToggleAllReporters(true)">Select All</button>
+                                <button type="button" class="btn-action-pill" onclick="handleToggleAllReporters(false)">Deselect All</button>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox List -->
+                        <div class="reporter-list-scroll" id="reporterListScroll">
+                            {% for rep in reporters %}
+                            <label class="reporter-select-card {% if selected_reporter_id|stringformat:'s' == rep.pk|stringformat:'s' %}selected{% endif %}" id="card_{{ rep.pk }}" for="rep_cb_{{ rep.pk }}">
+                                <div class="checkbox-indicator-wrapper">
+                                    <input type="checkbox" 
+                                           name="reporter_ids" 
+                                           id="rep_cb_{{ rep.pk }}" 
+                                           value="{{ rep.pk }}" 
+                                           class="native-checkbox reporter-cb"
+                                           data-name="{{ rep.name|lower }}"
+                                           data-district="{{ rep.district|lower }}"
+                                           data-phone="{{ rep.phone_number }}"
+                                           {% if selected_reporter_id|stringformat:'s' == rep.pk|stringformat:'s' %}checked{% endif %}
+                                           onchange="syncCardSelection(this)">
+                                    <div class="custom-check-box">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="reporter-avatar-circle">
+                                    {{ rep.name|slice:":1"|upper }}
+                                </div>
+                                <div class="reporter-card-info">
+                                    <div class="reporter-card-name">{{ rep.name }}</div>
+                                    <div class="reporter-card-tags">
+                                        <span class="district-chip">📍 {{ rep.district }} Bureau</span>
+                                        {% if rep.phone_number %}
+                                        <span>📞 {{ rep.phone_number }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </label>
+                            {% empty %}
+                            <div style="padding: 16px; text-align: center; color: #94a3b8; font-size: 13px;">
+                                No active field reporters found.
+                            </div>
+                            {% endfor %}
+                            <div id="noReportersNotice" style="display: none; padding: 14px; text-align: center; color: #64748b; font-size: 12.5px;">
+                                No reporters match your search.
+                            </div>
+                        </div>
+                    </div>
+                    <div id="reporterSelectionError" style="display: none; color: #dc2626; font-size: 12px; margin-top: 6px; font-weight: 600;">
+                        ⚠️ Please choose at least one field reporter to send the script.
+                    </div>
                 </div>
 
                 <!-- 4. Send Button -->
-                <button type="submit" class="btn-dispatch">
+                <button type="submit" class="btn-dispatch" id="btnDispatch">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
-                    <span>Send to Reporter's Teleprompter</span>
+                    <span id="btnDispatchLabel">Send to Selected Reporter(s)</span>
                 </button>
             </form>
         </div>
@@ -438,6 +732,92 @@
         updateWordCount();
     }
 
+    function syncCardSelection(checkbox) {
+        const card = checkbox.closest('.reporter-select-card');
+        if (card) {
+            if (checkbox.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        }
+        refreshSelectedBadge();
+    }
+
+    function refreshSelectedBadge() {
+        const all = document.querySelectorAll('.reporter-cb');
+        const checked = document.querySelectorAll('.reporter-cb:checked');
+        const badge = document.getElementById('selectedCountBadge');
+        const btnLabel = document.getElementById('btnDispatchLabel');
+        const count = checked.length;
+        const total = all.length;
+
+        if (badge) {
+            badge.textContent = `${count} of ${total} Selected`;
+            if (count > 0) {
+                badge.classList.add('active');
+                document.getElementById('reporterSelectionError').style.display = 'none';
+                document.getElementById('reporterPickerBox').classList.remove('has-error');
+            } else {
+                badge.classList.remove('active');
+            }
+        }
+
+        if (btnLabel) {
+            if (count === 0) {
+                btnLabel.textContent = "Send to Selected Reporter(s)";
+            } else if (count === 1) {
+                btnLabel.textContent = "Send to 1 Reporter's Teleprompter";
+            } else {
+                btnLabel.textContent = `Send to ${count} Reporters' Teleprompters`;
+            }
+        }
+    }
+
+    function handleToggleAllReporters(selectAll) {
+        const cards = document.querySelectorAll('.reporter-select-card');
+        cards.forEach(card => {
+            if (card.style.display !== 'none') {
+                const cb = card.querySelector('.reporter-cb');
+                if (cb) {
+                    cb.checked = selectAll;
+                    if (selectAll) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                }
+            }
+        });
+        refreshSelectedBadge();
+    }
+
+    function handleSearchReporters(query) {
+        const q = query.trim().toLowerCase();
+        const cards = document.querySelectorAll('.reporter-select-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const cb = card.querySelector('.reporter-cb');
+            if (!cb) return;
+            const name = cb.getAttribute('data-name') || '';
+            const district = cb.getAttribute('data-district') || '';
+            const phone = cb.getAttribute('data-phone') || '';
+
+            if (!q || name.includes(q) || district.includes(q) || phone.includes(q)) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const notice = document.getElementById('noReportersNotice');
+        if (notice) {
+            notice.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
     function handleStoryAutofill(selectEl) {
         const opt = selectEl.options[selectEl.selectedIndex];
         if (!opt || !opt.value) return;
@@ -451,15 +831,37 @@
         document.getElementById('formNewsId').value = opt.value;
 
         if (repId) {
-            const repSelect = document.getElementById('reporterSelect');
-            for (let i = 0; i < repSelect.options.length; i++) {
-                if (repSelect.options[i].value === repId) {
-                    repSelect.selectedIndex = i;
-                    break;
+            handleToggleAllReporters(false);
+            const targetCb = document.getElementById('rep_cb_' + repId);
+            if (targetCb) {
+                targetCb.checked = true;
+                syncCardSelection(targetCb);
+                const card = targetCb.closest('.reporter-select-card');
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             }
         }
         updateWordCount();
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        refreshSelectedBadge();
+
+        const form = document.getElementById('teleprompterForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const count = document.querySelectorAll('.reporter-cb:checked').length;
+                if (count === 0) {
+                    e.preventDefault();
+                    document.getElementById('reporterPickerBox').classList.add('has-error');
+                    const err = document.getElementById('reporterSelectionError');
+                    err.style.display = 'block';
+                    err.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

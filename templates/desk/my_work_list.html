@@ -1044,7 +1044,7 @@
                         <select name="voice_over_id" id="selVoiceOver" class="dept-dropdown" disabled>
                             <option value="">-- Select Voice Over Artist --</option>
                             {% for vo in voice_overs %}
-                            <option value="{{ vo.pk }}">{{ vo.name }} ({{ vo.phone_number }})</option>
+                            <option value="{{ vo.pk }}">{% if vo.is_online %}🟢{% else %}⚪{% endif %} {{ vo.name }} ({{ vo.phone_number }}) — {% if vo.is_online %}Online{% else %}Offline{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -1060,7 +1060,7 @@
                         <select name="copy_editor_id" id="selCopyEditor" class="dept-dropdown" disabled>
                             <option value="">-- Select Copy Editor --</option>
                             {% for ce in copy_editors %}
-                            <option value="{{ ce.pk }}">{{ ce.name }} ({{ ce.phone_number }})</option>
+                            <option value="{{ ce.pk }}">{% if ce.is_online %}🟢{% else %}⚪{% endif %} {{ ce.name }} ({{ ce.phone_number }}) — {% if ce.is_online %}Online{% else %}Offline{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -1076,7 +1076,7 @@
                         <select name="graphic_designer_id" id="selGraphicDesigner" class="dept-dropdown" disabled>
                             <option value="">-- Select Graphic Designer --</option>
                             {% for gd in graphic_designers %}
-                            <option value="{{ gd.pk }}">{{ gd.name }} ({{ gd.phone_number }})</option>
+                            <option value="{{ gd.pk }}">{% if gd.is_online %}🟢{% else %}⚪{% endif %} {{ gd.name }} ({{ gd.phone_number }}) — {% if gd.is_online %}Online{% else %}Offline{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -1092,7 +1092,7 @@
                         <select name="visual_editor_id" id="selVisualEditor" class="dept-dropdown" disabled>
                             <option value="">-- Select Visual Editor --</option>
                             {% for ve in visual_editors %}
-                            <option value="{{ ve.pk }}">{{ ve.name }} ({{ ve.phone_number }})</option>
+                            <option value="{{ ve.pk }}">{% if ve.is_online %}🟢{% else %}⚪{% endif %} {{ ve.name }} ({{ ve.phone_number }}) — {% if ve.is_online %}Online{% else %}Offline{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -1108,7 +1108,7 @@
                         <select name="social_media_id" id="selSocialMedia" class="dept-dropdown" disabled>
                             <option value="">-- Select Social Media Staff --</option>
                             {% for sm in social_medias %}
-                            <option value="{{ sm.pk }}">{{ sm.name }} ({{ sm.phone_number }})</option>
+                            <option value="{{ sm.pk }}">{% if sm.is_online %}🟢{% else %}⚪{% endif %} {{ sm.name }} ({{ sm.phone_number }}) — {% if sm.is_online %}Online{% else %}Offline{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>

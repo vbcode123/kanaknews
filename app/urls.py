@@ -16,6 +16,7 @@ urlpatterns = [
     path('voice-over/logout/', views.voice_over_logout_view, name='voice_over_logout'),
     path('copy-editor/logout/', views.copy_editor_logout_view, name='copy_editor_logout'),
     path('visual-editor/logout/', views.visual_editor_logout_view, name='visual_editor_logout'),
+    path('api/heartbeat/', views.heartbeat_api, name='heartbeat_api'),
 
     # ==========================================
     # 2. Admin Dashboard & Profile
@@ -242,13 +243,25 @@ urlpatterns = [
     path('news/edit/<int:pk>/', views.news_edit_view, name='news_edit'),
     path('news/delete/<int:pk>/', views.news_delete_view, name='news_delete'),
     path('news/ai-check/', views.ai_check_script_view, name='news_ai_check'),
+    path('news/<int:pk>/download-media/', views.news_download_single_media_view, name='news_download_media'),
 
     # Convenient portal aliases
     path('reporter/news/', views.news_list_view, name='reporter_news_list'),
     path('reporter/news/add/', views.news_add_view, name='reporter_news_add'),
+    path('input/news/<int:pk>/download/', views.news_download_single_media_view, name='input_download_single_news'),
     path('desk/news/', views.desk_news_verify_list_view, name='desk_news_list'),
     path('desk/news/verify/', views.desk_news_verify_list_view, name='desk_news_verify_list'),
     path('desk/news/<int:pk>/status/', views.desk_update_news_status_view, name='desk_update_news_status'),
+    path('desk/news/<int:pk>/download/', views.news_download_single_media_view, name='desk_download_single_news'),
     path('desk/news/download-zip/', views.desk_download_approved_news_zip_view, name='desk_download_approved_zip'),
+
+    # ==========================================
+    # 8. Media Download Approval Guard URLs
+    # ==========================================
+    path('api/media-download/request/', views.request_download_passcode_view, name='request_download_passcode'),
+    path('api/media-download/verify/', views.verify_download_passcode_view, name='verify_download_passcode'),
+    path('api/media-download/status/', views.check_download_status_view, name='check_download_status'),
+    path('api/media-download/admin-requests/', views.admin_download_requests_api, name='admin_download_requests_api'),
+    path('admin-download-approvals/', views.admin_download_approvals_view, name='admin_download_approvals'),
 ]
 
