@@ -842,9 +842,13 @@
                             <!-- Copy Editor -->
                             <div class="team-dispatch-row">
                                 <span class="team-role-tag role-ce">✍️ Copy Editor</span>
-                                {% if item.assigned_copy_editor %}
-                                    <span class="team-person-name" title="{{ item.assigned_copy_editor.name }} ({{ item.assigned_copy_editor.phone_number }})">
-                                        {{ item.assigned_copy_editor.name }}
+                                {% if item.edited_by_copy_editor %}
+                                    <span class="team-person-name" style="color: #15803d; font-weight: 700;" title="Script Edited &amp; Saved by {{ item.edited_by_copy_editor.name }} ({{ item.edited_by_copy_editor.phone_number }})">
+                                        {{ item.edited_by_copy_editor.name }} <span style="font-size: 10px; background: #dcfce7; color: #166534; padding: 1px 5px; border-radius: 4px; font-weight: 800;">✓</span>
+                                    </span>
+                                {% elif item.assigned_copy_editor %}
+                                    <span class="team-person-name" {% if item.is_script_edited_by_copy_editor %}style="color: #15803d; font-weight: 700;"{% endif %} title="{{ item.assigned_copy_editor.name }} ({{ item.assigned_copy_editor.phone_number }})">
+                                        {{ item.assigned_copy_editor.name }}{% if item.is_script_edited_by_copy_editor %} <span style="font-size: 10px; background: #dcfce7; color: #166534; padding: 1px 5px; border-radius: 4px; font-weight: 800;">✓</span>{% endif %}
                                     </span>
                                 {% else %}
                                     <span class="team-not-assigned">—</span>

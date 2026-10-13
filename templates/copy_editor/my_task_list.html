@@ -751,6 +751,12 @@
                             <div id="scriptText_{{ task.pk }}">{{ task.description|default:"No narrative script text entered yet." }}</div>
                         </div>
 
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px;">
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 999px;">
+                                ✍️ Polished by {{ task.edited_by_copy_editor.name|default:task.assigned_copy_editor.name|default:copy_editor_user.name }}
+                            </span>
+                        </div>
+
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <button type="button" class="btn-quick-copy" onclick="copyStoryContent(`{{ task.headline|escapejs }}`, `{{ task.description|escapejs }}`)">
                                 📋 Copy Script

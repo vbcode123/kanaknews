@@ -1012,6 +1012,11 @@
 
                         <!-- Forwarded VE Badge -->
                         <div id="veBadge_{{ task.pk }}">
+                            {% if task.is_script_edited_by_copy_editor %}
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 999px; margin-right: 6px;">
+                                ✍️ Edited by {{ task.edited_by_copy_editor.name|default:task.assigned_copy_editor.name|default:copy_editor_user.name }}
+                            </span>
+                            {% endif %}
                             {% if task.assigned_visual_editor %}
                             <span class="badge-ve-sent" title="Story forwarded to Visual Editor">
                                 🎬 Sent to VE: {{ task.assigned_visual_editor.name }}

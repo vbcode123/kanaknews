@@ -402,7 +402,9 @@ class News(models.Model):
 
     # Team Assignment fields
     assigned_copy_editor = models.ForeignKey(CopyEditor, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_news')
-    is_script_edited_by_copy_editor = models.BooleanField(default=False, help_text="True if Copy Editor has edited and forwarded script to Visual Editor")
+    edited_by_copy_editor = models.ForeignKey(CopyEditor, on_delete=models.SET_NULL, null=True, blank=True, related_name='script_edited_news', help_text="Copy Editor who edited and saved the script")
+    is_script_edited_by_copy_editor = models.BooleanField(default=False, help_text="True if Copy Editor has edited and saved/forwarded script")
+    script_edited_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when Copy Editor saved script")
     sent_to_visual_editor_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when Copy Editor forwarded script to Visual Editor")
     assigned_visual_editor = models.ForeignKey(VisualEditor, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_news')
     assigned_voice_over = models.ForeignKey(VoiceOverUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_news')
